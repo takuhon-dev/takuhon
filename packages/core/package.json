@@ -1,0 +1,23 @@
+{
+  "name": "@meport/core",
+  "version": "0.0.0",
+  "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for meport",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
+  }
+}

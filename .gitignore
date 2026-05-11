@@ -1,0 +1,215 @@
+# ===== OS =====
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Linux
+*~
+
+# ===== Editor / IDE =====
+
+## VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+## JetBrains (IntelliJ, WebStorm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+## Vim / Neovim
+*.swp
+*.swo
+*.swn
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+Session.vim
+.netrwhist
+tags
+
+## Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+
+# ===== Environment / Secrets =====
+.env
+.env.*
+!.env.example
+!.env.test
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ===== Node.js =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.node_repl_history
+*.tsbuildinfo
+
+## Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.cache/
+
+## Test / Coverage
+coverage/
+.nyc_output/
+.vitest/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+.venv/
+venv/
+env/
+.tox/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+*.cover
+
+# ===== Go =====
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# ===== Rust =====
+target/
+Cargo.lock
+
+# ===== Logs & Temp =====
+logs/
+*.log
+tmp/
+temp/
+.temp/
+
+# ===== Miscellaneous =====
+*.bak
+*.orig
+*.rej
+.direnv/
+
+# ===== AI assistant instructions / agent local state =====
+# Internal AI-agent configuration. Repo-specific conventions, paths, and
+# assistant directives that are not meaningful to public OSS consumers —
+# keep them out of the published repository.
+
+# Generic agent convention files
+AGENTS.md
+AGENTS.local.md
+
+# Anthropic Claude
+CLAUDE.md
+.claude/
+
+# Google Gemini
+GEMINI.md
+
+# GitHub Copilot
+.github/copilot-instructions.md
+
+# Cursor IDE
+.cursor/
+.cursorrules
+.cursorignore
+
+# Windsurf
+.windsurf/
+.windsurfrules
+
+# Aider
+.aider*
+
+# Continue.dev
+.continue/
+
+# Codeium
+.codeium/
+
+# Zed Editor
+.zed/
+
+# Cline
+.cline*
+.clinerules*
+
+# Roo Code
+.roo/
+.roomodes*
+
+# Kilocode
+.kilocode/
+
+# Tabnine
+.tabnine/
+
+# JetBrains Junie
+.junie/
+
+# Generic agent runtime state
+.agents/local/
+.agents/tmp/
+
+# Basou - default ignore (Y-2 Section 1.3 / Y-1.5 Section 5.1)
+.basou/logs/
+.basou/raw/
+.basou/tmp/
+.basou/status.json
+.basou/sessions/*/events.jsonl
+.basou/sessions/*/artifacts/
+.basou/approvals/pending/
+.basou/approvals/resolved/
