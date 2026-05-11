@@ -62,7 +62,6 @@ export interface Profile {
   displayName: LocalizedTitle;
   tagline?: LocalizedTitle;
   bio?: LocalizedBody;
-  pronouns?: string;
   avatar?: Avatar;
   location?: Address;
 }
@@ -89,6 +88,7 @@ export interface Career {
   isCurrent?: boolean;
   url?: string;
   location?: Address;
+  order?: number;
 }
 
 export interface Project {
@@ -104,13 +104,15 @@ export interface Project {
   order?: number;
 }
 
-export type SkillLevel = 'familiar' | 'competent' | 'proficient' | 'expert';
-
 export interface Skill {
+  id: Slug;
   label: string;
+  /**
+   * Recommended values (extensible): programming, design, business, communication,
+   * language, music, art, sports, other.
+   */
   category?: string;
-  level?: SkillLevel;
-  yearsOfExperience?: number;
+  order?: number;
 }
 
 export interface Contact {
@@ -123,7 +125,16 @@ export interface Settings {
   defaultLocale: LocaleTag;
   fallbackLocale?: LocaleTag;
   availableLocales: LocaleTag[];
+  /** UI theme identifier. `'default'` is the built-in theme. */
+  theme?: string;
+  /** Display the 'Powered by meport' attribution on the rendered profile. */
+  showPoweredBy?: boolean;
+  /** Emit Schema.org JSON-LD on the rendered profile page. */
   enableJsonLd?: boolean;
+  /** Expose the public read API endpoints. */
+  enableApi?: boolean;
+  /** Opt-in flag for first-party analytics. Default is false. */
+  enableAnalytics?: boolean;
 }
 
 export interface ContentLicenseAttribution {
@@ -142,6 +153,8 @@ export interface ContentLicense {
 export interface Meta {
   createdAt?: IsoDateTime;
   updatedAt?: IsoDateTime;
+  /** Tool that produced this document (e.g. `'MePort'`, `'create-meport@0.1.0'`). */
+  generator?: string;
   contentLicense: ContentLicense;
 }
 

@@ -29,7 +29,6 @@ export type {
   Project,
   Settings,
   Skill,
-  SkillLevel,
   Slug,
   YearMonth,
 } from './types.js';

@@ -45,6 +45,40 @@ describe('examples/personal-profile/meport.json', () => {
     expect(example.settings.defaultLocale).toBe('en');
   });
 
+  it('exercises every Settings flag from Spec §6.11', () => {
+    expect(example.settings.theme).toBeTypeOf('string');
+    expect(example.settings.showPoweredBy).toBeTypeOf('boolean');
+    expect(example.settings.enableJsonLd).toBeTypeOf('boolean');
+    expect(example.settings.enableApi).toBeTypeOf('boolean');
+    expect(example.settings.enableAnalytics).toBe(false);
+  });
+
+  it('populates Meta.generator', () => {
+    expect(example.meta.generator).toBeTypeOf('string');
+  });
+
+  it('gives every skill an id and uses Spec §6.9 recommended categories', () => {
+    expect(example.skills.length).toBeGreaterThan(0);
+    const recommended = new Set([
+      'programming',
+      'design',
+      'business',
+      'communication',
+      'language',
+      'music',
+      'art',
+      'sports',
+      'other',
+    ]);
+    for (const skill of example.skills) {
+      expect(skill.id).toBeTypeOf('string');
+      expect(skill.id.length).toBeGreaterThan(0);
+      if (skill.category !== undefined) {
+        expect(recommended.has(skill.category)).toBe(true);
+      }
+    }
+  });
+
   it('chooses a non-empty content license (no implicit default)', () => {
     expect(example.meta.contentLicense.spdxId).toBeTypeOf('string');
     expect(example.meta.contentLicense.spdxId.length).toBeGreaterThan(0);

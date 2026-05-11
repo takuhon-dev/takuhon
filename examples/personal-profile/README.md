@@ -10,9 +10,11 @@ in Lisbon. The example covers:
   with `iconUrl`
 - A current position (`endDate: null`, `isCurrent: true`) plus a past one
 - A project tied to a career via `relatedCareerId`
-- A `Skill` mix spanning `language`, `framework`, `accessibility`, and `tooling`
-  categories with different `level` values
-- A `meta.contentLicense` set to `CC-BY-4.0` with attribution
+- A `Skill` mix spanning the Spec §6.9 recommended categories (`programming`,
+  `design`, `language`)
+- All `Settings` flags (`theme`, `showPoweredBy`, `enableJsonLd`, `enableApi`,
+  `enableAnalytics`) populated with their expected defaults
+- A `meta.generator` plus `meta.contentLicense` set to `CC-BY-4.0` with attribution
 
 It doubles as a test fixture in `packages/core/src/__tests__/example.test.ts`.
 Use it as the starting template when scaffolding a real profile, or as a

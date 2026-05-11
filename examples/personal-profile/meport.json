@@ -13,7 +13,6 @@
       "en": "Pat Rivera is a fictional persona used to exercise every field of the meport profile schema. They maintain a handful of open-source libraries focused on accessibility tooling and frequently speak at local meetups.",
       "ja": "Pat Rivera は meport プロフィール schema の全フィールドを示すための架空の人物です。アクセシビリティ系のオープンソースライブラリを保守し、地域コミュニティで登壇しています。"
     },
-    "pronouns": "they/them",
     "avatar": {
       "url": "/assets/avatar.webp",
       "alt": {
@@ -96,7 +95,8 @@
       "startDate": "2023-04",
       "endDate": null,
       "isCurrent": true,
-      "url": "https://example.com/stellar"
+      "url": "https://example.com/stellar",
+      "order": 0
     },
     {
       "id": "harbor-labs",
@@ -113,7 +113,8 @@
         "ja": "デザインシステム基盤と、社内 9 プロダクトで利用されるアクセシブルなコンポーネントライブラリを設計。"
       },
       "startDate": "2019-06",
-      "endDate": "2023-03"
+      "endDate": "2023-03",
+      "order": 1
     }
   ],
   "projects": [
@@ -160,14 +161,14 @@
     }
   ],
   "skills": [
-    { "label": "TypeScript", "category": "language", "level": "expert" },
-    { "label": "React", "category": "framework", "level": "expert" },
-    { "label": "WCAG 2.2", "category": "accessibility", "level": "expert" },
-    { "label": "ARIA", "category": "accessibility", "level": "proficient" },
-    { "label": "Storybook", "category": "tooling", "level": "proficient" },
-    { "label": "Playwright", "category": "testing", "level": "proficient" },
-    { "label": "Design tokens", "category": "design-systems", "level": "competent" },
-    { "label": "Portuguese (B2)", "category": "language", "level": "competent" }
+    { "id": "typescript", "label": "TypeScript", "category": "programming", "order": 0 },
+    { "id": "react", "label": "React", "category": "programming", "order": 1 },
+    { "id": "wcag-2-2", "label": "WCAG 2.2", "category": "design", "order": 2 },
+    { "id": "aria", "label": "ARIA", "category": "design", "order": 3 },
+    { "id": "storybook", "label": "Storybook", "category": "programming", "order": 4 },
+    { "id": "playwright", "label": "Playwright", "category": "programming", "order": 5 },
+    { "id": "design-tokens", "label": "Design tokens", "category": "design", "order": 6 },
+    { "id": "portuguese", "label": "Portuguese (B2)", "category": "language", "order": 7 }
   ],
   "contact": {
     "email": "pat@example.com",
@@ -178,11 +179,16 @@
     "defaultLocale": "en",
     "fallbackLocale": "en",
     "availableLocales": ["en", "ja"],
-    "enableJsonLd": true
+    "theme": "default",
+    "showPoweredBy": true,
+    "enableJsonLd": true,
+    "enableApi": true,
+    "enableAnalytics": false
   },
   "meta": {
     "createdAt": "2026-01-15T09:00:00Z",
     "updatedAt": "2026-05-12T08:30:00Z",
+    "generator": "MePort",
     "contentLicense": {
       "spdxId": "CC-BY-4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",

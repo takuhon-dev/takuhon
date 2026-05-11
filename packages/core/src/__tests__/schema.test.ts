@@ -114,4 +114,39 @@ describe('meport.schema.json structural shape', () => {
     expect(schema.$defs.Career.additionalProperties).toBe(true);
     expect(schema.$defs.Project.additionalProperties).toBe(true);
   });
+
+  it('declares every Settings flag from Spec §6.11', () => {
+    const props = Object.keys(schema.$defs.Settings.properties);
+    expect(props).toEqual(
+      expect.arrayContaining([
+        'defaultLocale',
+        'fallbackLocale',
+        'availableLocales',
+        'theme',
+        'showPoweredBy',
+        'enableJsonLd',
+        'enableApi',
+        'enableAnalytics',
+      ]),
+    );
+    expect(schema.$defs.Settings.properties.enableAnalytics.default).toBe(false);
+  });
+
+  it('matches Spec §6.9 Skill shape (id required, no level / yearsOfExperience)', () => {
+    expect(schema.$defs.Skill.required).toEqual(expect.arrayContaining(['id', 'label']));
+    const props = Object.keys(schema.$defs.Skill.properties);
+    expect(props).toEqual(expect.arrayContaining(['id', 'label', 'category', 'order']));
+    expect(props).not.toContain('level');
+    expect(props).not.toContain('yearsOfExperience');
+  });
+
+  it('matches Spec §6.5 Profile shape (no out-of-spec pronouns extension)', () => {
+    const props = Object.keys(schema.$defs.Profile.properties);
+    expect(props).not.toContain('pronouns');
+  });
+
+  it('exposes Meta.generator + Career.order per Spec §6.7 / §6.12', () => {
+    expect(schema.$defs.Meta.properties).toHaveProperty('generator');
+    expect(schema.$defs.Career.properties).toHaveProperty('order');
+  });
 });

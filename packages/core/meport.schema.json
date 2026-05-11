@@ -144,7 +144,6 @@
         "displayName": { "$ref": "#/$defs/LocalizedTitle" },
         "tagline": { "$ref": "#/$defs/LocalizedTitle" },
         "bio": { "$ref": "#/$defs/LocalizedBody" },
-        "pronouns": { "type": "string", "maxLength": 64 },
         "avatar": { "$ref": "#/$defs/Avatar" },
         "location": { "$ref": "#/$defs/Address" }
       }
@@ -211,7 +210,8 @@
         },
         "isCurrent": { "type": "boolean" },
         "url": { "$ref": "#/$defs/Url" },
-        "location": { "$ref": "#/$defs/Address" }
+        "location": { "$ref": "#/$defs/Address" },
+        "order": { "type": "integer", "minimum": 0 }
       }
     },
     "Project": {
@@ -240,19 +240,17 @@
     "Skill": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["label"],
+      "required": ["id", "label"],
       "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
         "label": { "type": "string", "minLength": 1, "maxLength": 100 },
-        "category": { "type": "string", "minLength": 1, "maxLength": 64 },
-        "level": {
+        "category": {
           "type": "string",
-          "enum": ["familiar", "competent", "proficient", "expert"]
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Recommended values (extensible): programming, design, business, communication, language, music, art, sports, other."
         },
-        "yearsOfExperience": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 100
-        }
+        "order": { "type": "integer", "minimum": 0 }
       }
     },
     "Contact": {
@@ -278,7 +276,32 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/LocaleTag" }
         },
-        "enableJsonLd": { "type": "boolean", "default": true }
+        "theme": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "UI theme identifier. 'default' is the built-in theme; adapters may add more."
+        },
+        "showPoweredBy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Display the 'Powered by meport' attribution in the rendered profile."
+        },
+        "enableJsonLd": {
+          "type": "boolean",
+          "default": true,
+          "description": "Emit Schema.org JSON-LD on the rendered profile page."
+        },
+        "enableApi": {
+          "type": "boolean",
+          "default": true,
+          "description": "Expose the public read API endpoints (GET /api/profile, /api/jsonld, /api/schema, /meport.json)."
+        },
+        "enableAnalytics": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt-in flag for first-party analytics. Default is false to keep meport privacy-respecting by default."
+        }
       }
     },
     "Meta": {
@@ -288,6 +311,12 @@
       "properties": {
         "createdAt": { "$ref": "#/$defs/IsoDateTime" },
         "updatedAt": { "$ref": "#/$defs/IsoDateTime" },
+        "generator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Tool that produced this document (e.g. 'MePort', 'create-meport@0.1.0')."
+        },
         "contentLicense": { "$ref": "#/$defs/ContentLicense" }
       }
     },
