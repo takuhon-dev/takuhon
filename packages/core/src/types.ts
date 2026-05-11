@@ -1,20 +1,36 @@
 /**
  * TypeScript types for meport profile data.
  *
- * These mirror the canonical contract defined in `meport.schema.json` and are
- * kept in sync via structural assertions in `__tests__/schema.test.ts` and
- * `__tests__/example.test.ts`. When the schema changes, update these types
- * accordingly and add a migration entry under `src/migrations/` for the
- * next minor version.
+ * These mirror the canonical contract defined in `meport.schema.json`. The
+ * published shape is sanity-checked at commit 1 by `__tests__/schema.test.ts`
+ * (top-level keys, `$defs`, required fields, hybrid `additionalProperties`
+ * splits, Spec §6 invariants) and by `__tests__/example.test.ts` (the bundled
+ * fixture is assigned to `Meport` via a boundary cast, and per-Spec invariants
+ * are asserted at runtime). Those tests catch the kind of drift that changes
+ * the published shape, but they do not enforce field-by-field parity between
+ * JSON Schema `properties` and TypeScript members — that stronger guarantee
+ * arrives with the Ajv-backed validator in commit 2.
  *
- * Public surface scope: these types model only the canonical fields defined in
- * the schema. The schema keeps `additionalProperties: true` on structural
- * containers (`Profile`, `Settings`, `Meta`, `Career`, `Project`, ...) so that
- * meport.json documents may carry forward-compatible extras, but the public
- * TypeScript surface intentionally omits an `[key: string]: unknown` index
- * signature for those extras — exposing it would degrade IDE autocomplete and
- * force `unknown` narrowing at every property access. Consumers that need to
- * attach custom fields should extend the relevant interface locally:
+ * When the schema changes, update these types accordingly and add a migration
+ * entry under `src/migrations/` for the next minor version.
+ *
+ * Public surface scope (hybrid `additionalProperties` strategy):
+ *
+ * - **Closed** in the schema (no forward-compatible extras): the document
+ *   root, `ContentLicense`, and every `Link` variant.
+ * - **Open** in the schema (`additionalProperties: true`): `Profile`,
+ *   `Settings`, `Meta`, `Career`, `Project`, `Skill`, `Contact`, `Avatar`,
+ *   `Address`, and the locale-keyed map shapes `LocalizedTitle` /
+ *   `LocalizedBody`.
+ *
+ * The public TypeScript surface intentionally omits an `[key: string]: unknown`
+ * index signature on the open containers. Declared properties stay accurately
+ * typed regardless of the choice — what such a signature would change is
+ * access to *undeclared* keys: it would let consumers spell arbitrary property
+ * names without an error and force `unknown` narrowing for those reads, and it
+ * would dilute IDE autocomplete on every dotted access. Keeping the types
+ * focused on the canonical members preserves that ergonomics. Consumers that
+ * need to attach custom fields should extend the relevant interface locally:
  *
  *     interface MyProfile extends Profile {
  *       customField: string;
