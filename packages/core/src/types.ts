@@ -6,6 +6,19 @@
  * `__tests__/example.test.ts`. When the schema changes, update these types
  * accordingly and add a migration entry under `src/migrations/` for the
  * next minor version.
+ *
+ * Public surface scope: these types model only the canonical fields defined in
+ * the schema. The schema keeps `additionalProperties: true` on structural
+ * containers (`Profile`, `Settings`, `Meta`, `Career`, `Project`, ...) so that
+ * meport.json documents may carry forward-compatible extras, but the public
+ * TypeScript surface intentionally omits an `[key: string]: unknown` index
+ * signature for those extras — exposing it would degrade IDE autocomplete and
+ * force `unknown` narrowing at every property access. Consumers that need to
+ * attach custom fields should extend the relevant interface locally:
+ *
+ *     interface MyProfile extends Profile {
+ *       customField: string;
+ *     }
  */
 
 /** BCP-47 language tag, e.g. 'en', 'ja', 'zh-Hant', 'pt-BR'. */
