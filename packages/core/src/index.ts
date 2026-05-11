@@ -19,6 +19,8 @@ export type {
   Iso3166Alpha2,
   IsoDateTime,
   Link,
+  LinkBuiltin,
+  LinkCustom,
   LinkType,
   LocaleTag,
   LocalizedBody,

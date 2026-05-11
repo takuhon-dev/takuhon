@@ -95,16 +95,37 @@ export interface Profile {
   location?: Address;
 }
 
-export interface Link {
+interface LinkCommon {
   id: Slug;
-  type: LinkType;
   label?: LocalizedTitle;
   url: string;
   featured?: boolean;
   order?: number;
-  /** Required when `type === 'custom'`. */
+}
+
+/**
+ * A link of a built-in `type` (anything other than `'custom'`). The schema
+ * permits an optional `iconUrl` on these entries — for example, to override
+ * the default platform icon.
+ */
+export interface LinkBuiltin extends LinkCommon {
+  type: Exclude<LinkType, 'custom'>;
   iconUrl?: string;
 }
+
+/**
+ * A user-defined link (`type: 'custom'`). The schema requires `iconUrl` for
+ * these entries; modelling that constraint as a discriminated union here lets
+ * TypeScript reject `{ type: 'custom', ... }` literals that forget the icon
+ * before Ajv validation runs in commit 2.
+ */
+export interface LinkCustom extends LinkCommon {
+  type: 'custom';
+  iconUrl: string;
+}
+
+/** A profile link. Discriminated on `type`; see `LinkBuiltin` / `LinkCustom`. */
+export type Link = LinkBuiltin | LinkCustom;
 
 export interface Career {
   id: Slug;

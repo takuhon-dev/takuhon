@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
 import { SCHEMA_VERSION } from '../index.js';
-import type { Meport } from '../types.js';
+import type { LinkCustom, Meport } from '../types.js';
 
 // JSON imports widen string literals (e.g. `links[].type` becomes `string` instead
 // of `LinkType`), so a direct `const example: Meport = exampleJson` assignment is
@@ -97,6 +97,21 @@ describe('examples/personal-profile/meport.json', () => {
     const customLink = example.links.find((link) => link.type === 'custom');
     expect(customLink).toBeDefined();
     expect(customLink?.iconUrl).toBeTypeOf('string');
+  });
+
+  it('rejects custom links missing iconUrl at compile time', () => {
+    // The discriminated union mirrors the schema's allOf/if/then rule:
+    // omitting iconUrl on a `type: 'custom'` link is a TS error before Ajv
+    // validation even runs. The @ts-expect-error below trips the typecheck if
+    // the constraint regresses.
+    // @ts-expect-error iconUrl is required when type is 'custom'.
+    const _invalid: LinkCustom = {
+      id: 'invalid-custom',
+      type: 'custom',
+      url: 'https://example.com/missing-icon',
+    };
+    void _invalid;
+    expect(true).toBe(true);
   });
 
   it('ties at least one project to a career via relatedCareerId', () => {
