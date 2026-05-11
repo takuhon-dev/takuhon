@@ -22,6 +22,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "typecheck": "tsc",
     "build": "tsup src/index.ts src/init.ts --format esm --dts --clean --sourcemap"
   },
   "dependencies": {

@@ -16,10 +16,9 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
 
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
     "sourceMap": true,
-    "incremental": true,
+    "noEmit": true,
 
     "skipLibCheck": true
   }
