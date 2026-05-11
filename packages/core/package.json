@@ -28,10 +28,13 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./schema.json": "./meport.schema.json",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "meport.schema.json",
     "README.md",
     "LICENSE",
     "NOTICE"

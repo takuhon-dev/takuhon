@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "0.1.0",
+  "profile": {
+    "displayName": {
+      "en": "Pat Rivera",
+      "ja": "パット・リベラ"
+    },
+    "tagline": {
+      "en": "Open-source maintainer and accessibility advocate",
+      "ja": "オープンソースメンテナ / アクセシビリティ実践者"
+    },
+    "bio": {
+      "en": "Pat Rivera is a fictional persona used to exercise every field of the meport profile schema. They maintain a handful of open-source libraries focused on accessibility tooling and frequently speak at local meetups.",
+      "ja": "Pat Rivera は meport プロフィール schema の全フィールドを示すための架空の人物です。アクセシビリティ系のオープンソースライブラリを保守し、地域コミュニティで登壇しています。"
+    },
+    "pronouns": "they/them",
+    "avatar": {
+      "url": "/assets/avatar.webp",
+      "alt": {
+        "en": "Pat Rivera smiling, wearing round glasses, in front of a soft gradient.",
+        "ja": "ソフトなグラデーションを背景に微笑む Pat Rivera。丸眼鏡を着用。"
+      }
+    },
+    "location": {
+      "country": "PT",
+      "region": "Lisbon",
+      "locality": {
+        "en": "Lisbon",
+        "ja": "リスボン"
+      },
+      "display": {
+        "en": "Lisbon, Portugal",
+        "ja": "ポルトガル・リスボン"
+      }
+    }
+  },
+  "links": [
+    {
+      "id": "website",
+      "type": "website",
+      "label": { "en": "Personal site" },
+      "url": "https://example.com/pat",
+      "featured": true,
+      "order": 0
+    },
+    {
+      "id": "github",
+      "type": "github",
+      "url": "https://github.com/example-pat",
+      "featured": true,
+      "order": 1
+    },
+    {
+      "id": "mastodon",
+      "type": "mastodon",
+      "url": "https://example.social/@pat",
+      "order": 2
+    },
+    {
+      "id": "blog",
+      "type": "blog",
+      "label": {
+        "en": "Notes on accessible UI",
+        "ja": "アクセシブル UI の覚え書き"
+      },
+      "url": "https://example.com/pat/blog",
+      "order": 3
+    },
+    {
+      "id": "newsletter",
+      "type": "custom",
+      "label": {
+        "en": "Weekly newsletter",
+        "ja": "週次ニュースレター"
+      },
+      "url": "https://example.com/pat/newsletter",
+      "iconUrl": "/assets/icons/newsletter.svg",
+      "order": 4
+    }
+  ],
+  "careers": [
+    {
+      "id": "stellar-ux",
+      "organization": {
+        "en": "Stellar UX Studio",
+        "ja": "ステラ UX スタジオ"
+      },
+      "role": {
+        "en": "Principal Accessibility Engineer",
+        "ja": "プリンシパル・アクセシビリティエンジニア"
+      },
+      "description": {
+        "en": "Lead the accessibility engineering practice across product surfaces, drive WCAG 2.2 conformance reviews, and mentor a team of five engineers.",
+        "ja": "プロダクト全体のアクセシビリティ設計を統括。WCAG 2.2 適合レビューを主導し、5 名のエンジニアをメンタリング。"
+      },
+      "startDate": "2023-04",
+      "endDate": null,
+      "isCurrent": true,
+      "url": "https://example.com/stellar"
+    },
+    {
+      "id": "harbor-labs",
+      "organization": {
+        "en": "Harbor Labs",
+        "ja": "ハーバーラボ"
+      },
+      "role": {
+        "en": "Senior Frontend Engineer",
+        "ja": "シニアフロントエンドエンジニア"
+      },
+      "description": {
+        "en": "Built the design system foundation and an accessible component library used across nine internal products.",
+        "ja": "デザインシステム基盤と、社内 9 プロダクトで利用されるアクセシブルなコンポーネントライブラリを設計。"
+      },
+      "startDate": "2019-06",
+      "endDate": "2023-03"
+    }
+  ],
+  "projects": [
+    {
+      "id": "axe-helpers",
+      "title": {
+        "en": "axe-helpers",
+        "ja": "axe-helpers"
+      },
+      "description": {
+        "en": "A tiny set of utilities that wraps axe-core for use in component-level integration tests.",
+        "ja": "コンポーネント単位の統合テスト向けに axe-core をラップする小規模ユーティリティ集。"
+      },
+      "url": "https://example.com/axe-helpers",
+      "tags": ["accessibility", "testing", "typescript"],
+      "relatedCareerId": "stellar-ux",
+      "startDate": "2023-09",
+      "highlighted": true,
+      "order": 0
+    },
+    {
+      "id": "color-contrast-cli",
+      "title": {
+        "en": "color-contrast-cli",
+        "ja": "color-contrast-cli"
+      },
+      "description": {
+        "en": "Command-line tool that audits design tokens for WCAG contrast ratios.",
+        "ja": "デザイントークンの WCAG コントラスト比を監査するコマンドラインツール。"
+      },
+      "url": "https://example.com/color-contrast-cli",
+      "tags": ["accessibility", "cli", "design-tokens"],
+      "startDate": "2021-02",
+      "endDate": "2022-08",
+      "order": 1
+    },
+    {
+      "id": "meetup-talks",
+      "title": {
+        "en": "Local meetup talks",
+        "ja": "地域コミュニティ登壇"
+      },
+      "order": 2
+    }
+  ],
+  "skills": [
+    { "label": "TypeScript", "category": "language", "level": "expert" },
+    { "label": "React", "category": "framework", "level": "expert" },
+    { "label": "WCAG 2.2", "category": "accessibility", "level": "expert" },
+    { "label": "ARIA", "category": "accessibility", "level": "proficient" },
+    { "label": "Storybook", "category": "tooling", "level": "proficient" },
+    { "label": "Playwright", "category": "testing", "level": "proficient" },
+    { "label": "Design tokens", "category": "design-systems", "level": "competent" },
+    { "label": "Portuguese (B2)", "category": "language", "level": "competent" }
+  ],
+  "contact": {
+    "email": "pat@example.com",
+    "showEmail": false,
+    "formUrl": "https://example.com/pat/contact"
+  },
+  "settings": {
+    "defaultLocale": "en",
+    "fallbackLocale": "en",
+    "availableLocales": ["en", "ja"],
+    "enableJsonLd": true
+  },
+  "meta": {
+    "createdAt": "2026-01-15T09:00:00Z",
+    "updatedAt": "2026-05-12T08:30:00Z",
+    "contentLicense": {
+      "spdxId": "CC-BY-4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": {
+        "name": "Pat Rivera",
+        "url": "https://example.com/pat"
+      }
+    }
+  }
+}

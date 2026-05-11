@@ -1,0 +1,159 @@
+/**
+ * TypeScript types for meport profile data.
+ *
+ * These mirror the canonical contract defined in `meport.schema.json` and are
+ * kept in sync via structural assertions in `__tests__/schema.test.ts` and
+ * `__tests__/example.test.ts`. When the schema changes, update these types
+ * accordingly and add a migration entry under `src/migrations/` for the
+ * next minor version.
+ */
+
+/** BCP-47 language tag, e.g. 'en', 'ja', 'zh-Hant', 'pt-BR'. */
+export type LocaleTag = string;
+
+/** ISO 3166-1 alpha-2 country code, uppercase, two letters (e.g. 'JP', 'PT'). */
+export type Iso3166Alpha2 = string;
+
+/** Year-month in `YYYY-MM` format. */
+export type YearMonth = string;
+
+/** ISO 8601 date-time string (e.g. `2026-05-12T12:34:56Z`). */
+export type IsoDateTime = string;
+
+/** Identifier matching `^[a-z0-9][a-z0-9-]*$`, max 64 chars. */
+export type Slug = string;
+
+/** Map from BCP-47 locale tag to a short localized string (≤200 chars). */
+export type LocalizedTitle = Record<LocaleTag, string>;
+
+/** Map from BCP-47 locale tag to a body-length localized string (≤5000 chars). */
+export type LocalizedBody = Record<LocaleTag, string>;
+
+export type LinkType =
+  | 'website'
+  | 'blog'
+  | 'github'
+  | 'gitlab'
+  | 'linkedin'
+  | 'x'
+  | 'mastodon'
+  | 'bluesky'
+  | 'instagram'
+  | 'youtube'
+  | 'threads'
+  | 'facebook'
+  | 'email'
+  | 'rss'
+  | 'custom';
+
+export interface Avatar {
+  url: string;
+  alt?: LocalizedTitle;
+}
+
+export interface Address {
+  country?: Iso3166Alpha2;
+  region?: string;
+  locality?: LocalizedTitle;
+  display?: LocalizedTitle;
+}
+
+export interface Profile {
+  displayName: LocalizedTitle;
+  tagline?: LocalizedTitle;
+  bio?: LocalizedBody;
+  pronouns?: string;
+  avatar?: Avatar;
+  location?: Address;
+}
+
+export interface Link {
+  id: Slug;
+  type: LinkType;
+  label?: LocalizedTitle;
+  url: string;
+  featured?: boolean;
+  order?: number;
+  /** Required when `type === 'custom'`. */
+  iconUrl?: string;
+}
+
+export interface Career {
+  id: Slug;
+  organization: LocalizedTitle;
+  role: LocalizedTitle;
+  description?: LocalizedBody;
+  startDate: YearMonth;
+  /** `null` denotes an unbounded current position; omit if not applicable. */
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  location?: Address;
+}
+
+export interface Project {
+  id: Slug;
+  title: LocalizedTitle;
+  description?: LocalizedBody;
+  url?: string;
+  tags?: string[];
+  relatedCareerId?: Slug;
+  startDate?: YearMonth;
+  endDate?: YearMonth | null;
+  highlighted?: boolean;
+  order?: number;
+}
+
+export type SkillLevel = 'familiar' | 'competent' | 'proficient' | 'expert';
+
+export interface Skill {
+  label: string;
+  category?: string;
+  level?: SkillLevel;
+  yearsOfExperience?: number;
+}
+
+export interface Contact {
+  email?: string;
+  showEmail?: boolean;
+  formUrl?: string;
+}
+
+export interface Settings {
+  defaultLocale: LocaleTag;
+  fallbackLocale?: LocaleTag;
+  availableLocales: LocaleTag[];
+  enableJsonLd?: boolean;
+}
+
+export interface ContentLicenseAttribution {
+  name?: string;
+  url?: string;
+}
+
+export interface ContentLicense {
+  /** SPDX identifier (e.g. 'CC-BY-4.0', 'CC0-1.0') or 'Proprietary'. No default. */
+  spdxId: string;
+  url?: string;
+  attribution?: ContentLicenseAttribution;
+  rights?: string;
+}
+
+export interface Meta {
+  createdAt?: IsoDateTime;
+  updatedAt?: IsoDateTime;
+  contentLicense: ContentLicense;
+}
+
+/** A complete meport profile document. */
+export interface Meport {
+  schemaVersion: string;
+  profile: Profile;
+  links: Link[];
+  careers: Career[];
+  projects: Project[];
+  skills: Skill[];
+  contact: Contact;
+  settings: Settings;
+  meta: Meta;
+}

@@ -1,0 +1,74 @@
+import { describe, expect, it } from 'vitest';
+
+import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import { SCHEMA_VERSION } from '../index.js';
+import type { Meport } from '../types.js';
+
+// JSON imports widen string literals (e.g. `links[].type` becomes `string` instead
+// of `LinkType`), so a direct `const example: Meport = exampleJson` assignment is
+// rejected by TypeScript even when the data is otherwise compatible. Cast through
+// the type at the boundary; deeper drift detection (every value matches the schema)
+// arrives with the Ajv-based `validate()` test suite in the next commit.
+const example = exampleJson as Meport;
+
+describe('examples/personal-profile/meport.json', () => {
+  it('matches the bundled SCHEMA_VERSION', () => {
+    expect(example.schemaVersion).toBe(SCHEMA_VERSION);
+  });
+
+  it('contains every required top-level field', () => {
+    const keys = Object.keys(example).sort();
+    expect(keys).toEqual(
+      [
+        'schemaVersion',
+        'profile',
+        'links',
+        'careers',
+        'projects',
+        'skills',
+        'contact',
+        'settings',
+        'meta',
+      ].sort(),
+    );
+  });
+
+  it('exercises the multilingual title fields across multiple locales', () => {
+    expect(Object.keys(example.profile.displayName).sort()).toEqual(['en', 'ja']);
+    expect(example.profile.tagline?.en).toBeTypeOf('string');
+    expect(example.profile.tagline?.ja).toBeTypeOf('string');
+    expect(example.profile.bio?.en).toBeTypeOf('string');
+  });
+
+  it('declares all locales the profile advertises in settings', () => {
+    expect(example.settings.availableLocales).toEqual(expect.arrayContaining(['en', 'ja']));
+    expect(example.settings.defaultLocale).toBe('en');
+  });
+
+  it('chooses a non-empty content license (no implicit default)', () => {
+    expect(example.meta.contentLicense.spdxId).toBeTypeOf('string');
+    expect(example.meta.contentLicense.spdxId.length).toBeGreaterThan(0);
+  });
+
+  it('contains a current career entry plus at least one past entry', () => {
+    const current = example.careers.find((career) => career.isCurrent === true);
+    const past = example.careers.find((career) => career.isCurrent !== true);
+    expect(current).toBeDefined();
+    expect(current?.endDate).toBeNull();
+    expect(past).toBeDefined();
+    expect(typeof past?.endDate).toBe('string');
+  });
+
+  it('demonstrates a custom-type link with the required iconUrl', () => {
+    const customLink = example.links.find((link) => link.type === 'custom');
+    expect(customLink).toBeDefined();
+    expect(customLink?.iconUrl).toBeTypeOf('string');
+  });
+
+  it('ties at least one project to a career via relatedCareerId', () => {
+    const linked = example.projects.find((project) => project.relatedCareerId !== undefined);
+    expect(linked).toBeDefined();
+    const careerIds = new Set(example.careers.map((career) => career.id));
+    expect(careerIds.has(linked?.relatedCareerId ?? '')).toBe(true);
+  });
+});
