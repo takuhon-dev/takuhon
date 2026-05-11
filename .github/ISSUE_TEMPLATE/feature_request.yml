@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a new capability or improvement
+title: '[feature]: '
+labels: ['type:feature', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an idea. Please describe what you want to do and why, not just an implementation suggestion.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the user need or pain point, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would this work from a user's perspective? Include API/UX sketches if helpful.
+    validations:
+      required: true
+
+  - type: input
+    id: package
+    attributes:
+      label: Target package or area
+      description: e.g. `@meport/core`, `@meport/ui`, Cloudflare adapter, JSON-LD output
+      placeholder: '@meport/core'
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider? Why is the proposal preferred?
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Links to related discussions, screenshots, prior art, etc.

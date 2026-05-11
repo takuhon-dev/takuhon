@@ -3,6 +3,23 @@
   "version": "0.0.0",
   "description": "create-meport scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "MIT",
+  "author": "meport contributors",
+  "homepage": "https://github.com/takashi-matsuyama/meport/tree/main/packages/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takashi-matsuyama/meport.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/takashi-matsuyama/meport/issues"
+  },
+  "keywords": [
+    "meport",
+    "profile",
+    "cli",
+    "create-meport",
+    "scaffolding"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,8 +36,16 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "typecheck": "tsc",
     "build": "tsup src/index.ts src/init.ts --format esm --dts --clean --sourcemap"

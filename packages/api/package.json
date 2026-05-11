@@ -3,6 +3,23 @@
   "version": "0.0.0",
   "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for meport",
   "license": "MIT",
+  "author": "meport contributors",
+  "homepage": "https://github.com/takashi-matsuyama/meport/tree/main/packages/api#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takashi-matsuyama/meport.git",
+    "directory": "packages/api"
+  },
+  "bugs": {
+    "url": "https://github.com/takashi-matsuyama/meport/issues"
+  },
+  "keywords": [
+    "meport",
+    "profile",
+    "api",
+    "hono",
+    "cloudflare-workers"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,8 +32,16 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "typecheck": "tsc",
     "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"

@@ -1,0 +1,26 @@
+# meport CODEOWNERS
+#
+# Each line is a file pattern followed by one or more owners.
+# Order matters: the last matching pattern takes precedence.
+# See: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-customization/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo.
+*                                @takashi-matsuyama
+
+# Workflow / repo-wide config require special attention.
+/.github/                        @takashi-matsuyama
+/.github/workflows/              @takashi-matsuyama
+
+# License / security / governance files.
+/LICENSE                         @takashi-matsuyama
+/NOTICE                          @takashi-matsuyama
+/SECURITY.md                     @takashi-matsuyama
+/CODE_OF_CONDUCT.md              @takashi-matsuyama
+/CODEOWNERS                      @takashi-matsuyama
+
+# Package-level changes (per future contributor expansion, these can become
+# more granular).
+/packages/core/                  @takashi-matsuyama
+/packages/api/                   @takashi-matsuyama
+/packages/ui/                    @takashi-matsuyama
+/packages/cli/                   @takashi-matsuyama

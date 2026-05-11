@@ -3,6 +3,24 @@
   "version": "0.0.0",
   "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for meport",
   "license": "MIT",
+  "author": "meport contributors",
+  "homepage": "https://github.com/takashi-matsuyama/meport/tree/main/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takashi-matsuyama/meport.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/takashi-matsuyama/meport/issues"
+  },
+  "keywords": [
+    "meport",
+    "profile",
+    "json-schema",
+    "json-ld",
+    "portable",
+    "self-hosted"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,8 +33,16 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "typecheck": "tsc",
     "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
