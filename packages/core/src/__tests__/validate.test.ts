@@ -179,6 +179,38 @@ describe('validate() schema-level failures', () => {
       (e) => e.keyword === 'minItems' && e.pointer === '/settings/availableLocales',
     );
   });
+
+  it('rejects duplicate locales in availableLocales (uniqueItems)', () => {
+    const broken = cloneExample();
+    broken.settings.availableLocales = ['en', 'en'];
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'uniqueItems' && e.pointer === '/settings/availableLocales',
+    );
+  });
+
+  it('rejects negative Link.order (minimum)', () => {
+    const broken = cloneExample();
+    const firstLink = broken.links[0];
+    if (!firstLink) throw new Error('expected example to contain at least one link');
+    firstLink.order = -1;
+    const result = validate(broken);
+    expectError(result, (e) => e.keyword === 'minimum' && e.pointer === '/links/0/order');
+  });
+
+  it('rejects malformed Iso3166Alpha2 country code (pattern)', () => {
+    const broken = cloneExample();
+    if (!broken.profile.location) {
+      throw new Error('expected example to include profile.location');
+    }
+    broken.profile.location.country = 'xyz';
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'pattern' && e.pointer === '/profile/location/country',
+    );
+  });
 });
 
 describe('validate() format failures (ajv-formats)', () => {
@@ -203,6 +235,13 @@ describe('validate() format failures (ajv-formats)', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
   });
+
+  it('rejects a malformed Meta.createdAt (date-time format)', () => {
+    const broken = cloneExample();
+    broken.meta.createdAt = 'not-a-date';
+    const result = validate(broken);
+    expectError(result, (e) => e.keyword === 'format' && e.pointer === '/meta/createdAt');
+  });
 });
 
 describe('validate() error envelope details', () => {
@@ -222,5 +261,24 @@ describe('validate() error envelope details', () => {
     const result = validate(broken);
     const err = expectError(result, (e) => e.keyword === 'enum');
     expect(err.schemaPointer).toMatch(/Link/);
+  });
+
+  it('escapes RFC 6901 reserved characters (~, /) when building pointers', () => {
+    // Root has additionalProperties: false, so an unknown property at the root
+    // produces an `additionalProperties` error whose pointer is built by
+    // appending `/<escaped property name>`. `/` must escape to `~1` and `~`
+    // must escape to `~0` per RFC 6901.
+    const broken = { ...exampleJson, 'foo/bar': 1, 'tilde~name': 2 };
+    const result = validate(broken);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected validate() to fail');
+    const slashErr = result.errors.find(
+      (e) => e.keyword === 'additionalProperties' && e.pointer === '/foo~1bar',
+    );
+    const tildeErr = result.errors.find(
+      (e) => e.keyword === 'additionalProperties' && e.pointer === '/tilde~0name',
+    );
+    expect(slashErr, `expected escaped pointer /foo~1bar`).toBeDefined();
+    expect(tildeErr, `expected escaped pointer /tilde~0name`).toBeDefined();
   });
 });
