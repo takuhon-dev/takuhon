@@ -1,9 +1,17 @@
 /**
- * @meport/core — JSON Schema, validation, normalization, locale resolution, and JSON-LD.
+ * @meport/core — canonical JSON Schema, hand-written TypeScript types, and
+ * Ajv-backed validation for meport profile documents.
  *
- * Phase 1 commit 1 ships the canonical schema and TypeScript types. Validation,
- * normalization, locale resolution, JSON-LD generation, storage interfaces, and
- * the migration registry land in subsequent commits.
+ * Public surface (Phase 1):
+ * - {@link schema}: the JSON Schema 2020-12 contract bundled with this build.
+ * - {@link SCHEMA_VERSION}: the version of that schema (matches the `$id`).
+ * - {@link validate} / {@link ValidationResult} / {@link ValidationError} /
+ *   {@link SUPPORTED_SCHEMA_VERSIONS}: Result-style validator backed by Ajv.
+ * - Domain types: {@link Meport} and its constituent shapes (`Profile`,
+ *   `Settings`, `Career`, `Project`, `Link` discriminated union, etc.).
+ *
+ * Normalization, locale resolution, JSON-LD generation, storage interfaces,
+ * and the migration registry are still to come in later commits.
  */
 
 export { schema } from './schema.js';
