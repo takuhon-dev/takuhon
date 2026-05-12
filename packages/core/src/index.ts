@@ -9,6 +9,9 @@
 export { schema } from './schema.js';
 export type { Schema } from './schema.js';
 
+export { SUPPORTED_SCHEMA_VERSIONS, validate } from './validate.js';
+export type { ValidationError, ValidationResult } from './validate.js';
+
 export type {
   Address,
   Avatar,

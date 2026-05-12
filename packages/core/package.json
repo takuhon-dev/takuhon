@@ -49,5 +49,9 @@
   "scripts": {
     "typecheck": "tsc",
     "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }

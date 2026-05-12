@@ -191,7 +191,10 @@
             "properties": { "type": { "const": "custom" } },
             "required": ["type"]
           },
-          "then": { "required": ["iconUrl"] }
+          "then": {
+            "properties": { "iconUrl": { "$ref": "#/$defs/Url" } },
+            "required": ["iconUrl"]
+          }
         }
       ]
     },
