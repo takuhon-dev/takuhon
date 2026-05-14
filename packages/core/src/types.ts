@@ -231,3 +231,105 @@ export interface Meport {
  * OSS adopters need the static guarantee.
  */
 export type NormalizedMeport = Meport;
+
+/**
+ * Address with localized fields collapsed to single strings — the shape
+ * `resolveLocale()` produces for `profile.location`.
+ */
+export interface LocalizedAddress {
+  country?: Iso3166Alpha2;
+  region?: string;
+  locality?: string;
+  display?: string;
+}
+
+/** Avatar with `alt` collapsed to a single string. */
+export interface LocalizedAvatar {
+  url: string;
+  alt?: string;
+}
+
+/** Profile with every localized field collapsed to a single string. */
+export interface LocalizedProfile {
+  displayName: string;
+  tagline?: string;
+  bio?: string;
+  avatar?: LocalizedAvatar;
+  location?: LocalizedAddress;
+}
+
+interface LocalizedLinkCommon {
+  id: Slug;
+  label?: string;
+  url: string;
+  featured?: boolean;
+  order?: number;
+}
+
+export interface LocalizedLinkBuiltin extends LocalizedLinkCommon {
+  type: Exclude<LinkType, 'custom'>;
+  iconUrl?: string;
+}
+
+export interface LocalizedLinkCustom extends LocalizedLinkCommon {
+  type: 'custom';
+  iconUrl: string;
+}
+
+/** Link with `label` collapsed to a single string. */
+export type LocalizedLink = LocalizedLinkBuiltin | LocalizedLinkCustom;
+
+/** Career with `organization`, `role`, `description` collapsed to single strings. */
+export interface LocalizedCareer {
+  id: Slug;
+  organization: string;
+  role: string;
+  description?: string;
+  startDate: YearMonth;
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  location?: LocalizedAddress;
+  order?: number;
+}
+
+/** Project with `title`, `description` collapsed to single strings. */
+export interface LocalizedProject {
+  id: Slug;
+  title: string;
+  description?: string;
+  url?: string;
+  tags?: string[];
+  relatedCareerId?: Slug;
+  startDate?: YearMonth;
+  endDate?: YearMonth | null;
+  highlighted?: boolean;
+  order?: number;
+}
+
+/**
+ * A meport document with every localized map flattened to a single string,
+ * plus a `resolvedLocale` field recording which tag was actually used as the
+ * head of the fallback chain. `resolveLocale()` returns this shape.
+ *
+ * `Skill`, `Contact`, `Settings`, and `Meta` carry no localized fields and
+ * pass through unchanged.
+ */
+export interface LocalizedMeport {
+  schemaVersion: string;
+  profile: LocalizedProfile;
+  links: LocalizedLink[];
+  careers: LocalizedCareer[];
+  projects: LocalizedProject[];
+  skills: Skill[];
+  contact: Contact;
+  settings: Settings;
+  meta: Meta;
+  /**
+   * The locale tag that was matched first by the fallback chain and used as
+   * the head of per-field resolution. Equals one of the candidates derived
+   * from the request arguments or `settings`; an empty string only when no
+   * candidate was usable (theoretical — `validate()` rejects such inputs).
+   */
+  resolvedLocale: LocaleTag;
+}
