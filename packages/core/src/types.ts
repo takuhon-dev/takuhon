@@ -220,3 +220,14 @@ export interface Meport {
   settings: Settings;
   meta: Meta;
 }
+
+/**
+ * A {@link Meport} document that has been canonicalized by `normalize()`:
+ * arrays sorted by `order`, and empty localized-field entries removed.
+ *
+ * Structurally identical to {@link Meport}; the alias is a documentation hook
+ * for downstream consumers that want to express "must run through normalize
+ * first". A nominal branded form may replace this alias in a later phase if
+ * OSS adopters need the static guarantee.
+ */
+export type NormalizedMeport = Meport;
