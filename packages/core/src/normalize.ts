@@ -35,7 +35,12 @@ import type { LocalizedBody, LocalizedTitle, Meport, NormalizedMeport, Profile }
  *          list fields sorted by `order`.
  */
 export function normalize(data: Meport): NormalizedMeport {
-  const out = structuredClone(data);
+  // A meport document is structurally pure JSON (string/number/boolean/null +
+  // plain objects / arrays — no Date, Map, Set, BigInt, or functions), so a
+  // round-trip through JSON gives an equivalent deep clone without depending
+  // on `structuredClone`'s global type declaration (which moves between TS
+  // `lib.es2022.d.ts` and `lib.dom.d.ts` across TypeScript major releases).
+  const out = JSON.parse(JSON.stringify(data)) as Meport;
 
   normalizeProfile(out.profile);
 
