@@ -15,11 +15,14 @@
  * - {@link generateJsonLd} / {@link generatePersonJsonLd} /
  *   {@link generateProfilePageJsonLd}: emit Schema.org JSON-LD
  *   (`ProfilePage` wrapping `Person`) from a locale-resolved document.
+ * - {@link MeportStorage} / {@link MeportAssetStorage}: persistence contracts
+ *   for adapters (KV / R2 / filesystem / SQLite / …), with the
+ *   {@link StorageError} / {@link NotFoundError} / {@link ConflictError}
+ *   exception family for optimistic-locking and not-found signalling.
  * - Domain types: {@link Meport} and its constituent shapes (`Profile`,
  *   `Settings`, `Career`, `Project`, `Link` discriminated union, etc.).
  *
- * Storage interfaces and the migration registry are still to come in later
- * commits.
+ * The migration registry is still to come in later commits.
  */
 
 export { schema } from './schema.js';
@@ -31,6 +34,14 @@ export type { ValidationError, ValidationResult } from './validate.js';
 export { normalize } from './normalize.js';
 export { resolveLocale } from './resolve-locale.js';
 export { generateJsonLd, generatePersonJsonLd, generateProfilePageJsonLd } from './jsonld.js';
+
+export { ConflictError, NotFoundError, StorageError } from './storage-interface.js';
+export type {
+  AssetOptions,
+  AssetRecord,
+  MeportAssetStorage,
+  MeportStorage,
+} from './storage-interface.js';
 
 export type {
   Address,
