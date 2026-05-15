@@ -1,6 +1,9 @@
 import js from '@eslint/js';
 import prettierConfig from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -75,11 +78,30 @@ export default tseslint.config(
       globals: { ...globals.worker, ...globals.node, ...globals.serviceworker },
     },
   },
-  // UI: React in browser
+  // UI + playground: browser globals (covers both .ts and .tsx)
   {
-    files: ['packages/ui/**/*.{ts,tsx}'],
+    files: ['packages/ui/**/*.{ts,tsx}', 'apps/playground/**/*.{ts,tsx}'],
     languageOptions: {
       globals: { ...globals.browser },
+    },
+  },
+  // UI + playground: React rules only on .tsx (JSX-bearing files)
+  {
+    files: ['packages/ui/**/*.tsx', 'apps/playground/**/*.tsx'],
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooks,
+      'jsx-a11y': jsxA11y,
+    },
+    languageOptions: {
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    settings: { react: { version: '19.2' } },
+    rules: {
+      ...reactPlugin.configs.flat.recommended.rules,
+      ...reactPlugin.configs.flat['jsx-runtime'].rules,
+      ...reactHooks.configs.recommended.rules,
+      ...jsxA11y.flatConfigs.recommended.rules,
     },
   },
   // Adapters: Cloudflare = Workers; Vercel = Node + Edge; WordPress = mixed
