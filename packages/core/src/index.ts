@@ -19,10 +19,14 @@
  *   for adapters (KV / R2 / filesystem / SQLite / …), with the
  *   {@link StorageError} / {@link NotFoundError} / {@link ConflictError}
  *   exception family for optimistic-locking and not-found signalling.
+ * - {@link exportMeport} / {@link importMeport} / {@link ExportOptions} /
+ *   {@link ExportedMeport} / {@link ImportError}: roundtrip-stable
+ *   serialisation for transport (file, API response, …).
+ * - {@link migrateMeport} / {@link Migration} / {@link migrations} /
+ *   {@link MigrationError}: forward-only migration registry. Empty in
+ *   Phase 1; first entry lands with the v0.2.0 schema bump.
  * - Domain types: {@link Meport} and its constituent shapes (`Profile`,
  *   `Settings`, `Career`, `Project`, `Link` discriminated union, etc.).
- *
- * The migration registry is still to come in later commits.
  */
 
 export { schema } from './schema.js';
@@ -37,6 +41,10 @@ export { generateJsonLd, generatePersonJsonLd, generateProfilePageJsonLd } from 
 
 export { ImportError, exportMeport, importMeport } from './export.js';
 export type { ExportOptions, ExportedMeport } from './export.js';
+
+export { MigrationError, migrateMeport } from './migrate.js';
+export { migrations } from './migrations/index.js';
+export type { Migration } from './migrations/index.js';
 
 export { ConflictError, NotFoundError, StorageError } from './storage-interface.js';
 export type {
