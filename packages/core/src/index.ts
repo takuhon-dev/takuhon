@@ -12,11 +12,14 @@
  *   document (sort lists by `order`, drop blank localized entries).
  * - {@link resolveLocale} / {@link LocalizedMeport}: collapse a multi-locale
  *   document to a single requested locale with BCP-47 regional fallback.
+ * - {@link generateJsonLd} / {@link generatePersonJsonLd} /
+ *   {@link generateProfilePageJsonLd}: emit Schema.org JSON-LD
+ *   (`ProfilePage` wrapping `Person`) from a locale-resolved document.
  * - Domain types: {@link Meport} and its constituent shapes (`Profile`,
  *   `Settings`, `Career`, `Project`, `Link` discriminated union, etc.).
  *
- * JSON-LD generation, storage interfaces, and the migration registry are
- * still to come in later commits.
+ * Storage interfaces and the migration registry are still to come in later
+ * commits.
  */
 
 export { schema } from './schema.js';
@@ -27,6 +30,7 @@ export type { ValidationError, ValidationResult } from './validate.js';
 
 export { normalize } from './normalize.js';
 export { resolveLocale } from './resolve-locale.js';
+export { generateJsonLd, generatePersonJsonLd, generateProfilePageJsonLd } from './jsonld.js';
 
 export type {
   Address,
