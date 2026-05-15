@@ -1,0 +1,24 @@
+{
+  "name": "@meport/playground",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local Vite playground that renders @meport/ui against the personal-profile example",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@meport/core": "workspace:*",
+    "@meport/ui": "workspace:*",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
+  }
+}
