@@ -1,0 +1,30 @@
+.wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding-block: var(--meport-space-2);
+}
+
+.select {
+  min-height: var(--meport-tap-target);
+  padding-inline: var(--meport-space-3);
+  padding-block: var(--meport-space-2);
+  border: 1px solid var(--meport-color-border);
+  border-radius: var(--meport-radius-sm);
+  background-color: var(--meport-color-bg);
+  color: var(--meport-color-text);
+  font-family: var(--meport-font-family);
+  font-size: var(--meport-font-size-base);
+  line-height: var(--meport-line-height);
+  transition:
+    border-color var(--meport-transition-fast),
+    box-shadow var(--meport-transition-fast);
+}
+
+.select:hover {
+  border-color: var(--meport-color-primary);
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--meport-color-primary);
+  outline-offset: 2px;
+}
