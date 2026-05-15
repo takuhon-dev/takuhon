@@ -1,0 +1,50 @@
+import { resolveLocale } from '@meport/core';
+import type { Meport } from '@meport/core';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import exampleJson from '../../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import { LinksList } from '../LinksList.js';
+
+const example = resolveLocale(exampleJson as unknown as Meport, 'en');
+
+describe('LinksList', () => {
+  it('renders one link per entry inside a labelled nav', () => {
+    render(<LinksList links={example.links} />);
+    const nav = screen.getByRole('navigation', { name: /profile links/i });
+    expect(nav).toBeInTheDocument();
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(example.links.length);
+  });
+
+  it('places featured entries before non-featured ones', () => {
+    render(<LinksList links={example.links} />);
+    const links = screen.getAllByRole('link');
+    const hrefs = links.map((el) => el.getAttribute('href'));
+    expect(hrefs.slice(0, 2)).toEqual([
+      'https://example.com/pat',
+      'https://github.com/example-pat',
+    ]);
+  });
+
+  it('falls back to id label when label and type would be ambiguous', () => {
+    render(
+      <LinksList
+        links={[
+          {
+            id: 'newsletter',
+            type: 'custom',
+            url: 'https://example.com/n',
+            iconUrl: 'https://example.com/i.svg',
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('link', { name: /newsletter/i })).toBeInTheDocument();
+  });
+
+  it('returns nothing when given an empty list', () => {
+    const { container } = render(<LinksList links={[]} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+});

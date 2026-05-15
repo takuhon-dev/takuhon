@@ -1,0 +1,27 @@
+.footer {
+  margin-top: var(--meport-space-6);
+  padding-block: var(--meport-space-4);
+  border-top: 1px solid var(--meport-color-border);
+  text-align: center;
+}
+
+.line {
+  margin: 0;
+  font-size: var(--meport-font-size-sm);
+  color: var(--meport-color-text-muted);
+}
+
+.link {
+  color: var(--meport-color-primary);
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--meport-color-primary);
+  outline-offset: 2px;
+}

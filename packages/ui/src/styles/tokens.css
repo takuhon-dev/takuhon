@@ -1,0 +1,55 @@
+:root {
+  --meport-color-bg: #ffffff;
+  --meport-color-surface: #f6f7f9;
+  --meport-color-text: #1f2933;
+  --meport-color-text-muted: #52606d;
+  --meport-color-primary: #2563eb;
+  --meport-color-primary-contrast: #ffffff;
+  --meport-color-border: #d8dee7;
+  --meport-color-accent: #4f46e5;
+
+  --meport-space-1: 4px;
+  --meport-space-2: 8px;
+  --meport-space-3: 12px;
+  --meport-space-4: 16px;
+  --meport-space-5: 24px;
+  --meport-space-6: 32px;
+
+  --meport-radius-sm: 6px;
+  --meport-radius-md: 12px;
+  --meport-radius-lg: 20px;
+  --meport-radius-full: 9999px;
+
+  --meport-font-family:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --meport-font-size-sm: 14px;
+  --meport-font-size-base: 16px;
+  --meport-font-size-lg: 18px;
+  --meport-font-size-xl: 22px;
+  --meport-font-size-2xl: 28px;
+  --meport-line-height: 1.6;
+
+  --meport-tap-target: 44px;
+  --meport-max-content-width: 480px;
+
+  --meport-transition-fast: 120ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --meport-color-bg: #0f172a;
+    --meport-color-surface: #1e293b;
+    --meport-color-text: #e2e8f0;
+    --meport-color-text-muted: #94a3b8;
+    --meport-color-primary: #60a5fa;
+    --meport-color-primary-contrast: #0f172a;
+    --meport-color-border: #334155;
+    --meport-color-accent: #818cf8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --meport-transition-fast: 0ms;
+  }
+}
