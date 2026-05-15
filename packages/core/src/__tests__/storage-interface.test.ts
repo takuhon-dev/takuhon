@@ -1,10 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import {
-  ConflictError,
-  NotFoundError,
-  StorageError,
-} from '../index.js';
+import { ConflictError, NotFoundError, StorageError } from '../index.js';
 import type {
   AssetOptions,
   AssetRecord,
@@ -15,15 +11,19 @@ import type {
 
 describe('MeportStorage interface shape', () => {
   it('getProfile() resolves to { data: Meport; version: string }', () => {
-    expectTypeOf<MeportStorage['getProfile']>()
-      .returns.resolves.toEqualTypeOf<{ data: Meport; version: string }>();
+    expectTypeOf<MeportStorage['getProfile']>().returns.resolves.toEqualTypeOf<{
+      data: Meport;
+      version: string;
+    }>();
   });
 
   it('saveProfile() accepts (data, ifMatch?) and resolves to { version: string }', () => {
-    expectTypeOf<MeportStorage['saveProfile']>()
-      .parameters.toEqualTypeOf<[data: Meport, ifMatch?: string]>();
-    expectTypeOf<MeportStorage['saveProfile']>()
-      .returns.resolves.toEqualTypeOf<{ version: string }>();
+    expectTypeOf<MeportStorage['saveProfile']>().parameters.toEqualTypeOf<
+      [data: Meport, ifMatch?: string]
+    >();
+    expectTypeOf<MeportStorage['saveProfile']>().returns.resolves.toEqualTypeOf<{
+      version: string;
+    }>();
   });
 
   it('deleteProfile() takes no arguments and resolves to void', () => {
@@ -34,22 +34,23 @@ describe('MeportStorage interface shape', () => {
 
 describe('MeportAssetStorage interface shape', () => {
   it('putAsset() accepts a File or Blob and optional AssetOptions', () => {
-    expectTypeOf<MeportAssetStorage['putAsset']>()
-      .parameters.toEqualTypeOf<[file: File | Blob, options?: AssetOptions]>();
-    expectTypeOf<MeportAssetStorage['putAsset']>()
-      .returns.resolves.toEqualTypeOf<AssetRecord>();
+    expectTypeOf<MeportAssetStorage['putAsset']>().parameters.toEqualTypeOf<
+      [file: File | Blob, options?: AssetOptions]
+    >();
+    expectTypeOf<MeportAssetStorage['putAsset']>().returns.resolves.toEqualTypeOf<AssetRecord>();
   });
 
   it('getPublicUrl() accepts an assetId and resolves to a string', () => {
-    expectTypeOf<MeportAssetStorage['getPublicUrl']>()
-      .parameters.toEqualTypeOf<[assetId: string]>();
-    expectTypeOf<MeportAssetStorage['getPublicUrl']>()
-      .returns.resolves.toEqualTypeOf<string>();
+    expectTypeOf<MeportAssetStorage['getPublicUrl']>().parameters.toEqualTypeOf<
+      [assetId: string]
+    >();
+    expectTypeOf<MeportAssetStorage['getPublicUrl']>().returns.resolves.toEqualTypeOf<string>();
   });
 
   it('listAssets() resolves to AssetRecord[]', () => {
-    expectTypeOf<MeportAssetStorage['listAssets']>()
-      .returns.resolves.toEqualTypeOf<AssetRecord[]>();
+    expectTypeOf<MeportAssetStorage['listAssets']>().returns.resolves.toEqualTypeOf<
+      AssetRecord[]
+    >();
   });
 });
 

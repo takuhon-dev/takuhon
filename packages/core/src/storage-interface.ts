@@ -138,10 +138,7 @@ export class NotFoundError extends StorageError {
 export class ConflictError extends StorageError {
   readonly currentVersion?: string;
 
-  constructor(
-    message: string,
-    options?: { currentVersion?: string; cause?: unknown },
-  ) {
+  constructor(message: string, options?: { currentVersion?: string; cause?: unknown }) {
     super(message, { cause: options?.cause });
     this.name = 'ConflictError';
     this.currentVersion = options?.currentVersion;
