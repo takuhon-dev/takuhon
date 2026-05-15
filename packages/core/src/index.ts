@@ -35,6 +35,9 @@ export { normalize } from './normalize.js';
 export { resolveLocale } from './resolve-locale.js';
 export { generateJsonLd, generatePersonJsonLd, generateProfilePageJsonLd } from './jsonld.js';
 
+export { ImportError, exportMeport, importMeport } from './export.js';
+export type { ExportOptions, ExportedMeport } from './export.js';
+
 export { ConflictError, NotFoundError, StorageError } from './storage-interface.js';
 export type {
   AssetOptions,
