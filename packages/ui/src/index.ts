@@ -16,3 +16,4 @@ export { SkillsList, type SkillsListProps } from './components/SkillsList.js';
 export { ContactInfo, type ContactInfoProps } from './components/ContactInfo.js';
 export { Footer } from './components/Footer.js';
 export { LocaleSwitcher, type LocaleSwitcherProps } from './components/LocaleSwitcher.js';
+export { MeportHead, type MeportHeadProps } from './components/MeportHead.js';
