@@ -44,9 +44,11 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@meport/core": "workspace:*"
+    "@meport/core": "workspace:*",
+    "hono": "^4.12.18"
   }
 }

@@ -65,6 +65,9 @@ importers:
 
   adapters/cloudflare:
     dependencies:
+      '@meport/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@meport/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -103,6 +106,9 @@ importers:
       '@meport/core':
         specifier: workspace:*
         version: link:../core
+      hono:
+        specifier: ^4.12.18
+        version: 4.12.18
 
   packages/cli:
     dependencies:
@@ -1966,6 +1972,10 @@ packages:
 
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
+
+  hono@4.12.18:
+    resolution: {integrity: sha512-RWzP96k/yv0PQfyXnWjs6zot20TqfpfsNXhOnev8d1InAxubW93L11/oNUc3tQqn2G0bSdAOBpX+2uDFHV7kdQ==}
+    engines: {node: '>=16.9.0'}
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
@@ -4648,6 +4658,8 @@ snapshots:
   hermes-parser@0.25.1:
     dependencies:
       hermes-estree: 0.25.1
+
+  hono@4.12.18: {}
 
   html-escaper@2.0.2: {}
 

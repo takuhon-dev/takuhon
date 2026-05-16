@@ -107,29 +107,43 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
   });
 
-  it('GET /unknown returns 404 with application/problem+json envelope', async () => {
+  it('GET /unknown returns 404 with type=https://meport.dev/errors/not-found', async () => {
     const res = await call('https://worker.example/does-not-exist', makeEnv().env);
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
+    expect(body.type).toBe('https://meport.dev/errors/not-found');
     expect(body.status).toBe(404);
-    expect(body.title).toBe('Not Found');
+    expect(body.instance).toBe('/does-not-exist');
   });
 
-  it('POST /api/profile returns 405 method not allowed', async () => {
+  it('POST /api/profile returns 405 with type=https://meport.dev/errors/method-not-allowed', async () => {
     const res = await call('https://worker.example/api/profile', makeEnv().env, {
       method: 'POST',
     });
     expect(res.status).toBe(405);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
+    const body: any = await res.json();
+    expect(body.type).toBe('https://meport.dev/errors/method-not-allowed');
   });
 
-  it('every response carries the baseline security headers', async () => {
+  it('GET /api/jsonld returns a JSON-LD document with ProfilePage type', async () => {
+    const res = await call('https://worker.example/api/jsonld', makeEnv().env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toMatch(/application\/ld\+json/);
+    const body: any = await res.json();
+    expect(Array.isArray(body)).toBe(true);
+    expect(body[0]['@type']).toBe('ProfilePage');
+  });
+
+  it('every response carries the baseline security headers including CSP', async () => {
     const res = await call('https://worker.example/api/schema', makeEnv().env);
     expect(res.headers.get('strict-transport-security')).toMatch(/max-age=63072000/);
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
     expect(res.headers.get('x-frame-options')).toBe('DENY');
     expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
     expect(res.headers.get('permissions-policy')).toContain('camera=()');
+    expect(res.headers.get('content-security-policy')).toMatch(/default-src 'self'/);
+    expect(res.headers.get('content-security-policy')).toMatch(/frame-ancestors 'none'/);
   });
 });

@@ -13,6 +13,7 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
+    "@meport/api": "workspace:*",
     "@meport/core": "workspace:*"
   },
   "devDependencies": {
