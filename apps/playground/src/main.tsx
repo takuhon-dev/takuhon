@@ -1,5 +1,5 @@
 import { resolveLocale, validate, type LocaleTag, type Meport } from '@meport/core';
-import { LocaleSwitcher, MeportProfile } from '@meport/ui';
+import { LocaleSwitcher, MeportHead, MeportProfile } from '@meport/ui';
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -56,6 +56,7 @@ function App({ meport }: { meport: Meport }): React.JSX.Element {
 
   return (
     <>
+      <MeportHead data={localized} />
       <LocaleSwitcher
         availableLocales={meport.settings.availableLocales}
         currentLocale={locale}
