@@ -4,6 +4,7 @@ import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import exampleJson from '../../../examples/personal-profile/meport.json' with { type: 'json' };
+import './index.css';
 
 const COOKIE_NAME = 'meport_locale';
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
@@ -56,13 +57,18 @@ function App({ meport }: { meport: Meport }): React.JSX.Element {
 
   return (
     <>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <MeportHead data={localized} />
       <LocaleSwitcher
         availableLocales={meport.settings.availableLocales}
         currentLocale={locale}
         onSelect={handleSelect}
       />
-      <MeportProfile data={localized} />
+      <main id="main-content">
+        <MeportProfile data={localized} />
+      </main>
     </>
   );
 }

@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  background-color: var(--meport-color-bg);
+  color: var(--meport-color-text);
+  font-family: var(--meport-font-family);
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: var(--meport-space-2);
+  inset-block-start: var(--meport-space-2);
+  padding: var(--meport-space-2) var(--meport-space-3);
+  background-color: var(--meport-color-primary);
+  color: var(--meport-color-primary-contrast);
+  border-radius: var(--meport-radius-sm);
+  text-decoration: none;
+  font-family: var(--meport-font-family);
+  font-size: var(--meport-font-size-sm);
+  transform: translateY(-200%);
+  transition: transform var(--meport-transition-fast);
+  z-index: 100;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--meport-color-primary);
+  outline-offset: 2px;
+}
