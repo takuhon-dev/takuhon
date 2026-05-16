@@ -1,4 +1,4 @@
-import type { LocalizedProject } from '@meport/core';
+import type { LocalizedProject } from '@ownport/core';
 
 import styles from './ProjectsList.module.css';
 
@@ -22,8 +22,8 @@ export function ProjectsList({ projects }: ProjectsListProps): React.JSX.Element
   const ordered = sortProjects(projects);
 
   return (
-    <section className={styles.section} aria-labelledby="meport-projects-heading">
-      <h2 id="meport-projects-heading" className={styles.heading}>
+    <section className={styles.section} aria-labelledby="ownport-projects-heading">
+      <h2 id="ownport-projects-heading" className={styles.heading}>
         Projects
       </h2>
       <ul className={styles.list}>

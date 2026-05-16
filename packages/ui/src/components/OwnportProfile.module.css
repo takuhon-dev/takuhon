@@ -1,0 +1,13 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ownport-space-4);
+  max-width: var(--ownport-max-content-width);
+  margin-inline: auto;
+  padding: var(--ownport-space-4);
+  background-color: var(--ownport-color-bg);
+  color: var(--ownport-color-text);
+  font-family: var(--ownport-font-family);
+  font-size: var(--ownport-font-size-base);
+  line-height: var(--ownport-line-height);
+}

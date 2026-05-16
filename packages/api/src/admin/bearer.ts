@@ -14,7 +14,7 @@ import type { AuditLogger } from './audit-logger.js';
  *
  * This is intentionally a from-scratch implementation rather than
  * `crypto.subtle.timingSafeEqual`, which Cloudflare Workers exposes but
- * Node lacks — `@meport/api` is adapter-neutral.
+ * Node lacks — `@ownport/api` is adapter-neutral.
  */
 export function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
   const len = a.length > b.length ? a.length : b.length;

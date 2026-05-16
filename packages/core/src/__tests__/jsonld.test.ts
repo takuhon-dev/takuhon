@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import {
   generateJsonLd,
   generatePersonJsonLd,
@@ -8,10 +8,10 @@ import {
   normalize,
   resolveLocale,
 } from '../index.js';
-import type { LocalizedMeport, Meport } from '../index.js';
+import type { LocalizedMeport, Ownport } from '../index.js';
 
-function cloneExample(): Meport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Meport;
+function cloneExample(): Ownport {
+  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
 }
 
 function prepare(locale?: string): LocalizedMeport {

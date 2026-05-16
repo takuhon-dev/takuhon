@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { exportMeport, ImportError, importMeport, validate } from '../index.js';
-import type { Meport } from '../index.js';
+import type { Ownport } from '../index.js';
 
-function cloneExample(): Meport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Meport;
+function cloneExample(): Ownport {
+  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
 }
 
 describe('exportMeport', () => {
@@ -50,7 +50,7 @@ describe('exportMeport', () => {
 });
 
 describe('importMeport', () => {
-  it('returns a Meport for a valid input', () => {
+  it('returns a Ownport for a valid input', () => {
     const out = importMeport(cloneExample());
     expect(out.schemaVersion).toBe('0.1.0');
     expect(out.profile.displayName).toBeDefined();
@@ -61,7 +61,7 @@ describe('importMeport', () => {
     delete broken.profile;
     let caught: unknown;
     try {
-      importMeport(broken as unknown as Meport);
+      importMeport(broken as unknown as Ownport);
     } catch (err) {
       caught = err;
     }

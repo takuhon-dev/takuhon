@@ -1,20 +1,20 @@
-import { ConflictError, NotFoundError, type Meport, type MeportStorage } from '@meport/core';
+import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@ownport/core';
 
 /**
- * In-memory MeportStorage for tests that need a runtime-agnostic backing
- * store. Mirrors the contract of @meport/cloudflare's FakeKV-backed adapter
- * but lives inside @meport/api so unit tests stay free of adapter imports.
+ * In-memory OwnportStorage for tests that need a runtime-agnostic backing
+ * store. Mirrors the contract of @ownport/cloudflare's FakeKV-backed adapter
+ * but lives inside @ownport/api so unit tests stay free of adapter imports.
  */
-export class FakeStorage implements MeportStorage {
-  private state: { data: Meport; version: string } | null = null;
+export class FakeStorage implements OwnportStorage {
+  private state: { data: Ownport; version: string } | null = null;
   private counter = 0;
 
-  getProfile(): Promise<{ data: Meport; version: string }> {
+  getProfile(): Promise<{ data: Ownport; version: string }> {
     if (!this.state) return Promise.reject(new NotFoundError('no profile stored'));
     return Promise.resolve(this.state);
   }
 
-  saveProfile(data: Meport, ifMatch?: string): Promise<{ version: string }> {
+  saveProfile(data: Ownport, ifMatch?: string): Promise<{ version: string }> {
     if (ifMatch !== undefined && this.state?.version !== ifMatch) {
       return Promise.reject(
         new ConflictError(`version mismatch: expected "${ifMatch}"`, {

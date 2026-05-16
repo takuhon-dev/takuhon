@@ -1,5 +1,5 @@
 /**
- * Reduce a multi-locale {@link Meport} document to a single requested locale.
+ * Reduce a multi-locale {@link Ownport} document to a single requested locale.
  *
  * Builds a flat candidate chain from the function arguments and `data.settings`,
  * expanding each entry's regional subtag (e.g. `'en-US' → ['en-US', 'en']`),
@@ -12,7 +12,7 @@
  * Design notes:
  * - Function arguments (`locale`, `fallbackLocale`) take precedence over
  *   `settings.*`, in line with the spec's 7-tier list: HTTP-derived locales
- *   (#1-#4) are resolved upstream by `@meport/api` and arrive here as
+ *   (#1-#4) are resolved upstream by `@ownport/api` and arrive here as
  *   `locale` / `fallbackLocale`; `settings.defaultLocale` (#5),
  *   `settings.fallbackLocale` (#6), and `settings.availableLocales[0]` (#7)
  *   fill the tail.
@@ -46,22 +46,22 @@ import type {
   LocalizedProfile,
   LocalizedProject,
   LocalizedTitle,
-  Meport,
+  Ownport,
   Profile,
   Project,
 } from './types.js';
 
 /**
- * Resolve a meport document to a single locale.
+ * Resolve a ownport document to a single locale.
  *
- * @param data    A meport document (validated; ideally normalized first).
+ * @param data    A ownport document (validated; ideally normalized first).
  * @param locale  Caller-resolved request locale (e.g. from `?lang=` or
  *                `Accept-Language`). Invalid tags are ignored.
  * @param fallbackLocale Caller-supplied secondary candidate when `locale`
  *                misses. Invalid tags are ignored.
  */
 export function resolveLocale(
-  data: Meport,
+  data: Ownport,
   locale?: string,
   fallbackLocale?: string,
 ): LocalizedMeport {
@@ -83,7 +83,7 @@ export function resolveLocale(
 }
 
 function buildCandidates(
-  data: Meport,
+  data: Ownport,
   locale: string | undefined,
   fallbackLocale: string | undefined,
 ): LocaleTag[] {

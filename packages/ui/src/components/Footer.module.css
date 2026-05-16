@@ -1,18 +1,18 @@
 .footer {
-  margin-top: var(--meport-space-6);
-  padding-block: var(--meport-space-4);
-  border-top: 1px solid var(--meport-color-border);
+  margin-top: var(--ownport-space-6);
+  padding-block: var(--ownport-space-4);
+  border-top: 1px solid var(--ownport-color-border);
   text-align: center;
 }
 
 .line {
   margin: 0;
-  font-size: var(--meport-font-size-sm);
-  color: var(--meport-color-text-muted);
+  font-size: var(--ownport-font-size-sm);
+  color: var(--ownport-color-text-muted);
 }
 
 .link {
-  color: var(--meport-color-primary);
+  color: var(--ownport-color-primary);
   text-decoration: none;
 }
 
@@ -22,6 +22,6 @@
 }
 
 .link:focus-visible {
-  outline: 2px solid var(--meport-color-primary);
+  outline: 2px solid var(--ownport-color-primary);
   outline-offset: 2px;
 }

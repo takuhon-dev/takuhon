@@ -1,14 +1,14 @@
-import type { Meport } from '@meport/core';
+import type { Ownport } from '@ownport/core';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import worker, { type Env } from '../index.js';
 import { KV_KEY, type KvMetadata } from '../kv-storage.js';
 import { FakeKV } from '../test-utils/fake-kv.js';
 
 function makeEnv(): { env: Env; kv: FakeKV } {
   const kv = new FakeKV();
-  return { env: { MEPORT_KV: kv as unknown as KVNamespace }, kv };
+  return { env: { OWNPORT_KV: kv as unknown as KVNamespace }, kv };
 }
 
 function call(url: string, env: Env, init?: RequestInit): Promise<Response> {
@@ -20,7 +20,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     const res = await call('https://worker.example/', makeEnv().env);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('meport');
+    expect(await res.text()).toContain('ownport');
   });
 
   it('GET /api/profile falls back to bundled fixture when KV is empty', async () => {
@@ -47,10 +47,10 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(res.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
   });
 
-  it('GET /api/profile reads from KV when MEPORT_DATA is populated', async () => {
+  it('GET /api/profile reads from KV when OWNPORT_DATA is populated', async () => {
     const { env, kv } = makeEnv();
-    const base = exampleJson as Meport;
-    const stored: Meport = {
+    const base = exampleJson as Ownport;
+    const stored: Ownport = {
       ...base,
       profile: {
         ...base.profile,
@@ -73,8 +73,8 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.$schema).toBeTruthy();
   });
 
-  it('GET /meport.json returns the raw Meport (no wrap, all locales embedded)', async () => {
-    const res = await call('https://worker.example/meport.json', makeEnv().env);
+  it('GET /ownport.json returns the raw Ownport (no wrap, all locales embedded)', async () => {
+    const res = await call('https://worker.example/ownport.json', makeEnv().env);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/application\/json/);
     const body: any = await res.json();
@@ -84,14 +84,14 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.meta.contentLicense).toBeTruthy();
   });
 
-  it('GET /meport.json carries ETag and Cache-Control: public, max-age=300', async () => {
-    const res = await call('https://worker.example/meport.json', makeEnv().env);
+  it('GET /ownport.json carries ETag and Cache-Control: public, max-age=300', async () => {
+    const res = await call('https://worker.example/ownport.json', makeEnv().env);
     expect(res.headers.get('etag')).toMatch(/^".+"$/);
     expect(res.headers.get('cache-control')).toBe('public, max-age=300');
   });
 
-  it('GET /.well-known/meport.json returns the 6-field metadata document', async () => {
-    const res = await call('https://worker.example/.well-known/meport.json', makeEnv().env);
+  it('GET /.well-known/ownport.json returns the 6-field metadata document', async () => {
+    const res = await call('https://worker.example/.well-known/ownport.json', makeEnv().env);
     expect(res.status).toBe(200);
     const body: any = await res.json();
     expect(body.schemaVersion).toBe('0.1.0');
@@ -99,32 +99,32 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.profile).toBe('/api/profile');
     expect(body.jsonld).toBe('/api/jsonld');
     expect(body.export).toBe('/api/export');
-    expect(body.canonical).toBe('/meport.json');
+    expect(body.canonical).toBe('/ownport.json');
   });
 
-  it('GET /.well-known/meport.json carries Cache-Control: public, max-age=3600', async () => {
-    const res = await call('https://worker.example/.well-known/meport.json', makeEnv().env);
+  it('GET /.well-known/ownport.json carries Cache-Control: public, max-age=3600', async () => {
+    const res = await call('https://worker.example/.well-known/ownport.json', makeEnv().env);
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
   });
 
-  it('GET /unknown returns 404 with type=https://meport.dev/errors/not-found', async () => {
+  it('GET /unknown returns 404 with type=https://ownport.dev/errors/not-found', async () => {
     const res = await call('https://worker.example/does-not-exist', makeEnv().env);
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/not-found');
+    expect(body.type).toBe('https://ownport.dev/errors/not-found');
     expect(body.status).toBe(404);
     expect(body.instance).toBe('/does-not-exist');
   });
 
-  it('POST /api/profile returns 405 with type=https://meport.dev/errors/method-not-allowed', async () => {
+  it('POST /api/profile returns 405 with type=https://ownport.dev/errors/method-not-allowed', async () => {
     const res = await call('https://worker.example/api/profile', makeEnv().env, {
       method: 'POST',
     });
     expect(res.status).toBe(405);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/method-not-allowed');
+    expect(body.type).toBe('https://ownport.dev/errors/method-not-allowed');
   });
 
   it('GET /api/jsonld returns a JSON-LD document with ProfilePage type', async () => {

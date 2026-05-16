@@ -1,12 +1,12 @@
-import { resolveLocale, validate } from '@meport/core';
+import { resolveLocale, validate } from '@ownport/core';
 import { render } from '@testing-library/react';
 import axe from 'axe-core';
 import { describe, expect, it, vi } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { LocaleSwitcher } from '../LocaleSwitcher.js';
-import { MeportHead } from '../MeportHead.js';
-import { MeportProfile } from '../MeportProfile.js';
+import { OwnportHead } from '../OwnportHead.js';
+import { OwnportProfile } from '../OwnportProfile.js';
 
 const validated = validate(exampleJson);
 if (!validated.ok) {
@@ -19,8 +19,8 @@ async function audit(node: Element): Promise<axe.AxeResults> {
 }
 
 describe('axe-core a11y audit', () => {
-  it('MeportProfile has no detectable a11y violations', async () => {
-    const { container } = render(<MeportProfile data={example} />);
+  it('OwnportProfile has no detectable a11y violations', async () => {
+    const { container } = render(<OwnportProfile data={example} />);
     expect(await audit(container)).toHaveNoViolations();
   });
 
@@ -31,9 +31,9 @@ describe('axe-core a11y audit', () => {
     expect(await audit(container)).toHaveNoViolations();
   });
 
-  it('MeportHead does not introduce body-level a11y violations', async () => {
+  it('OwnportHead does not introduce body-level a11y violations', async () => {
     const { container } = render(
-      <MeportHead data={example} siteUrl="https://example.com" pageUrl="https://example.com/" />,
+      <OwnportHead data={example} siteUrl="https://example.com" pageUrl="https://example.com/" />,
     );
     expect(await audit(container)).toHaveNoViolations();
   });

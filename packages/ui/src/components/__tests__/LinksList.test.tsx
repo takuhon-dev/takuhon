@@ -1,12 +1,12 @@
-import { resolveLocale } from '@meport/core';
-import type { Meport } from '@meport/core';
+import { resolveLocale } from '@ownport/core';
+import type { Ownport } from '@ownport/core';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { LinksList } from '../LinksList.js';
 
-const example = resolveLocale(exampleJson as unknown as Meport, 'en');
+const example = resolveLocale(exampleJson as unknown as Ownport, 'en');
 
 describe('LinksList', () => {
   it('renders one link per entry inside a labelled nav', () => {

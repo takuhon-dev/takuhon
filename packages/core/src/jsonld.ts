@@ -62,7 +62,7 @@ const SAMEAS_IDENTITY_TYPES: ReadonlySet<LinkType> = new Set<LinkType>([
 /**
  * Build the `Person` JSON-LD object for `data`.
  *
- * @param data A locale-resolved meport document.
+ * @param data A locale-resolved ownport document.
  * @returns A Schema.org `Person` object. `@context` is included so the
  *          returned object is valid as a standalone JSON-LD document.
  */
@@ -75,7 +75,7 @@ export function generatePersonJsonLd(data: LocalizedMeport): object {
  * Build the `ProfilePage` JSON-LD object for `data`, with `Person` inlined
  * as `mainEntity`.
  *
- * @param data A locale-resolved meport document.
+ * @param data A locale-resolved ownport document.
  */
 export function generateProfilePageJsonLd(data: LocalizedMeport): object {
   const canonicalUrl = deriveCanonicalUrl(data);

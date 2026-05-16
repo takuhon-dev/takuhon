@@ -1,54 +1,54 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--meport-space-3);
-  margin-top: var(--meport-space-5);
+  gap: var(--ownport-space-3);
+  margin-top: var(--ownport-space-5);
 }
 
 .heading {
   margin: 0;
-  font-size: var(--meport-font-size-xl);
-  color: var(--meport-color-text);
+  font-size: var(--ownport-font-size-xl);
+  color: var(--ownport-color-text);
 }
 
 .list {
   list-style: none;
   margin: 0;
-  padding-inline-start: var(--meport-space-4);
+  padding-inline-start: var(--ownport-space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--meport-space-4);
-  border-inline-start: 2px solid var(--meport-color-border);
+  gap: var(--ownport-space-4);
+  border-inline-start: 2px solid var(--ownport-color-border);
 }
 
 .item {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--meport-space-3);
+  gap: var(--ownport-space-3);
   position: relative;
 }
 
 .timelineMarker {
   width: 12px;
   height: 12px;
-  border-radius: var(--meport-radius-full);
-  background-color: var(--meport-color-primary);
-  margin-inline-start: calc(-1 * var(--meport-space-4) - 6px);
-  margin-block-start: var(--meport-space-2);
+  border-radius: var(--ownport-radius-full);
+  background-color: var(--ownport-color-primary);
+  margin-inline-start: calc(-1 * var(--ownport-space-4) - 6px);
+  margin-block-start: var(--ownport-space-2);
   flex-shrink: 0;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--meport-space-1);
+  gap: var(--ownport-space-1);
 }
 
 .role {
   margin: 0;
   font-weight: 600;
-  color: var(--meport-color-text);
-  font-size: var(--meport-font-size-base);
+  color: var(--ownport-color-text);
+  font-size: var(--ownport-font-size-base);
 }
 
 .organizationLink {
@@ -59,29 +59,29 @@
 .organizationLink:hover,
 .organizationLink:focus-visible {
   text-decoration: underline;
-  color: var(--meport-color-primary);
+  color: var(--ownport-color-primary);
 }
 
 .organizationLink:focus-visible {
-  outline: 2px solid var(--meport-color-primary);
+  outline: 2px solid var(--ownport-color-primary);
   outline-offset: 2px;
 }
 
 .range {
   margin: 0;
-  font-size: var(--meport-font-size-sm);
-  color: var(--meport-color-text-muted);
+  font-size: var(--ownport-font-size-sm);
+  color: var(--ownport-color-text-muted);
 }
 
 .location {
   margin: 0;
-  font-size: var(--meport-font-size-sm);
-  color: var(--meport-color-text-muted);
+  font-size: var(--ownport-font-size-sm);
+  color: var(--ownport-color-text-muted);
 }
 
 .description {
   margin: 0;
-  font-size: var(--meport-font-size-base);
-  line-height: var(--meport-line-height);
-  color: var(--meport-color-text);
+  font-size: var(--ownport-font-size-base);
+  line-height: var(--ownport-line-height);
+  color: var(--ownport-color-text);
 }

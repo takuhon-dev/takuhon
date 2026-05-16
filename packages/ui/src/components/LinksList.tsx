@@ -1,4 +1,4 @@
-import type { LocalizedLink } from '@meport/core';
+import type { LocalizedLink } from '@ownport/core';
 
 import styles from './LinksList.module.css';
 

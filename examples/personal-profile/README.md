@@ -1,7 +1,7 @@
 # Personal profile example
 
-A reference [`meport.json`](./meport.json) that exercises every field of the
-[`@meport/core` schema](../../packages/core/meport.schema.json). The profile
+A reference [`ownport.json`](./ownport.json) that exercises every field of the
+[`@ownport/core` schema](../../packages/core/ownport.schema.json). The profile
 belongs to a fictional persona, **Pat Rivera**, an open-source maintainer based
 in Lisbon. The example covers:
 

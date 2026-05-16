@@ -1,7 +1,7 @@
 /**
- * Forward migration registry for `@meport/core`.
+ * Forward migration registry for `@ownport/core`.
  *
- * Each migration is a pure function from a meport document at version `from`
+ * Each migration is a pure function from a ownport document at version `from`
  * to one at version `to`. The registry is consulted by {@link migrateMeport}
  * to build a chain when the requested target is more than one step away
  * (`0.1.0 → 0.3.0` is composed of `0.1.0→0.2.0` and `0.2.0→0.3.0`).
@@ -15,11 +15,11 @@
  *   when applicable, and schema-pass against the target version's schema
  *
  * The chain-building algorithm lives in `_chain.ts` and is intentionally
- * not re-exported from `@meport/core` — it is an implementation detail of
+ * not re-exported from `@ownport/core` — it is an implementation detail of
  * {@link migrateMeport}.
  */
 
-import type { Meport } from '../types.js';
+import type { Ownport } from '../types.js';
 
 /**
  * A forward migration entry. `from` and `to` are semver strings matching
@@ -33,7 +33,7 @@ export interface Migration<From, To> {
 }
 
 /**
- * Forward migrations bundled with this build of `@meport/core`. Empty in
+ * Forward migrations bundled with this build of `@ownport/core`. Empty in
  * Phase 1; the first entry will land alongside the v0.2.0 schema bump.
  */
-export const migrations: readonly Migration<Meport, Meport>[] = [];
+export const migrations: readonly Migration<Ownport, Ownport>[] = [];

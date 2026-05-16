@@ -1,4 +1,4 @@
-import type { Contact } from '@meport/core';
+import type { Contact } from '@ownport/core';
 
 import styles from './ContactInfo.module.css';
 
@@ -11,8 +11,8 @@ export function ContactInfo({ contact }: ContactInfoProps): React.JSX.Element | 
   if (!showEmail && contact.formUrl === undefined) return null;
 
   return (
-    <section className={styles.section} aria-labelledby="meport-contact-heading">
-      <h2 id="meport-contact-heading" className={styles.heading}>
+    <section className={styles.section} aria-labelledby="ownport-contact-heading">
+      <h2 id="ownport-contact-heading" className={styles.heading}>
         Contact
       </h2>
       <ul className={styles.list}>

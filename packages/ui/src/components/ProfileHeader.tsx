@@ -1,4 +1,4 @@
-import type { LocalizedProfile } from '@meport/core';
+import type { LocalizedProfile } from '@ownport/core';
 
 import styles from './ProfileHeader.module.css';
 

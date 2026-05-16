@@ -1,5 +1,5 @@
 dist/
 node_modules/
-.meport-backups/
+.ownport-backups/
 *.lock
 pnpm-lock.yaml

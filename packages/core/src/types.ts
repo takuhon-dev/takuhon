@@ -1,11 +1,11 @@
 /**
- * TypeScript types for meport profile data.
+ * TypeScript types for ownport profile data.
  *
- * These mirror the canonical contract defined in `meport.schema.json`. The
+ * These mirror the canonical contract defined in `ownport.schema.json`. The
  * published shape is sanity-checked at commit 1 by `__tests__/schema.test.ts`
  * (top-level keys, `$defs`, required fields, hybrid `additionalProperties`
  * splits, Spec §6 invariants) and by `__tests__/example.test.ts` (the bundled
- * fixture is assigned to `Meport` via a boundary cast, and per-Spec invariants
+ * fixture is assigned to `Ownport` via a boundary cast, and per-Spec invariants
  * are asserted at runtime). Those tests catch the kind of drift that changes
  * the published shape, but they do not enforce field-by-field parity between
  * JSON Schema `properties` and TypeScript members — that stronger guarantee
@@ -177,7 +177,7 @@ export interface Settings {
   availableLocales: LocaleTag[];
   /** UI theme identifier. `'default'` is the built-in theme. */
   theme?: string;
-  /** Display the 'Powered by meport' attribution on the rendered profile. */
+  /** Display the 'Powered by ownport' attribution on the rendered profile. */
   showPoweredBy?: boolean;
   /** Emit Schema.org JSON-LD on the rendered profile page. */
   enableJsonLd?: boolean;
@@ -203,13 +203,13 @@ export interface ContentLicense {
 export interface Meta {
   createdAt?: IsoDateTime;
   updatedAt?: IsoDateTime;
-  /** Tool that produced this document (e.g. `'MePort'`, `'create-meport@0.1.0'`). */
+  /** Tool that produced this document (e.g. `'OwnPort'`, `'create-ownport@0.1.0'`). */
   generator?: string;
   contentLicense: ContentLicense;
 }
 
-/** A complete meport profile document. */
-export interface Meport {
+/** A complete ownport profile document. */
+export interface Ownport {
   schemaVersion: string;
   profile: Profile;
   links: Link[];
@@ -222,15 +222,15 @@ export interface Meport {
 }
 
 /**
- * A {@link Meport} document that has been canonicalized by `normalize()`:
+ * A {@link Ownport} document that has been canonicalized by `normalize()`:
  * arrays sorted by `order`, and empty localized-field entries removed.
  *
- * Structurally identical to {@link Meport}; the alias is a documentation hook
+ * Structurally identical to {@link Ownport}; the alias is a documentation hook
  * for downstream consumers that want to express "must run through normalize
  * first". A nominal branded form may replace this alias in a later phase if
  * OSS adopters need the static guarantee.
  */
-export type NormalizedMeport = Meport;
+export type NormalizedMeport = Ownport;
 
 /**
  * Address with localized fields collapsed to single strings — the shape
@@ -308,7 +308,7 @@ export interface LocalizedProject {
 }
 
 /**
- * A meport document with every localized map flattened to a single string,
+ * A ownport document with every localized map flattened to a single string,
  * plus a `resolvedLocale` field recording which tag was actually used as the
  * head of the fallback chain. `resolveLocale()` returns this shape.
  *

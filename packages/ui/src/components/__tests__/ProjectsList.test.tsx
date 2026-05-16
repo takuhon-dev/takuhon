@@ -1,12 +1,12 @@
-import { resolveLocale } from '@meport/core';
-import type { Meport } from '@meport/core';
+import { resolveLocale } from '@ownport/core';
+import type { Ownport } from '@ownport/core';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { ProjectsList } from '../ProjectsList.js';
 
-const example = resolveLocale(exampleJson as unknown as Meport, 'en');
+const example = resolveLocale(exampleJson as unknown as Ownport, 'en');
 
 describe('ProjectsList', () => {
   it('renders a labelled Projects section with one entry per project', () => {

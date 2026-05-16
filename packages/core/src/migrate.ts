@@ -1,5 +1,5 @@
 /**
- * Forward migration entry point for meport documents.
+ * Forward migration entry point for ownport documents.
  *
  * {@link migrateMeport} composes a chain of {@link Migration} entries from
  * the registry (`./migrations`) and applies them in order. Phase 1 ships
@@ -17,7 +17,7 @@
 
 import { findMigrationChain } from './migrations/_chain.js';
 import { migrations } from './migrations/index.js';
-import type { Meport } from './types.js';
+import type { Ownport } from './types.js';
 
 /**
  * Thrown by {@link migrateMeport} when no forward chain connects the
@@ -32,22 +32,22 @@ export class MigrationError extends Error {
 }
 
 /**
- * Migrate a meport document forward to `targetVersion`. Returns a deep
+ * Migrate a ownport document forward to `targetVersion`. Returns a deep
  * clone; the input is never mutated, even when a migration throws.
  *
  * @throws {MigrationError} when no forward chain exists from
  *         `data.schemaVersion` to `targetVersion`.
  */
-export function migrateMeport(data: Meport, targetVersion: string): Meport {
+export function migrateMeport(data: Ownport, targetVersion: string): Ownport {
   const sourceVersion = data.schemaVersion;
   if (sourceVersion === targetVersion) {
-    return JSON.parse(JSON.stringify(data)) as Meport;
+    return JSON.parse(JSON.stringify(data)) as Ownport;
   }
   const chain = findMigrationChain(sourceVersion, targetVersion, migrations);
   if (!chain) {
     throw new MigrationError(`No migration path from ${sourceVersion} to ${targetVersion}`);
   }
-  let current: Meport = JSON.parse(JSON.stringify(data)) as Meport;
+  let current: Ownport = JSON.parse(JSON.stringify(data)) as Ownport;
   for (const step of chain) {
     current = step.migrate(current);
   }

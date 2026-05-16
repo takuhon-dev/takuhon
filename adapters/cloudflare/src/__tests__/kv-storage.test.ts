@@ -1,7 +1,7 @@
-import { ConflictError, NotFoundError, type Meport } from '@meport/core';
+import { ConflictError, NotFoundError, type Ownport } from '@ownport/core';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { KV_KEY, KvMeportStorage, type KvMetadata } from '../kv-storage.js';
 import { FakeKV } from '../test-utils/fake-kv.js';
 
@@ -11,7 +11,7 @@ function makeStorage(): { storage: KvMeportStorage; kv: FakeKV } {
   return { storage, kv };
 }
 
-const sample = exampleJson as unknown as Meport;
+const sample = exampleJson as unknown as Ownport;
 
 describe('KvMeportStorage', () => {
   it('getProfile() throws NotFoundError when KV is empty', async () => {

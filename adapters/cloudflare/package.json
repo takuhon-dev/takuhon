@@ -1,7 +1,7 @@
 {
-  "name": "@meport/cloudflare",
+  "name": "@ownport/cloudflare",
   "version": "0.0.0",
-  "description": "Cloudflare Workers adapter for meport — public API, Workers Assets, KV, R2 integrations",
+  "description": "Cloudflare Workers adapter for ownport — public API, Workers Assets, KV, R2 integrations",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -13,8 +13,8 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
-    "@meport/api": "workspace:*",
-    "@meport/core": "workspace:*",
+    "@ownport/api": "workspace:*",
+    "@ownport/core": "workspace:*",
     "hono": "^4.12.19"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-describe('@meport/cli smoke', () => {
+describe('@ownport/cli smoke', () => {
   it('package is importable', () => {
     expect(true).toBe(true);
   });

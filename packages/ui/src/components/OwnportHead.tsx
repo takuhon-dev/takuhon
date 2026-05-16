@@ -1,7 +1,7 @@
-import { generateJsonLd, type LocalizedMeport } from '@meport/core';
+import { generateJsonLd, type LocalizedMeport } from '@ownport/core';
 import { useEffect } from 'react';
 
-export interface MeportHeadProps {
+export interface OwnportHeadProps {
   data: LocalizedMeport;
   siteUrl?: string;
   pageUrl?: string;
@@ -54,7 +54,7 @@ function detectPageUrl(
   return siteUrl;
 }
 
-export function MeportHead({ data, siteUrl, pageUrl }: MeportHeadProps): React.JSX.Element {
+export function OwnportHead({ data, siteUrl, pageUrl }: OwnportHeadProps): React.JSX.Element {
   const resolvedSiteUrl = detectSiteUrl(siteUrl);
   const resolvedPageUrl = detectPageUrl(pageUrl, resolvedSiteUrl);
 

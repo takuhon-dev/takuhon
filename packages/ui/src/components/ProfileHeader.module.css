@@ -3,45 +3,45 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--meport-space-3);
-  padding-block: var(--meport-space-5);
+  gap: var(--ownport-space-3);
+  padding-block: var(--ownport-space-5);
 }
 
 .avatar {
   width: 128px;
   height: 128px;
-  border-radius: var(--meport-radius-full);
+  border-radius: var(--ownport-radius-full);
   object-fit: cover;
-  background-color: var(--meport-color-surface);
-  border: 1px solid var(--meport-color-border);
+  background-color: var(--ownport-color-surface);
+  border: 1px solid var(--ownport-color-border);
 }
 
 .displayName {
   margin: 0;
-  font-size: var(--meport-font-size-2xl);
+  font-size: var(--ownport-font-size-2xl);
   line-height: 1.25;
-  color: var(--meport-color-text);
+  color: var(--ownport-color-text);
   font-weight: 700;
 }
 
 .tagline {
   margin: 0;
-  font-size: var(--meport-font-size-lg);
-  color: var(--meport-color-text-muted);
+  font-size: var(--ownport-font-size-lg);
+  color: var(--ownport-color-text-muted);
   line-height: 1.4;
 }
 
 .location {
   margin: 0;
-  font-size: var(--meport-font-size-sm);
-  color: var(--meport-color-text-muted);
+  font-size: var(--ownport-font-size-sm);
+  color: var(--ownport-color-text-muted);
 }
 
 .bio {
   margin: 0;
-  font-size: var(--meport-font-size-base);
-  line-height: var(--meport-line-height);
-  color: var(--meport-color-text);
+  font-size: var(--ownport-font-size-base);
+  line-height: var(--ownport-line-height);
+  color: var(--ownport-color-text);
   text-align: start;
   max-width: 100%;
 }

@@ -1,4 +1,4 @@
-import type { LocalizedCareer } from '@meport/core';
+import type { LocalizedCareer } from '@ownport/core';
 
 import styles from './CareerTimeline.module.css';
 
@@ -24,8 +24,8 @@ export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Elem
   const ordered = sortCareers(careers);
 
   return (
-    <section className={styles.section} aria-labelledby="meport-career-heading">
-      <h2 id="meport-career-heading" className={styles.heading}>
+    <section className={styles.section} aria-labelledby="ownport-career-heading">
+      <h2 id="ownport-career-heading" className={styles.heading}>
         Career
       </h2>
       <ol className={styles.list}>

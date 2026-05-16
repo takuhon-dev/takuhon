@@ -1,20 +1,20 @@
 {
-  "name": "@meport/api",
+  "name": "@ownport/api",
   "version": "0.0.0",
-  "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for meport",
+  "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for ownport",
   "license": "MIT",
-  "author": "meport contributors",
-  "homepage": "https://github.com/takashi-matsuyama/meport/tree/main/packages/api#readme",
+  "author": "ownport contributors",
+  "homepage": "https://github.com/ownport-dev/ownport/tree/main/packages/api#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/takashi-matsuyama/meport.git",
+    "url": "git+https://github.com/ownport-dev/ownport.git",
     "directory": "packages/api"
   },
   "bugs": {
-    "url": "https://github.com/takashi-matsuyama/meport/issues"
+    "url": "https://github.com/ownport-dev/ownport/issues"
   },
   "keywords": [
-    "meport",
+    "ownport",
     "profile",
     "api",
     "hono",
@@ -48,7 +48,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@meport/core": "workspace:*",
+    "@ownport/core": "workspace:*",
     "hono": "^4.12.19"
   }
 }
