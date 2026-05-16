@@ -1,7 +1,7 @@
 /**
- * @meport/core — canonical JSON Schema, hand-written TypeScript types,
+ * @ownport/core — canonical JSON Schema, hand-written TypeScript types,
  * Ajv-backed validation, document normalization, and locale resolution for
- * meport profile data.
+ * ownport profile data.
  *
  * Public surface (Phase 1):
  * - {@link schema}: the JSON Schema 2020-12 contract bundled with this build.
@@ -15,7 +15,7 @@
  * - {@link generateJsonLd} / {@link generatePersonJsonLd} /
  *   {@link generateProfilePageJsonLd}: emit Schema.org JSON-LD
  *   (`ProfilePage` wrapping `Person`) from a locale-resolved document.
- * - {@link MeportStorage} / {@link MeportAssetStorage}: persistence contracts
+ * - {@link OwnportStorage} / {@link OwnportAssetStorage}: persistence contracts
  *   for adapters (KV / R2 / filesystem / SQLite / …), with the
  *   {@link StorageError} / {@link NotFoundError} / {@link ConflictError}
  *   exception family for optimistic-locking and not-found signalling.
@@ -25,7 +25,7 @@
  * - {@link migrateMeport} / {@link Migration} / {@link migrations} /
  *   {@link MigrationError}: forward-only migration registry. Empty in
  *   Phase 1; first entry lands with the v0.2.0 schema bump.
- * - Domain types: {@link Meport} and its constituent shapes (`Profile`,
+ * - Domain types: {@link Ownport} and its constituent shapes (`Profile`,
  *   `Settings`, `Career`, `Project`, `Link` discriminated union, etc.).
  */
 
@@ -50,8 +50,8 @@ export { ConflictError, NotFoundError, StorageError } from './storage-interface.
 export type {
   AssetOptions,
   AssetRecord,
-  MeportAssetStorage,
-  MeportStorage,
+  OwnportAssetStorage,
+  OwnportStorage,
 } from './storage-interface.js';
 
 export type {
@@ -79,7 +79,7 @@ export type {
   LocalizedProfile,
   LocalizedProject,
   LocalizedTitle,
-  Meport,
+  Ownport,
   Meta,
   NormalizedMeport,
   Profile,
@@ -91,8 +91,8 @@ export type {
 } from './types.js';
 
 /**
- * Version of the meport schema bundled with this build of `@meport/core`.
- * A meport profile document's `schemaVersion` field must be migrate-compatible
+ * Version of the ownport schema bundled with this build of `@ownport/core`.
+ * A ownport profile document's `schemaVersion` field must be migrate-compatible
  * with this version. See operational-lifecycle docs for the migration policy.
  */
 export const SCHEMA_VERSION = '0.1.0';

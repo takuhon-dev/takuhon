@@ -1,20 +1,20 @@
 {
-  "name": "@meport/core",
+  "name": "@ownport/core",
   "version": "0.0.0",
-  "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for meport",
+  "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for ownport",
   "license": "MIT",
-  "author": "meport contributors",
-  "homepage": "https://github.com/takashi-matsuyama/meport/tree/main/packages/core#readme",
+  "author": "ownport contributors",
+  "homepage": "https://github.com/ownport-dev/ownport/tree/main/packages/core#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/takashi-matsuyama/meport.git",
+    "url": "git+https://github.com/ownport-dev/ownport.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/takashi-matsuyama/meport/issues"
+    "url": "https://github.com/ownport-dev/ownport/issues"
   },
   "keywords": [
-    "meport",
+    "ownport",
     "profile",
     "json-schema",
     "json-ld",
@@ -29,12 +29,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema.json": "./meport.schema.json",
+    "./schema.json": "./ownport.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "meport.schema.json",
+    "ownport.schema.json",
     "README.md",
     "LICENSE",
     "NOTICE"

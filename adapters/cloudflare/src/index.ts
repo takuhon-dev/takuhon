@@ -6,32 +6,32 @@ import {
   problemResponse,
   type AuditLogger,
   type CachePurger,
-} from '@meport/api';
-import { validate, type Meport } from '@meport/core';
+} from '@ownport/api';
+import { validate, type Ownport } from '@ownport/core';
 import { Hono } from 'hono';
 
-import exampleJson from '../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../examples/personal-profile/ownport.json' with { type: 'json' };
 
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
 import { KvMeportStorage } from './kv-storage.js';
 
 export interface Env {
-  MEPORT_KV: KVNamespace;
+  OWNPORT_KV: KVNamespace;
   /**
-   * Admin bearer token. Provision via `wrangler secret put MEPORT_ADMIN_TOKEN`.
+   * Admin bearer token. Provision via `wrangler secret put OWNPORT_ADMIN_TOKEN`.
    * Leave unset to disable admin writes entirely (every PUT/DELETE returns 401).
    */
-  MEPORT_ADMIN_TOKEN?: string;
+  OWNPORT_ADMIN_TOKEN?: string;
   /**
    * Comma-separated Origin allowlist for browser-originating admin requests.
    * Empty / unset disables the check (deploy without a configured allowlist is
    * acceptable when the admin UI is same-origin; documented in the README).
    */
-  MEPORT_ADMIN_ORIGIN?: string;
+  OWNPORT_ADMIN_ORIGIN?: string;
 }
 
-function bundledFallback(): Meport {
+function bundledFallback(): Ownport {
   const r = validate(exampleJson);
   if (!r.ok) throw new Error('Bundled fixture failed validation.');
   return r.data;
@@ -48,7 +48,7 @@ function parseOrigins(raw: string | undefined): string[] {
 export default {
   fetch(request: Request, env: Env): Response | Promise<Response> {
     const url = new URL(request.url);
-    const storage = new KvMeportStorage(env.MEPORT_KV);
+    const storage = new KvMeportStorage(env.OWNPORT_KV);
     const cachePurger: CachePurger = new CloudflareCachePurger(() => caches.default, {
       origin: url.origin,
     });
@@ -67,8 +67,8 @@ export default {
       '/api/admin',
       createAdminApiApp({
         storage,
-        getAdminToken: () => env.MEPORT_ADMIN_TOKEN,
-        getAdminOrigins: () => parseOrigins(env.MEPORT_ADMIN_ORIGIN),
+        getAdminToken: () => env.OWNPORT_ADMIN_TOKEN,
+        getAdminOrigins: () => parseOrigins(env.OWNPORT_ADMIN_ORIGIN),
         cachePurger,
         auditLogger,
       }),

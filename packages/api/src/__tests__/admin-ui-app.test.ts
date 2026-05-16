@@ -19,7 +19,7 @@ describe('createAdminUiApp', () => {
     expect(res.headers.get('content-type')).toMatch(/text\/html/);
     const html = await res.text();
     expect(html.toLowerCase()).toContain('<!doctype html>');
-    expect(html).toContain('<title>meport admin</title>');
+    expect(html).toContain('<title>ownport admin</title>');
   });
 
   it('attaches an admin CSP with matching nonces on script-src and style-src', async () => {

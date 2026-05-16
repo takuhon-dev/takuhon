@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The meport project is in an early development phase (pre-v1.0). Security fixes are applied to the latest `main` branch only. Once a stable release is published, this policy will be updated to cover supported version windows.
+The ownport project is in an early development phase (pre-v1.0). Security fixes are applied to the latest `main` branch only. Once a stable release is published, this policy will be updated to cover supported version windows.
 
 ## Reporting a Vulnerability
 
@@ -10,7 +10,7 @@ Please **do not open a public GitHub issue** for security vulnerabilities.
 
 Report security issues via GitHub Security Advisories:
 
-> https://github.com/takashi-matsuyama/meport/security/advisories/new
+> https://github.com/ownport-dev/ownport/security/advisories/new
 
 Include:
 

@@ -1,11 +1,11 @@
-import { normalize, validate, type Meport } from '@meport/core';
+import { normalize, validate, type Ownport } from '@ownport/core';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { createPublicApp } from '../public-app.js';
 import { FakeStorage } from '../test-utils/fake-storage.js';
 
-function makeSample(): Meport {
+function makeSample(): Ownport {
   const r = validate(exampleJson);
   if (!r.ok) throw new Error('fixture invalid');
   return normalize(r.data);
@@ -31,7 +31,7 @@ describe('createPublicApp', () => {
     const res = await fetchPath(app, '/');
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('meport');
+    expect(await res.text()).toContain('ownport');
   });
 
   it('GET /api/profile uses storage data when present', async () => {
@@ -89,9 +89,9 @@ describe('createPublicApp', () => {
     expect(body[0].inLanguage).toBe('ja');
   });
 
-  it('GET /meport.json returns the raw Meport document', async () => {
+  it('GET /ownport.json returns the raw Ownport document', async () => {
     const { app } = makeApp();
-    const res = await fetchPath(app, '/meport.json');
+    const res = await fetchPath(app, '/ownport.json');
     expect(res.headers.get('cache-control')).toBe('public, max-age=300');
     const body: any = await res.json();
     expect(body.profile.displayName.en).toBe('Pat Rivera');
@@ -99,31 +99,31 @@ describe('createPublicApp', () => {
     expect(body.data).toBeUndefined();
   });
 
-  it('GET /.well-known/meport.json returns the 6-field metadata', async () => {
+  it('GET /.well-known/ownport.json returns the 6-field metadata', async () => {
     const { app } = makeApp();
-    const res = await fetchPath(app, '/.well-known/meport.json');
+    const res = await fetchPath(app, '/.well-known/ownport.json');
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
     const body: any = await res.json();
     expect(body.schemaVersion).toBe('0.1.0');
-    expect(body.canonical).toBe('/meport.json');
+    expect(body.canonical).toBe('/ownport.json');
   });
 
-  it('GET /unknown returns RFC 7807 with type=https://meport.dev/errors/not-found', async () => {
+  it('GET /unknown returns RFC 7807 with type=https://ownport.dev/errors/not-found', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/does-not-exist');
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/not-found');
+    expect(body.type).toBe('https://ownport.dev/errors/not-found');
     expect(body.instance).toBe('/does-not-exist');
   });
 
-  it('POST /api/profile returns 405 with type=https://meport.dev/errors/method-not-allowed', async () => {
+  it('POST /api/profile returns 405 with type=https://ownport.dev/errors/method-not-allowed', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/api/profile', { method: 'POST' });
     expect(res.status).toBe(405);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/method-not-allowed');
+    expect(body.type).toBe('https://ownport.dev/errors/method-not-allowed');
     expect(body.instance).toBe('/api/profile');
   });
 

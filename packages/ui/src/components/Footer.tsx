@@ -7,11 +7,11 @@ export function Footer(): React.JSX.Element {
         Powered by{' '}
         <a
           className={styles.link}
-          href="https://github.com/takashi-matsuyama/meport"
+          href="https://github.com/ownport-dev/ownport"
           target="_blank"
           rel="noopener noreferrer"
         >
-          meport
+          ownport
         </a>
       </p>
     </footer>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { SUPPORTED_SCHEMA_VERSIONS, validate } from '../index.js';
 import type { ValidationError, ValidationResult } from '../index.js';
 

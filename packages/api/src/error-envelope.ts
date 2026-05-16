@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 /**
- * RFC 7807 problem type slugs used by meport. The 11 below are the
+ * RFC 7807 problem type slugs used by ownport. The 11 below are the
  * Spec-defined values (api.md §5.1); `methodNotAllowed` is added locally
  * for the 405 path that the Spec leaves unnamed.
  */
@@ -23,7 +23,7 @@ export const ERROR_SLUGS = {
 
 export type ErrorSlug = (typeof ERROR_SLUGS)[keyof typeof ERROR_SLUGS];
 
-const TYPE_BASE = 'https://meport.dev/errors';
+const TYPE_BASE = 'https://ownport.dev/errors';
 
 export interface ProblemFieldError {
   path: string;

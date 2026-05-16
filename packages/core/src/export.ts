@@ -1,10 +1,10 @@
 /**
- * Export and import for meport profile documents.
+ * Export and import for ownport profile documents.
  *
- * {@link exportMeport} serialises a {@link Meport} document into a transport
+ * {@link exportMeport} serialises a {@link Ownport} document into a transport
  * form ({@link ExportedMeport}) that can be persisted to a file, an API
  * response, or any other byte-oriented sink. {@link importMeport} is the
- * inverse: it validates the input and returns a {@link Meport}.
+ * inverse: it validates the input and returns a {@link Ownport}.
  *
  * Scope of these helpers (deliberately narrow):
  * - Pure, in-memory data transforms — no I/O, no storage adapter coupling.
@@ -19,17 +19,17 @@
  * are the storage / API layer's responsibility.
  */
 
-import type { Meport } from './types.js';
+import type { Ownport } from './types.js';
 import { validate, type ValidationError } from './validate.js';
 
 /**
- * Structural alias of {@link Meport}: the transport form is the document
+ * Structural alias of {@link Ownport}: the transport form is the document
  * itself. A wrapping envelope (e.g. `{ format, version, data, hash }`) is
  * intentionally avoided in Phase 1 — adding one later would be a breaking
  * change to the `GET /api/export` response shape and would require a major
- * version bump of `@meport/core`.
+ * version bump of `@ownport/core`.
  */
-export type ExportedMeport = Meport;
+export type ExportedMeport = Ownport;
 
 /** Options for {@link exportMeport}. */
 export interface ExportOptions {
@@ -61,11 +61,11 @@ export class ImportError extends Error {
 }
 
 /**
- * Serialise a {@link Meport} into its transport form. The input is
+ * Serialise a {@link Ownport} into its transport form. The input is
  * deep-cloned via `JSON.parse(JSON.stringify(...))`; the original is never
  * mutated.
  */
-export function exportMeport(data: Meport, options: ExportOptions = {}): ExportedMeport {
+export function exportMeport(data: Ownport, options: ExportOptions = {}): ExportedMeport {
   const out = JSON.parse(JSON.stringify(data)) as ExportedMeport;
   if (options.updateTimestamp !== false) {
     out.meta = { ...out.meta, updatedAt: new Date().toISOString() };
@@ -74,7 +74,7 @@ export function exportMeport(data: Meport, options: ExportOptions = {}): Exporte
 }
 
 /**
- * Validate an {@link ExportedMeport} and return it as a {@link Meport}.
+ * Validate an {@link ExportedMeport} and return it as a {@link Ownport}.
  *
  * On schema validation failure (including an unsupported `schemaVersion`)
  * throws an {@link ImportError} with the structured `errors` attached. The
@@ -84,10 +84,10 @@ export function exportMeport(data: Meport, options: ExportOptions = {}): Exporte
  * Cross-version inputs (older `schemaVersion`) are out of scope: callers
  * (CLI / API layer) should run {@link migrateMeport} before calling this.
  */
-export function importMeport(data: ExportedMeport): Meport {
+export function importMeport(data: ExportedMeport): Ownport {
   const result = validate(data);
   if (!result.ok) {
     throw new ImportError('imported document failed schema validation', { errors: result.errors });
   }
-  return JSON.parse(JSON.stringify(result.data)) as Meport;
+  return JSON.parse(JSON.stringify(result.data)) as Ownport;
 }

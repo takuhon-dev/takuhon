@@ -1,4 +1,4 @@
-import type { LocaleTag } from '@meport/core';
+import type { LocaleTag } from '@ownport/core';
 
 import styles from './LocaleSwitcher.module.css';
 

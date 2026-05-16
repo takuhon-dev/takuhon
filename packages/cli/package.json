@@ -1,23 +1,23 @@
 {
-  "name": "@meport/cli",
+  "name": "@ownport/cli",
   "version": "0.0.0",
-  "description": "create-meport scaffolding plus dev/validate/sync/export/migrate/restore commands",
+  "description": "create-ownport scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "MIT",
-  "author": "meport contributors",
-  "homepage": "https://github.com/takashi-matsuyama/meport/tree/main/packages/cli#readme",
+  "author": "ownport contributors",
+  "homepage": "https://github.com/ownport-dev/ownport/tree/main/packages/cli#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/takashi-matsuyama/meport.git",
+    "url": "git+https://github.com/ownport-dev/ownport.git",
     "directory": "packages/cli"
   },
   "bugs": {
-    "url": "https://github.com/takashi-matsuyama/meport/issues"
+    "url": "https://github.com/ownport-dev/ownport/issues"
   },
   "keywords": [
-    "meport",
+    "ownport",
     "profile",
     "cli",
-    "create-meport",
+    "create-ownport",
     "scaffolding"
   ],
   "type": "module",
@@ -30,8 +30,8 @@
     }
   },
   "bin": {
-    "meport": "./dist/index.js",
-    "create-meport": "./dist/init.js"
+    "ownport": "./dist/index.js",
+    "create-ownport": "./dist/init.js"
   },
   "files": [
     "dist",
@@ -51,6 +51,6 @@
     "build": "tsup src/index.ts src/init.ts --format esm --dts --clean --sourcemap"
   },
   "dependencies": {
-    "@meport/core": "workspace:*"
+    "@ownport/core": "workspace:*"
   }
 }

@@ -1,13 +1,13 @@
-import { normalize, validate, type Meport } from '@meport/core';
+import { normalize, validate, type Ownport } from '@ownport/core';
 import { describe, expect, it, vi } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { createAdminApiApp } from '../admin/admin-api-app.js';
 import { noopAuditLogger, type AuditLogger } from '../admin/audit-logger.js';
 import { noopCachePurger, type CachePurger } from '../admin/cache-purger.js';
 import { FakeStorage } from '../test-utils/fake-storage.js';
 
-function makeSample(): Meport {
+function makeSample(): Ownport {
   const r = validate(exampleJson);
   if (!r.ok) throw new Error('fixture invalid');
   return normalize(r.data);
@@ -90,7 +90,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(409);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/conflict');
+    expect(body.type).toBe('https://ownport.dev/errors/conflict');
     expect(body.currentVersion).toBe('v1');
   });
 
@@ -113,7 +113,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(403);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/forbidden');
+    expect(body.type).toBe('https://ownport.dev/errors/forbidden');
   });
 
   it('returns 415 when Content-Type is not application/json', async () => {
@@ -125,7 +125,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(415);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/unsupported-media-type');
+    expect(body.type).toBe('https://ownport.dev/errors/unsupported-media-type');
   });
 
   it('returns 400 on malformed JSON body', async () => {
@@ -137,7 +137,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(400);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/bad-request');
+    expect(body.type).toBe('https://ownport.dev/errors/bad-request');
   });
 
   it('returns 422 with JSON Pointer errors on schema violation', async () => {
@@ -149,7 +149,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(422);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/validation-failed');
+    expect(body.type).toBe('https://ownport.dev/errors/validation-failed');
     expect(Array.isArray(body.errors)).toBe(true);
     expect(body.errors.length).toBeGreaterThan(0);
     for (const fieldErr of body.errors as { path: string; message: string }[]) {
@@ -240,7 +240,7 @@ describe('createAdminApiApp method and route handling', () => {
     });
     expect(res.status).toBe(405);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/method-not-allowed');
+    expect(body.type).toBe('https://ownport.dev/errors/method-not-allowed');
   });
 
   it('returns 404 on unknown admin route under valid auth', async () => {
@@ -251,6 +251,6 @@ describe('createAdminApiApp method and route handling', () => {
     });
     expect(res.status).toBe(404);
     const body: any = await res.json();
-    expect(body.type).toBe('https://meport.dev/errors/not-found');
+    expect(body.type).toBe('https://ownport.dev/errors/not-found');
   });
 });

@@ -1,9 +1,9 @@
-import { resolveLocale, validate } from '@meport/core';
+import { resolveLocale, validate } from '@ownport/core';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/meport.json' with { type: 'json' };
-import { MeportProfile } from '../MeportProfile.js';
+import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import { OwnportProfile } from '../OwnportProfile.js';
 
 const validated = validate(exampleJson);
 if (!validated.ok) {
@@ -11,19 +11,19 @@ if (!validated.ok) {
 }
 const example = resolveLocale(validated.data, 'en');
 
-describe('MeportProfile', () => {
+describe('OwnportProfile', () => {
   it('renders the profile through validate → resolveLocale without crashing', () => {
-    const { container } = render(<MeportProfile data={example} />);
+    const { container } = render(<OwnportProfile data={example} />);
     expect(container.querySelector('article')).not.toBeNull();
   });
 
   it('exposes the displayName as the top-level h1', () => {
-    render(<MeportProfile data={example} />);
+    render(<OwnportProfile data={example} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Pat Rivera' })).toBeInTheDocument();
   });
 
   it('renders Career, Projects, Skills sections as labelled regions', () => {
-    render(<MeportProfile data={example} />);
+    render(<OwnportProfile data={example} />);
     expect(screen.getByRole('region', { name: /career/i })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: /projects/i })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: /skills/i })).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('MeportProfile', () => {
 
   it('omits the Footer when settings.showPoweredBy is false', () => {
     render(
-      <MeportProfile
+      <OwnportProfile
         data={{ ...example, settings: { ...example.settings, showPoweredBy: false } }}
       />,
     );
@@ -39,7 +39,7 @@ describe('MeportProfile', () => {
   });
 
   it('renders the Footer when settings.showPoweredBy is true', () => {
-    render(<MeportProfile data={example} />);
+    render(<OwnportProfile data={example} />);
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
-import type { Meport } from '@meport/core';
+import type { Ownport } from '@ownport/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import worker, { type Env } from '../index.js';
 import { KV_KEY, type KvMetadata } from '../kv-storage.js';
 import { FakeCache } from '../test-utils/fake-cache.js';
@@ -11,8 +11,8 @@ function makeEnv(extra: Partial<Env> = {}): { env: Env; kv: FakeKV } {
   const kv = new FakeKV();
   return {
     env: {
-      MEPORT_KV: kv as unknown as KVNamespace,
-      MEPORT_ADMIN_TOKEN: 'integration-token',
+      OWNPORT_KV: kv as unknown as KVNamespace,
+      OWNPORT_ADMIN_TOKEN: 'integration-token',
       ...extra,
     },
     kv,
@@ -62,7 +62,7 @@ describe('cloudflare worker — Phase 3.4 admin integration', () => {
 
     const stored = await kv.getWithMetadata<KvMetadata>(KV_KEY, 'json');
     expect(stored.value).not.toBeNull();
-    expect((stored.value as Meport).profile.displayName.en).toBe('Pat Rivera');
+    expect((stored.value as Ownport).profile.displayName.en).toBe('Pat Rivera');
     expect(stored.metadata?.version).toBe(body.meta.version);
   });
 
@@ -80,13 +80,13 @@ describe('cloudflare worker — Phase 3.4 admin integration', () => {
     expect(urls).toContain('https://worker.example/');
     expect(urls).toContain('https://worker.example/api/profile');
     expect(urls).toContain('https://worker.example/api/jsonld');
-    expect(urls).toContain('https://worker.example/meport.json');
+    expect(urls).toContain('https://worker.example/ownport.json');
     expect(urls).toContain('https://worker.example/api/profile?lang=en');
     expect(urls).toContain('https://worker.example/api/profile?lang=ja');
   });
 
-  it('PUT /api/admin/profile returns 401 when MEPORT_ADMIN_TOKEN is unset', async () => {
-    const { env } = makeEnv({ MEPORT_ADMIN_TOKEN: undefined });
+  it('PUT /api/admin/profile returns 401 when OWNPORT_ADMIN_TOKEN is unset', async () => {
+    const { env } = makeEnv({ OWNPORT_ADMIN_TOKEN: undefined });
     const res = await call('https://worker.example/api/admin/profile', env, {
       method: 'PUT',
       headers: {
@@ -98,8 +98,8 @@ describe('cloudflare worker — Phase 3.4 admin integration', () => {
     expect(res.status).toBe(401);
   });
 
-  it('PUT /api/admin/profile returns 403 when Origin is not in MEPORT_ADMIN_ORIGIN', async () => {
-    const { env } = makeEnv({ MEPORT_ADMIN_ORIGIN: 'https://admin.example.com' });
+  it('PUT /api/admin/profile returns 403 when Origin is not in OWNPORT_ADMIN_ORIGIN', async () => {
+    const { env } = makeEnv({ OWNPORT_ADMIN_ORIGIN: 'https://admin.example.com' });
     const res = await call('https://worker.example/api/admin/profile', env, {
       method: 'PUT',
       headers: {

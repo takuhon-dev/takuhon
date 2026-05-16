@@ -2,10 +2,10 @@ import {
   ConflictError,
   normalize,
   validate,
-  type Meport,
-  type MeportStorage,
+  type Ownport,
+  type OwnportStorage,
   type ValidationError,
-} from '@meport/core';
+} from '@ownport/core';
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse, type ProblemFieldError } from '../error-envelope.js';
@@ -24,7 +24,7 @@ const ADMIN_API_CSP = ["default-src 'none'", "frame-ancestors 'none'", "base-uri
 );
 
 export interface AdminApiAppDeps {
-  storage: MeportStorage;
+  storage: OwnportStorage;
   /** Returns the configured admin token, or undefined if no secret is set. */
   getAdminToken: () => string | undefined;
   /** Allowlist of origins permitted for browser-originating admin requests. */
@@ -128,7 +128,7 @@ export function createAdminApiApp(deps: AdminApiAppDeps): Hono {
       });
     }
 
-    const data: Meport = result.data;
+    const data: Ownport = result.data;
     const ifMatchRaw = c.req.header('if-match');
     const ifMatch = ifMatchRaw !== undefined ? stripETag(ifMatchRaw) : undefined;
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { migrateMeport, MigrationError, migrations } from '../index.js';
-import type { Meport } from '../index.js';
+import type { Ownport } from '../index.js';
 
-function cloneExample(): Meport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Meport;
+function cloneExample(): Ownport {
+  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
 }
 
 describe('migrateMeport', () => {

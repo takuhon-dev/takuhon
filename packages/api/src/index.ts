@@ -1,5 +1,5 @@
 /**
- * @meport/api — Hono-based HTTP handlers and response builders for meport.
+ * @ownport/api — Hono-based HTTP handlers and response builders for ownport.
  *
  * Phase 3.3 introduced the public-app factory and the RFC 7807 envelope
  * helpers. Phase 3.4 adds the admin app factories (PUT/DELETE profile and

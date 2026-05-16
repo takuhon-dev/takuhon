@@ -1,6 +1,6 @@
-import { ConflictError, NotFoundError, type Meport, type MeportStorage } from '@meport/core';
+import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@ownport/core';
 
-export const KV_KEY = 'MEPORT_DATA';
+export const KV_KEY = 'OWNPORT_DATA';
 
 export interface KvMetadata {
   version: string;
@@ -8,8 +8,8 @@ export interface KvMetadata {
 }
 
 /**
- * Cloudflare KV implementation of the `MeportStorage` contract. Stores the
- * profile document as JSON under a single key (`MEPORT_DATA`) and tracks the
+ * Cloudflare KV implementation of the `OwnportStorage` contract. Stores the
+ * profile document as JSON under a single key (`OWNPORT_DATA`) and tracks the
  * optimistic-locking token inside KV value metadata.
  *
  * `version` is a fresh UUIDv4 on every successful write. Callers compare it
@@ -17,20 +17,20 @@ export interface KvMetadata {
  * `ConflictError` with `currentVersion` so the API layer can build the RFC
  * 7807 envelope without an extra round trip.
  */
-export class KvMeportStorage implements MeportStorage {
+export class KvMeportStorage implements OwnportStorage {
   constructor(private readonly kv: KVNamespace) {}
 
-  async getProfile(): Promise<{ data: Meport; version: string }> {
-    const result = await this.kv.getWithMetadata<Meport, KvMetadata>(KV_KEY, 'json');
+  async getProfile(): Promise<{ data: Ownport; version: string }> {
+    const result = await this.kv.getWithMetadata<Ownport, KvMetadata>(KV_KEY, 'json');
     if (result.value === null || !result.metadata?.version) {
       throw new NotFoundError(`No profile is stored at KV key "${KV_KEY}".`);
     }
     return { data: result.value, version: result.metadata.version };
   }
 
-  async saveProfile(data: Meport, ifMatch?: string): Promise<{ version: string }> {
+  async saveProfile(data: Ownport, ifMatch?: string): Promise<{ version: string }> {
     if (ifMatch !== undefined) {
-      const current = await this.kv.getWithMetadata<Meport, KvMetadata>(KV_KEY, 'json');
+      const current = await this.kv.getWithMetadata<Ownport, KvMetadata>(KV_KEY, 'json');
       const currentVersion = current.metadata?.version;
       if (currentVersion !== ifMatch) {
         throw new ConflictError(

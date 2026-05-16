@@ -65,10 +65,10 @@ importers:
 
   adapters/cloudflare:
     dependencies:
-      '@meport/api':
+      '@ownport/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@meport/core':
+      '@ownport/core':
         specifier: workspace:*
         version: link:../../packages/core
       hono:
@@ -84,10 +84,10 @@ importers:
 
   apps/playground:
     dependencies:
-      '@meport/core':
+      '@ownport/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@meport/ui':
+      '@ownport/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -106,7 +106,7 @@ importers:
 
   packages/api:
     dependencies:
-      '@meport/core':
+      '@ownport/core':
         specifier: workspace:*
         version: link:../core
       hono:
@@ -115,7 +115,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@meport/core':
+      '@ownport/core':
         specifier: workspace:*
         version: link:../core
 
@@ -130,7 +130,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@meport/core':
+      '@ownport/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

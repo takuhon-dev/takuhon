@@ -1,4 +1,4 @@
-import type { CachePurger } from '@meport/api';
+import type { CachePurger } from '@ownport/api';
 
 export interface CloudflareCachePurgerOptions {
   /**
@@ -53,7 +53,7 @@ export class CloudflareCachePurger implements CachePurger {
 
   private async purge(): Promise<void> {
     const cache = this.getCache();
-    const targets = ['/', '/api/profile', '/api/jsonld', '/meport.json'];
+    const targets = ['/', '/api/profile', '/api/jsonld', '/ownport.json'];
     for (const lang of this.langs) {
       const q = `?lang=${encodeURIComponent(lang)}`;
       targets.push(`/api/profile${q}`, `/api/jsonld${q}`);

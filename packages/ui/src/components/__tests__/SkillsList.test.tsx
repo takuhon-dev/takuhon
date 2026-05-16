@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/meport.json' with { type: 'json' };
+import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
 import { SkillsList } from '../SkillsList.js';
 
 const skills = exampleJson.skills;

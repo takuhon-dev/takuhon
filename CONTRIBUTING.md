@@ -1,8 +1,8 @@
-# Contributing to meport
+# Contributing to ownport
 
-Thanks for your interest in contributing to meport! This document describes the development workflow and expectations.
+Thanks for your interest in contributing to ownport! This document describes the development workflow and expectations.
 
-> **Status**: meport is in early development (Phase 1, pre-v1.0). APIs and data shapes may change. We welcome bug reports, feature discussions, and small focused PRs.
+> **Status**: ownport is in early development (Phase 1, pre-v1.0). APIs and data shapes may change. We welcome bug reports, feature discussions, and small focused PRs.
 
 ## Code of Conduct
 
@@ -19,8 +19,8 @@ Prerequisites:
 Setup:
 
 ```bash
-git clone https://github.com/takashi-matsuyama/meport.git
-cd meport
+git clone https://github.com/ownport-dev/ownport.git
+cd ownport
 pnpm install
 ```
 
@@ -40,10 +40,10 @@ Or run them individually as you iterate. `pnpm format` auto-fixes formatting; `p
 
 ```text
 packages/
-  core/      # @meport/core — schema, validation, normalization, JSON-LD, storage interface
-  api/       # @meport/api  — Hono-based HTTP handlers
-  ui/        # @meport/ui   — React mobile-first profile UI + admin editor
-  cli/       # @meport/cli  — create-meport scaffolding + dev/validate/sync commands
+  core/      # @ownport/core — schema, validation, normalization, JSON-LD, storage interface
+  api/       # @ownport/api  — Hono-based HTTP handlers
+  ui/        # @ownport/ui   — React mobile-first profile UI + admin editor
+  cli/       # @ownport/cli  — create-ownport scaffolding + dev/validate/sync commands
 
 adapters/    # Platform adapters (Phase 3+): cloudflare / vercel / wordpress / static
 apps/        # Reference apps: playground / wordpress-plugin
@@ -67,9 +67,9 @@ packages/core/src/__tests__/validate.test.ts
 
 For test design:
 
-- Use the JSON Schema in `@meport/core` as the source of truth for validation tests
+- Use the JSON Schema in `@ownport/core` as the source of truth for validation tests
 - Avoid mocking what you can test against real fixtures (`examples/` profiles)
-- For workspace-crossing tests, prefer `@meport/core` workspace imports over deep relative paths
+- For workspace-crossing tests, prefer `@ownport/core` workspace imports over deep relative paths
 
 ## Coding style
 
@@ -85,14 +85,14 @@ Coding conventions are defined in `eslint.config.js`, `.prettierrc`, and `tsconf
 
 By submitting a contribution, you agree that:
 
-- Your contribution to `@meport/core`, `@meport/api`, `@meport/ui`, `@meport/cli`, and most adapters will be licensed under the **MIT License** (matching the receiving package).
+- Your contribution to `@ownport/core`, `@ownport/api`, `@ownport/ui`, `@ownport/cli`, and most adapters will be licensed under the **MIT License** (matching the receiving package).
 - Your contribution to the WordPress adapter (when distributed via wp.org or as a derivative) will be licensed under **GPL-2.0-or-later** (required by WordPress derivative-work licensing).
 
 If you are unsure which license applies to the file you are modifying, check the `license` field in the nearest `package.json`.
 
 ## Reporting issues
 
-- **Bugs**: use the bug report template at https://github.com/takashi-matsuyama/meport/issues/new
+- **Bugs**: use the bug report template at https://github.com/ownport-dev/ownport/issues/new
 - **Features / discussions**: open an issue or start a GitHub Discussion
 - **Security vulnerabilities**: see [SECURITY.md](SECURITY.md) (please do not open public issues for security reports)
 

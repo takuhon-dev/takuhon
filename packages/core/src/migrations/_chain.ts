@@ -1,14 +1,14 @@
 /**
  * Module-private chain-building helper for the migration registry.
  *
- * Not re-exported from `@meport/core`'s public surface: the algorithm is an
+ * Not re-exported from `@ownport/core`'s public surface: the algorithm is an
  * implementation detail of {@link migrateMeport}, and adding it to the
  * public API would freeze its signature under semver. Unit tests import
  * this file directly to exercise the chain logic against synthetic
  * fixtures.
  */
 
-import type { Meport } from '../types.js';
+import type { Ownport } from '../types.js';
 
 import type { Migration } from './index.js';
 
@@ -21,12 +21,12 @@ import type { Migration } from './index.js';
 export function findMigrationChain(
   from: string,
   to: string,
-  registry: readonly Migration<Meport, Meport>[],
-): Migration<Meport, Meport>[] | null {
+  registry: readonly Migration<Ownport, Ownport>[],
+): Migration<Ownport, Ownport>[] | null {
   if (from === to) return [];
-  const byFrom = new Map<string, Migration<Meport, Meport>>();
+  const byFrom = new Map<string, Migration<Ownport, Ownport>>();
   for (const m of registry) byFrom.set(m.from, m);
-  const chain: Migration<Meport, Meport>[] = [];
+  const chain: Migration<Ownport, Ownport>[] = [];
   const visited = new Set<string>([from]);
   let cur = from;
   while (cur !== to) {
