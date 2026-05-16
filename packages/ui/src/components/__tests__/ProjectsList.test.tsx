@@ -28,6 +28,26 @@ describe('ProjectsList', () => {
     expect(tagLists.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('exposes machine-readable dateTime on project <time> elements', () => {
+    render(<ProjectsList projects={example.projects} />);
+    const times = screen.queryAllByText(/^\d{4}-\d{2}$/);
+    expect(times.length).toBeGreaterThan(0);
+    for (const t of times) {
+      expect(t.tagName.toLowerCase()).toBe('time');
+      expect(t).toHaveAttribute('datetime', t.textContent ?? '');
+    }
+  });
+
+  it('omits <time> when a project has no startDate', () => {
+    render(
+      <ProjectsList
+        projects={[{ id: 'no-date', title: 'Untimed', description: 'Project without dates.' }]}
+      />,
+    );
+    const section = screen.getByRole('region', { name: /projects/i });
+    expect(within(section).queryByText(/\d{4}-\d{2}/)).toBeNull();
+  });
+
   it('returns nothing when given an empty list', () => {
     const { container } = render(<ProjectsList projects={[]} />);
     expect(container).toBeEmptyDOMElement();

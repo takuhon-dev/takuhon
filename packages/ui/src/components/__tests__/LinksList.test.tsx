@@ -43,6 +43,15 @@ describe('LinksList', () => {
     expect(screen.getByRole('link', { name: /newsletter/i })).toBeInTheDocument();
   });
 
+  it('renders decorative icons with empty alt and without aria-hidden', () => {
+    render(<LinksList links={example.links} />);
+    const decorativeIcons = document.querySelectorAll('img[alt=""]');
+    expect(decorativeIcons.length).toBeGreaterThan(0);
+    for (const img of decorativeIcons) {
+      expect(img.hasAttribute('aria-hidden')).toBe(false);
+    }
+  });
+
   it('returns nothing when given an empty list', () => {
     const { container } = render(<LinksList links={[]} />);
     expect(container).toBeEmptyDOMElement();

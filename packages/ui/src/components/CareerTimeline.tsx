@@ -15,12 +15,8 @@ function sortCareers(careers: LocalizedCareer[]): LocalizedCareer[] {
   });
 }
 
-function formatRange(career: LocalizedCareer): string {
-  const end =
-    career.endDate === null || career.endDate === undefined || career.isCurrent
-      ? 'Present'
-      : career.endDate;
-  return `${career.startDate} – ${end}`;
+function isOngoing(career: LocalizedCareer): boolean {
+  return career.isCurrent === true || career.endDate === null || career.endDate === undefined;
 }
 
 export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Element | null {
@@ -54,7 +50,13 @@ export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Elem
                 )}
               </p>
               <p className={styles.range}>
-                <time>{formatRange(career)}</time>
+                <time dateTime={career.startDate}>{career.startDate}</time>
+                {' – '}
+                {isOngoing(career) ? (
+                  'Present'
+                ) : (
+                  <time dateTime={career.endDate!}>{career.endDate}</time>
+                )}
               </p>
               {career.location?.display ? (
                 <p className={styles.location}>{career.location.display}</p>

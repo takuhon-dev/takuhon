@@ -40,9 +40,7 @@ export function LinksList({ links }: LinksListProps): React.JSX.Element | null {
               rel="noopener noreferrer"
               data-featured={link.featured ? 'true' : undefined}
             >
-              {link.iconUrl ? (
-                <img className={styles.icon} src={link.iconUrl} alt="" aria-hidden="true" />
-              ) : null}
+              {link.iconUrl ? <img className={styles.icon} src={link.iconUrl} alt="" /> : null}
               <span className={styles.label}>{formatLinkLabel(link)}</span>
             </a>
           </li>

@@ -42,7 +42,7 @@ export function SkillsList({ skills }: SkillsListProps): React.JSX.Element | nul
       <div className={styles.groups}>
         {groups.map((group) => (
           <div key={group.category} className={styles.group}>
-            <p className={styles.category}>{group.category}</p>
+            <h3 className={styles.category}>{group.category}</h3>
             <ul className={styles.list} aria-label={`${group.category} skills`}>
               {group.skills.map((skill) => (
                 <li key={skill.id} className={styles.item}>

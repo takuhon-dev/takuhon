@@ -19,7 +19,17 @@ describe('CareerTimeline', () => {
 
   it('marks current positions with "Present" instead of a date', () => {
     render(<CareerTimeline careers={example.careers} />);
-    expect(screen.getByText(/2023-04 – Present/)).toBeInTheDocument();
+    const section = screen.getByRole('region', { name: /career/i });
+    expect(section.textContent).toMatch(/2023-04\s+–\s+Present/);
+  });
+
+  it('exposes machine-readable dateTime on the startDate <time> element', () => {
+    render(<CareerTimeline careers={example.careers} />);
+    const section = screen.getByRole('region', { name: /career/i });
+    const times = within(section).getAllByText(/^\d{4}-\d{2}$/);
+    const first = times[0];
+    expect(first?.tagName.toLowerCase()).toBe('time');
+    expect(first).toHaveAttribute('datetime', first?.textContent ?? '');
   });
 
   it('returns nothing when given an empty list', () => {
