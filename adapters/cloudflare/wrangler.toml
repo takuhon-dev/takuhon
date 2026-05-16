@@ -3,10 +3,13 @@ main = "src/index.ts"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
 
-# KV namespace will be added in Phase 3.2:
-# [[kv_namespaces]]
-# binding = "MEPORT_KV"
-# id = "..."
+# Replace the placeholder ids after running:
+#   wrangler kv namespace create MEPORT_KV
+#   wrangler kv namespace create MEPORT_KV --preview
+[[kv_namespaces]]
+binding = "MEPORT_KV"
+id = "REPLACE_WITH_PRODUCTION_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID"
 
 # R2 bucket will be added in Phase 3.5:
 # [[r2_buckets]]

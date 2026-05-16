@@ -1,46 +1,114 @@
+import type { Meport } from '@meport/core';
 import { describe, expect, it } from 'vitest';
 
+import exampleJson from '../../../../examples/personal-profile/meport.json' with { type: 'json' };
 import worker, { type Env } from '../index.js';
+import { KV_KEY, type KvMetadata } from '../kv-storage.js';
+import { FakeKV } from '../test-utils/fake-kv.js';
 
-const env = {} as Env;
+function makeEnv(): { env: Env; kv: FakeKV } {
+  const kv = new FakeKV();
+  return { env: { MEPORT_KV: kv as unknown as KVNamespace }, kv };
+}
 
-function call(url: string, init?: RequestInit): Promise<Response> {
+function call(url: string, env: Env, init?: RequestInit): Promise<Response> {
   return Promise.resolve(worker.fetch(new Request(url, init), env));
 }
 
-describe('cloudflare worker — Phase 3.1', () => {
+describe('cloudflare worker — Phase 3.2', () => {
   it('GET / returns a plain-text landing page', async () => {
-    const res = await call('https://worker.example/');
+    const res = await call('https://worker.example/', makeEnv().env);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/text\/plain/);
     expect(await res.text()).toContain('meport');
   });
 
-  it('GET /api/profile returns a LocalizedMeport with resolvedLocale', async () => {
-    const res = await call('https://worker.example/api/profile');
+  it('GET /api/profile falls back to bundled fixture when KV is empty', async () => {
+    const res = await call('https://worker.example/api/profile', makeEnv().env);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/application\/json/);
     const body: any = await res.json();
-    expect(body.profile.displayName).toBeTruthy();
-    expect(body.resolvedLocale).toBe('en');
+    expect(body.data.profile.displayName).toBeTruthy();
+    expect(body.meta.locale).toBe('en');
+    expect(body.meta.schemaVersion).toBe('0.1.0');
+    expect(typeof body.meta.updatedAt).toBe('string');
   });
 
-  it('GET /api/profile?lang=ja resolves Japanese content', async () => {
-    const res = await call('https://worker.example/api/profile?lang=ja');
+  it('GET /api/profile?lang=ja resolves Japanese content from the wrapped body', async () => {
+    const res = await call('https://worker.example/api/profile?lang=ja', makeEnv().env);
     const body: any = await res.json();
-    expect(body.resolvedLocale).toBe('ja');
-    expect(body.profile.displayName).toBe('パット・リベラ');
+    expect(body.meta.locale).toBe('ja');
+    expect(body.data.profile.displayName).toBe('パット・リベラ');
+  });
+
+  it('GET /api/profile carries ETag and Cache-Control headers', async () => {
+    const res = await call('https://worker.example/api/profile', makeEnv().env);
+    expect(res.headers.get('etag')).toMatch(/^".+"$/);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
+  });
+
+  it('GET /api/profile reads from KV when MEPORT_DATA is populated', async () => {
+    const { env, kv } = makeEnv();
+    const base = exampleJson as Meport;
+    const stored: Meport = {
+      ...base,
+      profile: {
+        ...base.profile,
+        displayName: { en: 'KV Source' },
+      },
+    };
+    const metadata: KvMetadata = { version: 'kv-version-1', updatedAt: '2026-05-15T00:00:00Z' };
+    await kv.put(KV_KEY, JSON.stringify(stored), { metadata });
+
+    const res = await call('https://worker.example/api/profile', env);
+    const body: any = await res.json();
+    expect(body.data.profile.displayName).toBe('KV Source');
+    expect(res.headers.get('etag')).toBe('"kv-version-1"');
   });
 
   it('GET /api/schema returns the JSON Schema document', async () => {
-    const res = await call('https://worker.example/api/schema');
+    const res = await call('https://worker.example/api/schema', makeEnv().env);
     expect(res.status).toBe(200);
     const body: any = await res.json();
     expect(body.$schema).toBeTruthy();
   });
 
+  it('GET /meport.json returns the raw Meport (no wrap, all locales embedded)', async () => {
+    const res = await call('https://worker.example/meport.json', makeEnv().env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toMatch(/application\/json/);
+    const body: any = await res.json();
+    expect(body.profile.displayName.en).toBe('Pat Rivera');
+    expect(body.profile.displayName.ja).toBe('パット・リベラ');
+    expect(body.data).toBeUndefined();
+    expect(body.meta.contentLicense).toBeTruthy();
+  });
+
+  it('GET /meport.json carries ETag and Cache-Control: public, max-age=300', async () => {
+    const res = await call('https://worker.example/meport.json', makeEnv().env);
+    expect(res.headers.get('etag')).toMatch(/^".+"$/);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=300');
+  });
+
+  it('GET /.well-known/meport.json returns the 6-field metadata document', async () => {
+    const res = await call('https://worker.example/.well-known/meport.json', makeEnv().env);
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.schemaVersion).toBe('0.1.0');
+    expect(body.schemaUrl).toBe('/api/schema');
+    expect(body.profile).toBe('/api/profile');
+    expect(body.jsonld).toBe('/api/jsonld');
+    expect(body.export).toBe('/api/export');
+    expect(body.canonical).toBe('/meport.json');
+  });
+
+  it('GET /.well-known/meport.json carries Cache-Control: public, max-age=3600', async () => {
+    const res = await call('https://worker.example/.well-known/meport.json', makeEnv().env);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
+  });
+
   it('GET /unknown returns 404 with application/problem+json envelope', async () => {
-    const res = await call('https://worker.example/does-not-exist');
+    const res = await call('https://worker.example/does-not-exist', makeEnv().env);
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
@@ -49,13 +117,15 @@ describe('cloudflare worker — Phase 3.1', () => {
   });
 
   it('POST /api/profile returns 405 method not allowed', async () => {
-    const res = await call('https://worker.example/api/profile', { method: 'POST' });
+    const res = await call('https://worker.example/api/profile', makeEnv().env, {
+      method: 'POST',
+    });
     expect(res.status).toBe(405);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
   });
 
   it('every response carries the baseline security headers', async () => {
-    const res = await call('https://worker.example/api/schema');
+    const res = await call('https://worker.example/api/schema', makeEnv().env);
     expect(res.headers.get('strict-transport-security')).toMatch(/max-age=63072000/);
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
     expect(res.headers.get('x-frame-options')).toBe('DENY');
