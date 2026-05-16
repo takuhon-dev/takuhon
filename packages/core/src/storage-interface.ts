@@ -21,7 +21,7 @@
  * - `OwnportAssetStorage` is intentionally a separate interface so deployments
  *   that don't host user-uploaded media (e.g. static export) can omit it.
  * - The naming standardises on the lowercase "Ownport" word (cf.
- *   {@link Ownport}, {@link LocalizedMeport}, `normalize`, `validate`) even
+ *   {@link Ownport}, {@link LocalizedOwnport}, `normalize`, `validate`) even
  *   where upstream documents write "OwnPort".
  */
 

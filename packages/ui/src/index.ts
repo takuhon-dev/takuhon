@@ -2,7 +2,7 @@
  * @ownport/ui — React mobile-first profile UI for ownport.
  *
  * All components accept a single locale-resolved input shape from `@ownport/core`
- * (`LocalizedMeport` or one of its sub-types) and render without state of their
+ * (`LocalizedOwnport` or one of its sub-types) and render without state of their
  * own. CSS Modules co-located with each component are emitted into `dist/` as
  * plain files and must be imported by the consumer's bundler.
  */

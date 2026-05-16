@@ -1,5 +1,5 @@
 /**
- * Generate Schema.org JSON-LD from a {@link LocalizedMeport} document.
+ * Generate Schema.org JSON-LD from a {@link LocalizedOwnport} document.
  *
  * Emits a `ProfilePage` whose `mainEntity` is the `Person` described by the
  * input. Mapping rules follow the published schema.org mapping spec; the
@@ -33,7 +33,7 @@ import type {
   LocalizedAvatar,
   LocalizedCareer,
   LocalizedLink,
-  LocalizedMeport,
+  LocalizedOwnport,
   LocalizedProject,
   Skill,
 } from './types.js';
@@ -66,7 +66,7 @@ const SAMEAS_IDENTITY_TYPES: ReadonlySet<LinkType> = new Set<LinkType>([
  * @returns A Schema.org `Person` object. `@context` is included so the
  *          returned object is valid as a standalone JSON-LD document.
  */
-export function generatePersonJsonLd(data: LocalizedMeport): object {
+export function generatePersonJsonLd(data: LocalizedOwnport): object {
   const person = buildPerson(data, deriveCanonicalUrl(data));
   return { '@context': 'https://schema.org', ...person };
 }
@@ -77,7 +77,7 @@ export function generatePersonJsonLd(data: LocalizedMeport): object {
  *
  * @param data A locale-resolved ownport document.
  */
-export function generateProfilePageJsonLd(data: LocalizedMeport): object {
+export function generateProfilePageJsonLd(data: LocalizedOwnport): object {
   const canonicalUrl = deriveCanonicalUrl(data);
   const person = buildPerson(data, canonicalUrl);
 
@@ -101,16 +101,16 @@ export function generateProfilePageJsonLd(data: LocalizedMeport): object {
  * `Person` is inlined there as `mainEntity`. The array shape leaves room
  * for later additions (e.g. `WebSite`) without changing the public surface.
  */
-export function generateJsonLd(data: LocalizedMeport): object[] {
+export function generateJsonLd(data: LocalizedOwnport): object[] {
   return [generateProfilePageJsonLd(data)];
 }
 
-function deriveCanonicalUrl(data: LocalizedMeport): string | undefined {
+function deriveCanonicalUrl(data: LocalizedOwnport): string | undefined {
   const featured = data.links.find((l) => l.type === 'website' && l.featured === true);
   return featured?.url;
 }
 
-function buildPerson(data: LocalizedMeport, canonicalUrl: string | undefined): object {
+function buildPerson(data: LocalizedOwnport, canonicalUrl: string | undefined): object {
   const { profile, careers, projects, links, skills, contact } = data;
 
   const out: Record<string, unknown> = {};

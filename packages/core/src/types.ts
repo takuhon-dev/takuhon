@@ -230,7 +230,7 @@ export interface Ownport {
  * first". A nominal branded form may replace this alias in a later phase if
  * OSS adopters need the static guarantee.
  */
-export type NormalizedMeport = Ownport;
+export type NormalizedOwnport = Ownport;
 
 /**
  * Address with localized fields collapsed to single strings — the shape
@@ -315,7 +315,7 @@ export interface LocalizedProject {
  * `Skill`, `Contact`, `Settings`, and `Meta` carry no localized fields and
  * pass through unchanged.
  */
-export interface LocalizedMeport {
+export interface LocalizedOwnport {
   schemaVersion: string;
   profile: LocalizedProfile;
   links: LocalizedLink[];

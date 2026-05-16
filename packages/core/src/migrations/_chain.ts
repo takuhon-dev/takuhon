@@ -2,7 +2,7 @@
  * Module-private chain-building helper for the migration registry.
  *
  * Not re-exported from `@ownport/core`'s public surface: the algorithm is an
- * implementation detail of {@link migrateMeport}, and adding it to the
+ * implementation detail of {@link migrateOwnport}, and adding it to the
  * public API would freeze its signature under semver. Unit tests import
  * this file directly to exercise the chain logic against synthetic
  * fixtures.

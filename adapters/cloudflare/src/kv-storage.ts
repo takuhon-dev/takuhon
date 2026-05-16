@@ -17,7 +17,7 @@ export interface KvMetadata {
  * `ConflictError` with `currentVersion` so the API layer can build the RFC
  * 7807 envelope without an extra round trip.
  */
-export class KvMeportStorage implements OwnportStorage {
+export class KvOwnportStorage implements OwnportStorage {
   constructor(private readonly kv: KVNamespace) {}
 
   async getProfile(): Promise<{ data: Ownport; version: string }> {

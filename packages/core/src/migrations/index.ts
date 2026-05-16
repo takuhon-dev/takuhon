@@ -2,7 +2,7 @@
  * Forward migration registry for `@ownport/core`.
  *
  * Each migration is a pure function from a ownport document at version `from`
- * to one at version `to`. The registry is consulted by {@link migrateMeport}
+ * to one at version `to`. The registry is consulted by {@link migrateOwnport}
  * to build a chain when the requested target is more than one step away
  * (`0.1.0 → 0.3.0` is composed of `0.1.0→0.2.0` and `0.2.0→0.3.0`).
  *
@@ -16,7 +16,7 @@
  *
  * The chain-building algorithm lives in `_chain.ts` and is intentionally
  * not re-exported from `@ownport/core` — it is an implementation detail of
- * {@link migrateMeport}.
+ * {@link migrateOwnport}.
  */
 
 import type { Ownport } from '../types.js';

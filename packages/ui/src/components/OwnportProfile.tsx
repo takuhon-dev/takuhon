@@ -1,4 +1,4 @@
-import type { LocalizedMeport } from '@ownport/core';
+import type { LocalizedOwnport } from '@ownport/core';
 
 import '../styles/tokens.css';
 
@@ -12,7 +12,7 @@ import { ProjectsList } from './ProjectsList.js';
 import { SkillsList } from './SkillsList.js';
 
 export interface OwnportProfileProps {
-  data: LocalizedMeport;
+  data: LocalizedOwnport;
 }
 
 export function OwnportProfile({ data }: OwnportProfileProps): React.JSX.Element {

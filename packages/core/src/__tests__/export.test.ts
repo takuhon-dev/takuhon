@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
-import { exportMeport, ImportError, importMeport, validate } from '../index.js';
+import { exportOwnport, ImportError, importOwnport, validate } from '../index.js';
 import type { Ownport } from '../index.js';
 
 function cloneExample(): Ownport {
   return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
 }
 
-describe('exportMeport', () => {
+describe('exportOwnport', () => {
   it('returns a structural clone (mutating the output does not touch input)', () => {
     const input = cloneExample();
-    const out = exportMeport(input, { updateTimestamp: false });
+    const out = exportOwnport(input, { updateTimestamp: false });
     out.profile.displayName = { en: 'mutated' };
     expect(input.profile.displayName).not.toEqual({ en: 'mutated' });
   });
@@ -20,7 +20,7 @@ describe('exportMeport', () => {
     const input = cloneExample();
     input.meta.updatedAt = '2020-01-01T00:00:00Z';
     const before = Date.now();
-    const out = exportMeport(input);
+    const out = exportOwnport(input);
     const after = Date.now();
     const updated = Date.parse(out.meta.updatedAt ?? '');
     expect(Number.isFinite(updated)).toBe(true);
@@ -31,27 +31,27 @@ describe('exportMeport', () => {
   it('leaves meta.updatedAt untouched when updateTimestamp: false', () => {
     const input = cloneExample();
     input.meta.updatedAt = '2020-01-01T00:00:00Z';
-    const out = exportMeport(input, { updateTimestamp: false });
+    const out = exportOwnport(input, { updateTimestamp: false });
     expect(out.meta.updatedAt).toBe('2020-01-01T00:00:00Z');
   });
 
   it('preserves meta.generator verbatim', () => {
     const input = cloneExample();
     input.meta.generator = 'my-tool@1.2.3';
-    const out = exportMeport(input);
+    const out = exportOwnport(input);
     expect(out.meta.generator).toBe('my-tool@1.2.3');
   });
 
   it('output round-trips through validate()', () => {
-    const out = exportMeport(cloneExample());
+    const out = exportOwnport(cloneExample());
     const result = validate(out);
     expect(result.ok).toBe(true);
   });
 });
 
-describe('importMeport', () => {
+describe('importOwnport', () => {
   it('returns a Ownport for a valid input', () => {
-    const out = importMeport(cloneExample());
+    const out = importOwnport(cloneExample());
     expect(out.schemaVersion).toBe('0.1.0');
     expect(out.profile.displayName).toBeDefined();
   });
@@ -61,7 +61,7 @@ describe('importMeport', () => {
     delete broken.profile;
     let caught: unknown;
     try {
-      importMeport(broken as unknown as Ownport);
+      importOwnport(broken as unknown as Ownport);
     } catch (err) {
       caught = err;
     }
@@ -74,28 +74,28 @@ describe('importMeport', () => {
   it('throws ImportError for an unsupported schemaVersion', () => {
     const futuristic = cloneExample();
     futuristic.schemaVersion = '9.9.9';
-    expect(() => importMeport(futuristic)).toThrow(ImportError);
+    expect(() => importOwnport(futuristic)).toThrow(ImportError);
   });
 
   it('does not mutate the input on success', () => {
     const input = cloneExample();
     const snapshot = JSON.stringify(input);
-    importMeport(input);
+    importOwnport(input);
     expect(JSON.stringify(input)).toBe(snapshot);
   });
 });
 
 describe('roundtrip', () => {
-  it('importMeport(exportMeport(x, { updateTimestamp: false })) deep-equals x', () => {
+  it('importOwnport(exportOwnport(x, { updateTimestamp: false })) deep-equals x', () => {
     const input = cloneExample();
-    const out = importMeport(exportMeport(input, { updateTimestamp: false }));
+    const out = importOwnport(exportOwnport(input, { updateTimestamp: false }));
     expect(out).toEqual(input);
   });
 
   it('two consecutive exports with updateTimestamp: false are deep-equal', () => {
     const input = cloneExample();
-    const first = exportMeport(input, { updateTimestamp: false });
-    const second = exportMeport(first, { updateTimestamp: false });
+    const first = exportOwnport(input, { updateTimestamp: false });
+    const second = exportOwnport(first, { updateTimestamp: false });
     expect(second).toEqual(first);
   });
 });

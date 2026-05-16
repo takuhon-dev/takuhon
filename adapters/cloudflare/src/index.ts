@@ -14,7 +14,7 @@ import exampleJson from '../../../examples/personal-profile/ownport.json' with {
 
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
-import { KvMeportStorage } from './kv-storage.js';
+import { KvOwnportStorage } from './kv-storage.js';
 
 export interface Env {
   OWNPORT_KV: KVNamespace;
@@ -48,7 +48,7 @@ function parseOrigins(raw: string | undefined): string[] {
 export default {
   fetch(request: Request, env: Env): Response | Promise<Response> {
     const url = new URL(request.url);
-    const storage = new KvMeportStorage(env.OWNPORT_KV);
+    const storage = new KvOwnportStorage(env.OWNPORT_KV);
     const cachePurger: CachePurger = new CloudflareCachePurger(() => caches.default, {
       origin: url.origin,
     });

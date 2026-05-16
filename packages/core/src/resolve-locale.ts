@@ -42,7 +42,7 @@ import type {
   LocalizedBody,
   LocalizedCareer,
   LocalizedLink,
-  LocalizedMeport,
+  LocalizedOwnport,
   LocalizedProfile,
   LocalizedProject,
   LocalizedTitle,
@@ -64,7 +64,7 @@ export function resolveLocale(
   data: Ownport,
   locale?: string,
   fallbackLocale?: string,
-): LocalizedMeport {
+): LocalizedOwnport {
   const candidates = buildCandidates(data, locale, fallbackLocale);
   const displayPick = pickLocalizedWithTag(data.profile.displayName, candidates);
 

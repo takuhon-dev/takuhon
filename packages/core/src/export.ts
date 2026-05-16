@@ -1,16 +1,16 @@
 /**
  * Export and import for ownport profile documents.
  *
- * {@link exportMeport} serialises a {@link Ownport} document into a transport
- * form ({@link ExportedMeport}) that can be persisted to a file, an API
- * response, or any other byte-oriented sink. {@link importMeport} is the
+ * {@link exportOwnport} serialises a {@link Ownport} document into a transport
+ * form ({@link ExportedOwnport}) that can be persisted to a file, an API
+ * response, or any other byte-oriented sink. {@link importOwnport} is the
  * inverse: it validates the input and returns a {@link Ownport}.
  *
  * Scope of these helpers (deliberately narrow):
  * - Pure, in-memory data transforms — no I/O, no storage adapter coupling.
- * - {@link importMeport} **does not** auto-migrate older `schemaVersion`
+ * - {@link importOwnport} **does not** auto-migrate older `schemaVersion`
  *   values. Cross-version handling belongs to the CLI / API layer, which
- *   composes `importMeport` + {@link migrateMeport} + storage adapters as
+ *   composes `importOwnport` + {@link migrateOwnport} + storage adapters as
  *   spelled out in operational-lifecycle §5.3.
  * - Round-trip equivalence (operational-lifecycle §5.1) is preserved up to
  *   the documented `meta.updatedAt` exception.
@@ -29,9 +29,9 @@ import { validate, type ValidationError } from './validate.js';
  * change to the `GET /api/export` response shape and would require a major
  * version bump of `@ownport/core`.
  */
-export type ExportedMeport = Ownport;
+export type ExportedOwnport = Ownport;
 
-/** Options for {@link exportMeport}. */
+/** Options for {@link exportOwnport}. */
 export interface ExportOptions {
   /**
    * When `true` (default), `meta.updatedAt` is overwritten with the current
@@ -45,7 +45,7 @@ export interface ExportOptions {
 }
 
 /**
- * Thrown by {@link importMeport} when the input fails schema validation
+ * Thrown by {@link importOwnport} when the input fails schema validation
  * (including an unsupported `schemaVersion`). The `errors` field carries
  * the same {@link ValidationError} list that `validate()` would have
  * returned, so the API layer can map them onto RFC 7807.
@@ -65,8 +65,8 @@ export class ImportError extends Error {
  * deep-cloned via `JSON.parse(JSON.stringify(...))`; the original is never
  * mutated.
  */
-export function exportMeport(data: Ownport, options: ExportOptions = {}): ExportedMeport {
-  const out = JSON.parse(JSON.stringify(data)) as ExportedMeport;
+export function exportOwnport(data: Ownport, options: ExportOptions = {}): ExportedOwnport {
+  const out = JSON.parse(JSON.stringify(data)) as ExportedOwnport;
   if (options.updateTimestamp !== false) {
     out.meta = { ...out.meta, updatedAt: new Date().toISOString() };
   }
@@ -74,7 +74,7 @@ export function exportMeport(data: Ownport, options: ExportOptions = {}): Export
 }
 
 /**
- * Validate an {@link ExportedMeport} and return it as a {@link Ownport}.
+ * Validate an {@link ExportedOwnport} and return it as a {@link Ownport}.
  *
  * On schema validation failure (including an unsupported `schemaVersion`)
  * throws an {@link ImportError} with the structured `errors` attached. The
@@ -82,9 +82,9 @@ export function exportMeport(data: Ownport, options: ExportOptions = {}): Export
  * caller mutations cannot reach back into the supplied document.
  *
  * Cross-version inputs (older `schemaVersion`) are out of scope: callers
- * (CLI / API layer) should run {@link migrateMeport} before calling this.
+ * (CLI / API layer) should run {@link migrateOwnport} before calling this.
  */
-export function importMeport(data: ExportedMeport): Ownport {
+export function importOwnport(data: ExportedOwnport): Ownport {
   const result = validate(data);
   if (!result.ok) {
     throw new ImportError('imported document failed schema validation', { errors: result.errors });
