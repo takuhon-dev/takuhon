@@ -1,0 +1,22 @@
+{
+  "name": "@meport/cloudflare",
+  "version": "0.0.0",
+  "description": "Cloudflare Workers adapter for meport — public API, Workers Assets, KV, R2 integrations",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "@meport/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251101.0",
+    "wrangler": "^4.30.0"
+  }
+}

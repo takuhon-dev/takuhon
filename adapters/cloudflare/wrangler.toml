@@ -1,0 +1,14 @@
+name = "meport-cloudflare"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV namespace will be added in Phase 3.2:
+# [[kv_namespaces]]
+# binding = "MEPORT_KV"
+# id = "..."
+
+# R2 bucket will be added in Phase 3.5:
+# [[r2_buckets]]
+# binding = "MEPORT_R2"
+# bucket_name = "..."
