@@ -124,6 +124,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
+      axe-core:
+        specifier: ^4.11.4
+        version: 4.11.4
       happy-dom:
         specifier: ^20.9.0
         version: 20.9.0
