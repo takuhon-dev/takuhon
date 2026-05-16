@@ -11,7 +11,21 @@ binding = "MEPORT_KV"
 id = "REPLACE_WITH_PRODUCTION_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID"
 
-# R2 bucket will be added in Phase 3.5:
+# Admin Origin allowlist (comma-separated). Empty value disables the check.
+# Example for production: MEPORT_ADMIN_ORIGIN = "https://admin.example.com"
+#
+# The admin bearer token MUST be provisioned as a Wrangler secret, never in
+# this file:
+#   wrangler secret put MEPORT_ADMIN_TOKEN
+# Use 32+ bytes of entropy, e.g. `openssl rand -base64 32`.
+#
+# Rate limiting for /api/admin/* is configured in the Cloudflare dashboard
+# (Security → WAF → Rate limiting Rules), not here. Recommended profile:
+# 10 requests/min keyed on the Authorization header. See adapter README.
+[vars]
+MEPORT_ADMIN_ORIGIN = ""
+
+# R2 bucket will be added in Phase 3.5 for asset uploads:
 # [[r2_buckets]]
 # binding = "MEPORT_R2"
 # bucket_name = "..."

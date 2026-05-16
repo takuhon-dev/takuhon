@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@meport/api": "workspace:*",
-    "@meport/core": "workspace:*"
+    "@meport/core": "workspace:*",
+    "hono": "^4.12.18"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251101.0",
