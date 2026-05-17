@@ -1,6 +1,6 @@
 {
   "name": "@ownport/cloudflare",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Cloudflare Workers adapter for ownport — public API, Workers Assets, KV, R2 integrations",
   "license": "MIT",
   "private": true,

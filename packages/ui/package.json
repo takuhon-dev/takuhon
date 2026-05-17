@@ -1,6 +1,6 @@
 {
   "name": "@ownport/ui",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React mobile-first profile UI and minimal admin editor components for ownport",
   "license": "MIT",
   "author": "ownport contributors",

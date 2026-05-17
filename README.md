@@ -33,6 +33,10 @@ This bootstraps the monorepo and runs all checks against the empty package skele
 
 Platform adapters (Cloudflare, Vercel, WordPress, Static) live under `adapters/` and are layered on top of these packages.
 
+## Publishing
+
+See [docs/publishing.md](docs/publishing.md) for the npm release workflow, including one-time setup, per-release steps, and the migration path to npm Trusted Publishing.
+
 ## License
 
 - Core packages (`@ownport/core`, `@ownport/api`, `@ownport/ui`, `@ownport/cli`) and most adapters: **MIT** — see `LICENSE`.

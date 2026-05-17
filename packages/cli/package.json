@@ -1,6 +1,6 @@
 {
   "name": "@ownport/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "create-ownport scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "MIT",
   "author": "ownport contributors",

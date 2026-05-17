@@ -1,6 +1,6 @@
 {
   "name": "@ownport/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for ownport",
   "license": "MIT",
   "author": "ownport contributors",

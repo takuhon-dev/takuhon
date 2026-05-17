@@ -1,6 +1,6 @@
 {
   "name": "@ownport/playground",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Local Vite playground that renders @ownport/ui against the personal-profile example",
   "license": "MIT",
