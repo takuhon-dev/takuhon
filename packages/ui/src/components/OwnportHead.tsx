@@ -1,8 +1,8 @@
-import { generateJsonLd, type LocalizedMeport } from '@ownport/core';
+import { generateJsonLd, type LocalizedOwnport } from '@ownport/core';
 import { useEffect } from 'react';
 
 export interface OwnportHeadProps {
-  data: LocalizedMeport;
+  data: LocalizedOwnport;
   siteUrl?: string;
   pageUrl?: string;
 }

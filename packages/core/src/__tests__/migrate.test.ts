@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
-import { migrateMeport, MigrationError, migrations } from '../index.js';
+import { migrateOwnport, MigrationError, migrations } from '../index.js';
 import type { Ownport } from '../index.js';
 
 function cloneExample(): Ownport {
   return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
 }
 
-describe('migrateMeport', () => {
+describe('migrateOwnport', () => {
   it('returns a structural clone when sourceVersion === targetVersion', () => {
     const input = cloneExample();
-    const out = migrateMeport(input, input.schemaVersion);
+    const out = migrateOwnport(input, input.schemaVersion);
     expect(out).toEqual(input);
     // Mutating the result does not touch the input.
     out.profile.displayName = { en: 'mutated' };
@@ -20,14 +20,14 @@ describe('migrateMeport', () => {
 
   it('throws MigrationError when no chain exists in the Phase 1 registry', () => {
     const input = cloneExample();
-    expect(() => migrateMeport(input, '0.2.0')).toThrow(MigrationError);
+    expect(() => migrateOwnport(input, '0.2.0')).toThrow(MigrationError);
   });
 
   it('error message names both source and target versions', () => {
     const input = cloneExample();
     let caught: unknown;
     try {
-      migrateMeport(input, '9.9.9');
+      migrateOwnport(input, '9.9.9');
     } catch (err) {
       caught = err;
     }
@@ -39,7 +39,7 @@ describe('migrateMeport', () => {
   it('does not mutate the input even when migrate throws', () => {
     const input = cloneExample();
     const snapshot = JSON.stringify(input);
-    expect(() => migrateMeport(input, '0.2.0')).toThrow();
+    expect(() => migrateOwnport(input, '0.2.0')).toThrow();
     expect(JSON.stringify(input)).toBe(snapshot);
   });
 

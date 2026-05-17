@@ -8,9 +8,9 @@
  * - {@link SCHEMA_VERSION}: the version of that schema (matches the `$id`).
  * - {@link validate} / {@link ValidationResult} / {@link ValidationError} /
  *   {@link SUPPORTED_SCHEMA_VERSIONS}: Result-style validator backed by Ajv.
- * - {@link normalize} / {@link NormalizedMeport}: canonicalize a validated
+ * - {@link normalize} / {@link NormalizedOwnport}: canonicalize a validated
  *   document (sort lists by `order`, drop blank localized entries).
- * - {@link resolveLocale} / {@link LocalizedMeport}: collapse a multi-locale
+ * - {@link resolveLocale} / {@link LocalizedOwnport}: collapse a multi-locale
  *   document to a single requested locale with BCP-47 regional fallback.
  * - {@link generateJsonLd} / {@link generatePersonJsonLd} /
  *   {@link generateProfilePageJsonLd}: emit Schema.org JSON-LD
@@ -19,10 +19,10 @@
  *   for adapters (KV / R2 / filesystem / SQLite / …), with the
  *   {@link StorageError} / {@link NotFoundError} / {@link ConflictError}
  *   exception family for optimistic-locking and not-found signalling.
- * - {@link exportMeport} / {@link importMeport} / {@link ExportOptions} /
- *   {@link ExportedMeport} / {@link ImportError}: roundtrip-stable
+ * - {@link exportOwnport} / {@link importOwnport} / {@link ExportOptions} /
+ *   {@link ExportedOwnport} / {@link ImportError}: roundtrip-stable
  *   serialisation for transport (file, API response, …).
- * - {@link migrateMeport} / {@link Migration} / {@link migrations} /
+ * - {@link migrateOwnport} / {@link Migration} / {@link migrations} /
  *   {@link MigrationError}: forward-only migration registry. Empty in
  *   Phase 1; first entry lands with the v0.2.0 schema bump.
  * - Domain types: {@link Ownport} and its constituent shapes (`Profile`,
@@ -39,10 +39,10 @@ export { normalize } from './normalize.js';
 export { resolveLocale } from './resolve-locale.js';
 export { generateJsonLd, generatePersonJsonLd, generateProfilePageJsonLd } from './jsonld.js';
 
-export { ImportError, exportMeport, importMeport } from './export.js';
-export type { ExportOptions, ExportedMeport } from './export.js';
+export { ImportError, exportOwnport, importOwnport } from './export.js';
+export type { ExportOptions, ExportedOwnport } from './export.js';
 
-export { MigrationError, migrateMeport } from './migrate.js';
+export { MigrationError, migrateOwnport } from './migrate.js';
 export { migrations } from './migrations/index.js';
 export type { Migration } from './migrations/index.js';
 
@@ -75,13 +75,13 @@ export type {
   LocalizedLink,
   LocalizedLinkBuiltin,
   LocalizedLinkCustom,
-  LocalizedMeport,
+  LocalizedOwnport,
   LocalizedProfile,
   LocalizedProject,
   LocalizedTitle,
   Ownport,
   Meta,
-  NormalizedMeport,
+  NormalizedOwnport,
   Profile,
   Project,
   Settings,

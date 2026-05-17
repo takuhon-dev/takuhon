@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/takashi-matsuyama/meport/security/advisories/new
+    url: https://github.com/ownport-dev/ownport/security/advisories/new
     about: Please do not file security issues as public issues. Use private security advisories instead.
   - name: Questions / Discussions
-    url: https://github.com/takashi-matsuyama/meport/discussions
+    url: https://github.com/ownport-dev/ownport/discussions
     about: Have a question or want to discuss something open-ended? Start a discussion.

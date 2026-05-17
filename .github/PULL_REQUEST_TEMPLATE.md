@@ -17,7 +17,7 @@
 
 ## Affected package(s)
 
-<!-- e.g. @meport/core, @meport/api, root config, CI -->
+<!-- e.g. /core, /api, root config, CI -->
 
 ## Test plan
 

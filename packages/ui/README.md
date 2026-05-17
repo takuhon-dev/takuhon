@@ -14,7 +14,7 @@ npm install @ownport/ui @ownport/core react react-dom
 
 ## Usage
 
-The components are pure — they read a single `LocalizedMeport` (or one of its sub-types) and render. State, persistence, and locale switching are out of scope for the components themselves; resolve the input first with `@ownport/core`.
+The components are pure — they read a single `LocalizedOwnport` (or one of its sub-types) and render. State, persistence, and locale switching are out of scope for the components themselves; resolve the input first with `@ownport/core`.
 
 ```tsx
 import { resolveLocale, validate } from '@ownport/core';
@@ -34,7 +34,7 @@ export function App() {
 
 | Component        | Input                              | Notes                                                                                                                                              |
 | ---------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OwnportProfile` | `{ data: LocalizedMeport }`        | Root container; renders all sub-sections; hides `<Footer />` when `settings.showPoweredBy === false`                                               |
+| `OwnportProfile` | `{ data: LocalizedOwnport }`       | Root container; renders all sub-sections; hides `<Footer />` when `settings.showPoweredBy === false`                                               |
 | `ProfileHeader`  | `{ profile: LocalizedProfile }`    | Avatar + displayName + tagline + location + bio                                                                                                    |
 | `LinksList`      | `{ links: LocalizedLink[] }`       | Vertical card list; featured entries first, then by `order`                                                                                        |
 | `CareerTimeline` | `{ careers: LocalizedCareer[] }`   | Timeline with `YYYY-MM – Present` for current positions                                                                                            |

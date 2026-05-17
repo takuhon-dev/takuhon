@@ -5,7 +5,7 @@ interface Entry {
 
 /**
  * Minimal in-memory KVNamespace double — supports the subset used by
- * KvMeportStorage (get / getWithMetadata / put / delete). Tests cast the
+ * KvOwnportStorage (get / getWithMetadata / put / delete). Tests cast the
  * instance to KVNamespace via `as unknown as KVNamespace`; if a future
  * sub-phase needs list / bulkPut, extend this class and remove the cast
  * detour at the same time.

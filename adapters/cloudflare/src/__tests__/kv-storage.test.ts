@@ -2,18 +2,18 @@ import { ConflictError, NotFoundError, type Ownport } from '@ownport/core';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
-import { KV_KEY, KvMeportStorage, type KvMetadata } from '../kv-storage.js';
+import { KV_KEY, KvOwnportStorage, type KvMetadata } from '../kv-storage.js';
 import { FakeKV } from '../test-utils/fake-kv.js';
 
-function makeStorage(): { storage: KvMeportStorage; kv: FakeKV } {
+function makeStorage(): { storage: KvOwnportStorage; kv: FakeKV } {
   const kv = new FakeKV();
-  const storage = new KvMeportStorage(kv as unknown as KVNamespace);
+  const storage = new KvOwnportStorage(kv as unknown as KVNamespace);
   return { storage, kv };
 }
 
 const sample = exampleJson as unknown as Ownport;
 
-describe('KvMeportStorage', () => {
+describe('KvOwnportStorage', () => {
   it('getProfile() throws NotFoundError when KV is empty', async () => {
     const { storage } = makeStorage();
     await expect(storage.getProfile()).rejects.toBeInstanceOf(NotFoundError);

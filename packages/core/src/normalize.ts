@@ -25,16 +25,22 @@
  *   enforced by the unit tests.
  */
 
-import type { LocalizedBody, LocalizedTitle, Ownport, NormalizedMeport, Profile } from './types.js';
+import type {
+  LocalizedBody,
+  LocalizedTitle,
+  Ownport,
+  NormalizedOwnport,
+  Profile,
+} from './types.js';
 
 /**
  * Return a normalized copy of `data`.
  *
  * @param data A ownport document that has already passed {@link validate}.
- * @returns A new {@link NormalizedMeport} with localized empties dropped and
+ * @returns A new {@link NormalizedOwnport} with localized empties dropped and
  *          list fields sorted by `order`.
  */
-export function normalize(data: Ownport): NormalizedMeport {
+export function normalize(data: Ownport): NormalizedOwnport {
   // A ownport document is structurally pure JSON (string/number/boolean/null +
   // plain objects / arrays — no Date, Map, Set, BigInt, or functions), so a
   // round-trip through JSON gives an equivalent deep clone without depending

@@ -1,7 +1,7 @@
 /**
  * Forward migration entry point for ownport documents.
  *
- * {@link migrateMeport} composes a chain of {@link Migration} entries from
+ * {@link migrateOwnport} composes a chain of {@link Migration} entries from
  * the registry (`./migrations`) and applies them in order. Phase 1 ships
  * with an empty registry, so any non-identity migration currently throws
  * {@link MigrationError}; the first concrete entry will land alongside
@@ -20,7 +20,7 @@ import { migrations } from './migrations/index.js';
 import type { Ownport } from './types.js';
 
 /**
- * Thrown by {@link migrateMeport} when no forward chain connects the
+ * Thrown by {@link migrateOwnport} when no forward chain connects the
  * source `schemaVersion` to `targetVersion`. The message includes both
  * versions so the API layer can surface an actionable RFC 7807 problem.
  */
@@ -38,7 +38,7 @@ export class MigrationError extends Error {
  * @throws {MigrationError} when no forward chain exists from
  *         `data.schemaVersion` to `targetVersion`.
  */
-export function migrateMeport(data: Ownport, targetVersion: string): Ownport {
+export function migrateOwnport(data: Ownport, targetVersion: string): Ownport {
   const sourceVersion = data.schemaVersion;
   if (sourceVersion === targetVersion) {
     return JSON.parse(JSON.stringify(data)) as Ownport;

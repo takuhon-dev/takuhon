@@ -28,8 +28,8 @@ body:
     id: package
     attributes:
       label: Target package or area
-      description: e.g. `@meport/core`, `@meport/ui`, Cloudflare adapter, JSON-LD output
-      placeholder: '@meport/core'
+      description: e.g. `/core`, `/ui`, Cloudflare adapter, JSON-LD output
+      placeholder: '/core'
 
   - type: textarea
     id: alternatives
