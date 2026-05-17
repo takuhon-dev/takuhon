@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "0.1.0",
+  "profile": {
+    "displayName": {
+      "en": "Diego Hernández",
+      "es": "Diego Hernández"
+    },
+    "tagline": {
+      "en": "Contract-based backend and devops consultant",
+      "es": "Consultor independiente de backend y devops"
+    },
+    "bio": {
+      "en": "Diego Hernández is a fictional persona showcasing the ownport schema for an independent consultant who runs several engagements in parallel. They lead small backend and platform projects on three-to-six month contracts, with overlapping engagements that all stay 'current' simultaneously.",
+      "es": "Diego Hernández es un personaje ficticio que ejemplifica el esquema de ownport para una persona consultora independiente con varias colaboraciones en paralelo. Lidera proyectos de backend y plataforma con contratos de tres a seis meses, manteniendo varios compromisos vigentes al mismo tiempo."
+    },
+    "location": {
+      "country": "MX",
+      "region": "Ciudad de México",
+      "locality": {
+        "en": "Mexico City",
+        "es": "Ciudad de México"
+      },
+      "display": {
+        "en": "Mexico City, Mexico",
+        "es": "Ciudad de México, México"
+      }
+    }
+  },
+  "links": [
+    {
+      "id": "website",
+      "type": "website",
+      "label": { "en": "Consulting site" },
+      "url": "https://example.com/diego",
+      "featured": true,
+      "order": 0
+    },
+    {
+      "id": "github",
+      "type": "github",
+      "url": "https://example.com/github/diego-h",
+      "featured": true,
+      "order": 1
+    },
+    {
+      "id": "linkedin",
+      "type": "linkedin",
+      "url": "https://example.com/linkedin/diego-h",
+      "order": 2
+    },
+    {
+      "id": "blog",
+      "type": "blog",
+      "label": {
+        "en": "Notes on platform engineering",
+        "es": "Notas sobre ingeniería de plataforma"
+      },
+      "url": "https://example.com/diego/blog",
+      "order": 3
+    },
+    {
+      "id": "office-hours",
+      "type": "custom",
+      "label": {
+        "en": "Book office hours",
+        "es": "Reservar horario de consulta"
+      },
+      "url": "https://example.com/diego/office-hours",
+      "iconUrl": "https://example.com/assets/icons/calendar.svg",
+      "order": 4
+    }
+  ],
+  "careers": [
+    {
+      "id": "harborline-platform",
+      "organization": {
+        "en": "Harborline Logistics",
+        "es": "Harborline Logistics"
+      },
+      "role": {
+        "en": "Backend Platform Consultant",
+        "es": "Consultor de plataforma backend"
+      },
+      "description": {
+        "en": "Migrate the order-routing service from a monolith to a queue-driven Go service set. Six-month engagement, working with an internal team of four.",
+        "es": "Migrar el servicio de ruteo de pedidos de un monolito a un conjunto de servicios en Go basado en colas. Compromiso de seis meses con un equipo interno de cuatro personas."
+      },
+      "startDate": "2026-02",
+      "endDate": null,
+      "isCurrent": true,
+      "url": "https://example.com/harborline",
+      "order": 0
+    },
+    {
+      "id": "altavista-devops",
+      "organization": {
+        "en": "AltaVista Health",
+        "es": "AltaVista Health"
+      },
+      "role": {
+        "en": "Devops Lead (fractional)",
+        "es": "Líder de Devops (fraccional)"
+      },
+      "description": {
+        "en": "Two days a week on call to harden the staging-to-production promotion pipeline and to mentor the in-house SRE team.",
+        "es": "Dos días por semana endureciendo la canalización de promoción de staging a producción y orientando al equipo interno de SRE."
+      },
+      "startDate": "2025-11",
+      "endDate": null,
+      "isCurrent": true,
+      "url": "https://example.com/altavista",
+      "order": 1
+    },
+    {
+      "id": "mercurial-postgres",
+      "organization": {
+        "en": "Mercurial Studios",
+        "es": "Mercurial Studios"
+      },
+      "role": {
+        "en": "PostgreSQL Performance Advisor",
+        "es": "Asesor de rendimiento de PostgreSQL"
+      },
+      "description": {
+        "en": "Quarterly engagement reviewing slow queries, replication topology, and partitioning strategy for a multi-tenant analytics workload.",
+        "es": "Compromiso trimestral revisando consultas lentas, topología de replicación y estrategia de particionamiento para una carga analítica multi-inquilino."
+      },
+      "startDate": "2025-04",
+      "endDate": null,
+      "isCurrent": true,
+      "url": "https://example.com/mercurial",
+      "order": 2
+    },
+    {
+      "id": "rivermouth-migration",
+      "organization": {
+        "en": "Rivermouth Travel",
+        "es": "Rivermouth Travel"
+      },
+      "role": {
+        "en": "Cloud Migration Consultant",
+        "es": "Consultor de migración a la nube"
+      },
+      "description": {
+        "en": "Led a four-month lift-and-reshape of a booking system from VM-based hosting to managed Kubernetes; finished on schedule and within the contracted scope.",
+        "es": "Lideré una migración de cuatro meses del sistema de reservas desde VMs a Kubernetes gestionado; entrega a tiempo y dentro del alcance contratado."
+      },
+      "startDate": "2024-09",
+      "endDate": "2024-12",
+      "url": "https://example.com/rivermouth",
+      "order": 3
+    },
+    {
+      "id": "northport-staff",
+      "organization": {
+        "en": "Northport Software",
+        "es": "Northport Software"
+      },
+      "role": {
+        "en": "Senior Backend Engineer",
+        "es": "Ingeniero de backend sénior"
+      },
+      "description": {
+        "en": "Five years on a payments product team, owning the ledger service and on-call rotation. Last full-time role before going independent.",
+        "es": "Cinco años en el equipo de producto de pagos, responsable del servicio de mayor y de la rotación de guardias. Último puesto a tiempo completo antes de independizarse."
+      },
+      "startDate": "2019-06",
+      "endDate": "2024-08",
+      "url": "https://example.com/northport",
+      "order": 4
+    }
+  ],
+  "projects": [
+    {
+      "id": "order-router",
+      "title": {
+        "en": "Order routing service refactor",
+        "es": "Refactorización del servicio de ruteo de pedidos"
+      },
+      "description": {
+        "en": "Public write-up of the queue-driven topology pattern introduced at Harborline, with a sample reference implementation in Go.",
+        "es": "Publicación pública del patrón de topología basado en colas implementado en Harborline, con una implementación de referencia en Go."
+      },
+      "url": "https://example.com/diego/order-router",
+      "tags": ["go", "queues", "backend"],
+      "relatedCareerId": "harborline-platform",
+      "startDate": "2026-04",
+      "highlighted": true,
+      "order": 0
+    },
+    {
+      "id": "staging-promotion",
+      "title": {
+        "en": "Staging-to-prod promotion pipeline template",
+        "es": "Plantilla de canalización de promoción de staging a producción"
+      },
+      "description": {
+        "en": "Reusable Terraform + GitHub Actions template extracted from the AltaVista engagement.",
+        "es": "Plantilla reutilizable de Terraform + GitHub Actions extraída del trabajo con AltaVista."
+      },
+      "url": "https://example.com/diego/promotion-template",
+      "tags": ["terraform", "github-actions", "devops"],
+      "relatedCareerId": "altavista-devops",
+      "startDate": "2025-12",
+      "order": 1
+    },
+    {
+      "id": "pg-partition-guide",
+      "title": {
+        "en": "Multi-tenant Postgres partitioning guide",
+        "es": "Guía de particionamiento de Postgres multi-inquilino"
+      },
+      "description": {
+        "en": "Long-form write-up explaining the partition layout and replication trade-offs surfaced during the Mercurial advisory.",
+        "es": "Artículo extenso explicando el diseño de particiones y los compromisos de replicación identificados durante la asesoría con Mercurial."
+      },
+      "url": "https://example.com/diego/pg-partitioning",
+      "tags": ["postgres", "performance", "data"],
+      "relatedCareerId": "mercurial-postgres",
+      "startDate": "2025-08",
+      "order": 2
+    },
+    {
+      "id": "k8s-migration-checklist",
+      "title": {
+        "en": "Managed-Kubernetes migration checklist",
+        "es": "Lista de verificación para migración a Kubernetes gestionado"
+      },
+      "description": {
+        "en": "Open checklist gathered from the Rivermouth migration, covering networking, secrets, observability, and rollback strategy.",
+        "es": "Lista abierta basada en la migración de Rivermouth: redes, secretos, observabilidad y estrategia de reversión."
+      },
+      "url": "https://example.com/diego/k8s-checklist",
+      "tags": ["kubernetes", "migration", "devops"],
+      "relatedCareerId": "rivermouth-migration",
+      "startDate": "2025-01",
+      "endDate": "2025-03",
+      "order": 3
+    }
+  ],
+  "skills": [
+    { "id": "go", "label": "Go", "category": "programming", "order": 0 },
+    { "id": "postgresql", "label": "PostgreSQL", "category": "programming", "order": 1 },
+    { "id": "terraform", "label": "Terraform", "category": "programming", "order": 2 },
+    { "id": "kubernetes", "label": "Kubernetes", "category": "programming", "order": 3 },
+    { "id": "github-actions", "label": "GitHub Actions", "category": "programming", "order": 4 },
+    {
+      "id": "observability",
+      "label": "Observability (OpenTelemetry)",
+      "category": "programming",
+      "order": 5
+    },
+    { "id": "incident-response", "label": "Incident response", "category": "business", "order": 6 },
+    {
+      "id": "contract-scoping",
+      "label": "Contract scoping & negotiation",
+      "category": "business",
+      "order": 7
+    },
+    { "id": "english-c1", "label": "English (C1)", "category": "language", "order": 8 },
+    { "id": "spanish-native", "label": "Spanish (Native)", "category": "language", "order": 9 }
+  ],
+  "contact": {
+    "email": "diego@example.com",
+    "showEmail": true,
+    "formUrl": "https://example.com/diego/contact"
+  },
+  "settings": {
+    "defaultLocale": "en",
+    "fallbackLocale": "en",
+    "availableLocales": ["en", "es"],
+    "theme": "default",
+    "showPoweredBy": true,
+    "enableJsonLd": true,
+    "enableApi": true,
+    "enableAnalytics": false
+  },
+  "meta": {
+    "createdAt": "2024-07-01T09:00:00Z",
+    "updatedAt": "2026-05-15T09:00:00Z",
+    "generator": "OwnPort",
+    "contentLicense": {
+      "spdxId": "CC-BY-4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": {
+        "name": "Diego Hernández",
+        "url": "https://example.com/diego"
+      }
+    }
+  }
+}

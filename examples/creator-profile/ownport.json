@@ -1,0 +1,248 @@
+{
+  "schemaVersion": "0.1.0",
+  "profile": {
+    "displayName": {
+      "en": "Maya Okuda",
+      "ja": "奥田 真矢"
+    },
+    "tagline": {
+      "en": "Illustrator and zine maker working in print and ink",
+      "ja": "印刷と墨で表現するイラストレーター・zine 作家"
+    },
+    "bio": {
+      "en": "Maya Okuda is a fictional persona showcasing the ownport schema from a creative practitioner's perspective. They run a small studio in Kyoto, publish zines twice a year, and accept select commissions and exhibition invitations.",
+      "ja": "奥田真矢は、ownport スキーマをクリエイティブな実践者の視点で表すための架空の人物です。京都で小さなスタジオを営み、年に二度 zine を刊行し、選んだ依頼や展示の招待を受けます。"
+    },
+    "avatar": {
+      "url": "/assets/avatar.webp",
+      "alt": {
+        "en": "Maya Okuda standing in front of a wall of hand-printed zines, with a smudge of ink on one cheek.",
+        "ja": "手刷りの zine が並ぶ壁の前に立つ奥田真矢。頬に墨。"
+      }
+    },
+    "location": {
+      "country": "JP",
+      "region": "Kyoto",
+      "locality": {
+        "en": "Kyoto",
+        "ja": "京都市"
+      },
+      "display": {
+        "en": "Kyoto, Japan",
+        "ja": "京都"
+      }
+    }
+  },
+  "links": [
+    {
+      "id": "instagram",
+      "type": "instagram",
+      "url": "https://example.com/instagram/maya.zine",
+      "featured": true,
+      "order": 0
+    },
+    {
+      "id": "bluesky",
+      "type": "bluesky",
+      "url": "https://example.social/@maya.zine",
+      "order": 1
+    },
+    {
+      "id": "website",
+      "type": "website",
+      "label": { "en": "Studio site" },
+      "url": "https://example.com/maya",
+      "featured": true,
+      "order": 2
+    },
+    {
+      "id": "shop",
+      "type": "custom",
+      "label": {
+        "en": "Online shop",
+        "ja": "オンラインショップ"
+      },
+      "url": "https://example.shop/maya",
+      "iconUrl": "https://example.com/assets/icons/shop.svg",
+      "order": 3
+    },
+    {
+      "id": "rss",
+      "type": "rss",
+      "url": "https://example.com/maya/feed.xml",
+      "order": 4
+    }
+  ],
+  "careers": [
+    {
+      "id": "open-art-school",
+      "organization": {
+        "en": "Open Art School Kyoto",
+        "ja": "京都オープン・アートスクール"
+      },
+      "role": {
+        "en": "Visiting Lecturer, Illustration & Printmaking",
+        "ja": "招聘講師（イラストレーション・版画）"
+      },
+      "description": {
+        "en": "Lead a semester-long studio course on screen-printed zine production and host a monthly open critique evening.",
+        "ja": "シルクスクリーン製本の半期スタジオコースを担当し、月に一度の合評会を主催。"
+      },
+      "startDate": "2024-04",
+      "endDate": null,
+      "isCurrent": true,
+      "url": "https://example.com/open-art-school",
+      "order": 0
+    },
+    {
+      "id": "ink-and-paper",
+      "organization": {
+        "en": "Ink & Paper Publishing",
+        "ja": "Ink & Paper 出版"
+      },
+      "role": {
+        "en": "Senior Editorial Designer",
+        "ja": "シニア・エディトリアルデザイナー"
+      },
+      "description": {
+        "en": "Designed seasonal cover lineups and illustrated essay collections; co-developed the in-house print specification.",
+        "ja": "季節ごとの表紙ラインナップとエッセイ集の挿絵を担当し、社内印刷仕様の整備にも従事。"
+      },
+      "startDate": "2019-04",
+      "endDate": "2024-03",
+      "url": "https://example.com/ink-and-paper",
+      "order": 1
+    }
+  ],
+  "projects": [
+    {
+      "id": "rivers-zine",
+      "title": {
+        "en": "Rivers of Kyoto (zine)",
+        "ja": "京都の川（zine）"
+      },
+      "description": {
+        "en": "A 32-page risograph zine tracing the small rivers and irrigation channels around the artist's studio neighborhood.",
+        "ja": "スタジオ周辺の小さな川や用水路を辿る、32 ページのリソグラフ zine。"
+      },
+      "url": "https://example.shop/maya/rivers-zine",
+      "tags": ["zine", "illustration", "print", "risograph"],
+      "startDate": "2025-03",
+      "highlighted": true,
+      "order": 0
+    },
+    {
+      "id": "kawaramachi-mural",
+      "title": {
+        "en": "Kawaramachi Sidewalk Mural",
+        "ja": "河原町の歩道壁画"
+      },
+      "description": {
+        "en": "A 12-meter outdoor mural commissioned by a local arcade association, depicting the seasonal night markets.",
+        "ja": "地元商店街連合の委嘱による、季節の夜市を描いた 12 メートルの屋外壁画。"
+      },
+      "url": "https://example.com/maya/kawaramachi-mural",
+      "tags": ["mural", "illustration", "commission"],
+      "relatedCareerId": "ink-and-paper",
+      "startDate": "2024-09",
+      "endDate": "2024-11",
+      "highlighted": true,
+      "order": 1
+    },
+    {
+      "id": "ink-on-paper-show",
+      "title": {
+        "en": "\"Ink on Paper\" Solo Show",
+        "ja": "個展「Ink on Paper」"
+      },
+      "description": {
+        "en": "Two-week solo exhibition of new ink works at a small gallery in Higashiyama.",
+        "ja": "東山の小さなギャラリーで開催した二週間の個展。新作の墨絵を展示。"
+      },
+      "url": "https://example.com/maya/ink-on-paper",
+      "tags": ["exhibition", "ink", "gallery"],
+      "startDate": "2024-05",
+      "endDate": "2024-05",
+      "order": 2
+    },
+    {
+      "id": "nightline-mv",
+      "title": {
+        "en": "Nightline (music video direction)",
+        "ja": "Nightline（MV ディレクション）"
+      },
+      "description": {
+        "en": "Animated direction for an indie band's three-minute music video, drawn frame-by-frame on transparent vellum.",
+        "ja": "インディーバンドのミュージックビデオ（3 分）のアニメーション・ディレクション。トレーシングペーパーに 1 コマずつ描画。"
+      },
+      "tags": ["animation", "music-video", "ink"],
+      "startDate": "2023-11",
+      "endDate": "2024-02",
+      "order": 3
+    },
+    {
+      "id": "okumonogatari-comic",
+      "title": {
+        "en": "Okumonogatari (web comic)",
+        "ja": "奥物語（ウェブコミック）"
+      },
+      "description": {
+        "en": "An ongoing slow-paced web comic about a fictional Kyoto neighborhood, updated monthly.",
+        "ja": "架空の京都の街を舞台にした月刊ウェブコミック。"
+      },
+      "url": "https://example.com/maya/okumonogatari",
+      "tags": ["comic", "illustration", "narrative"],
+      "startDate": "2024-01",
+      "order": 4
+    },
+    {
+      "id": "private-commission-2023",
+      "title": {
+        "en": "Private commission (2023)",
+        "ja": "プライベートコミッション（2023）"
+      },
+      "tags": ["commission", "ink"],
+      "startDate": "2023-06",
+      "endDate": "2023-08",
+      "order": 5
+    }
+  ],
+  "skills": [
+    { "id": "illustration", "label": "Illustration", "category": "art", "order": 0 },
+    { "id": "screen-printing", "label": "Screen printing", "category": "art", "order": 1 },
+    { "id": "ink-drawing", "label": "Ink drawing", "category": "art", "order": 2 },
+    { "id": "riso-printing", "label": "Risograph printing", "category": "art", "order": 3 },
+    { "id": "animation", "label": "Frame-by-frame animation", "category": "art", "order": 4 },
+    { "id": "editorial-design", "label": "Editorial design", "category": "design", "order": 5 },
+    { "id": "type-setting", "label": "Type setting", "category": "design", "order": 6 },
+    { "id": "japanese-native", "label": "Japanese (Native)", "category": "language", "order": 7 },
+    { "id": "english-b1", "label": "English (B1)", "category": "language", "order": 8 }
+  ],
+  "contact": {
+    "showEmail": false,
+    "formUrl": "https://example.com/maya/contact"
+  },
+  "settings": {
+    "defaultLocale": "en",
+    "fallbackLocale": "en",
+    "availableLocales": ["en", "ja"],
+    "theme": "default",
+    "showPoweredBy": true,
+    "enableJsonLd": true,
+    "enableApi": true,
+    "enableAnalytics": false
+  },
+  "meta": {
+    "createdAt": "2025-01-10T09:00:00Z",
+    "updatedAt": "2026-05-10T09:00:00Z",
+    "generator": "OwnPort",
+    "contentLicense": {
+      "spdxId": "CC-BY-NC-4.0",
+      "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "attribution": {
+        "name": "Maya Okuda",
+        "url": "https://example.com/maya"
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "0.1.0",
+  "profile": {
+    "displayName": {
+      "en": "Sam Lee"
+    }
+  },
+  "links": [
+    {
+      "id": "github",
+      "type": "github",
+      "url": "https://example.com/github/sam-lee",
+      "featured": true
+    }
+  ],
+  "careers": [
+    {
+      "id": "first-job",
+      "organization": {
+        "en": "Example Co."
+      },
+      "role": {
+        "en": "Junior Software Engineer"
+      },
+      "startDate": "2026-04",
+      "endDate": null,
+      "isCurrent": true
+    }
+  ],
+  "projects": [
+    {
+      "id": "personal-homepage",
+      "title": {
+        "en": "Personal homepage"
+      }
+    }
+  ],
+  "skills": [
+    { "id": "html", "label": "HTML" },
+    { "id": "css", "label": "CSS" },
+    { "id": "javascript", "label": "JavaScript" }
+  ],
+  "contact": {},
+  "settings": {
+    "defaultLocale": "en",
+    "availableLocales": ["en"]
+  },
+  "meta": {
+    "contentLicense": {
+      "spdxId": "CC0-1.0"
+    }
+  }
+}
