@@ -82,6 +82,12 @@ importers:
         specifier: ^4.30.0
         version: 4.92.0(@cloudflare/workers-types@4.20260516.1)
 
+  adapters/static:
+    dependencies:
+      '@ownport/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+
   apps/playground:
     dependencies:
       '@ownport/core':

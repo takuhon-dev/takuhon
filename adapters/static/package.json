@@ -1,0 +1,17 @@
+{
+  "name": "@ownport/static",
+  "version": "0.1.0",
+  "description": "Filesystem-backed adapter for ownport — implements OwnportStorage on Node.js fs",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ownport/core": "workspace:*"
+  }
+}
