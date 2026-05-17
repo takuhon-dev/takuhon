@@ -1,6 +1,6 @@
 {
   "name": "@ownport/api",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for ownport",
   "license": "MIT",
   "author": "ownport contributors",
