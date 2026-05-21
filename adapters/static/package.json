@@ -1,7 +1,7 @@
 {
   "name": "@takuhon/static",
   "version": "0.1.0",
-  "description": "Filesystem-backed adapter for ownport — implements OwnportStorage on Node.js fs",
+  "description": "Filesystem-backed adapter for takuhon — implements TakuhonStorage on Node.js fs",
   "license": "MIT",
   "private": true,
   "type": "module",

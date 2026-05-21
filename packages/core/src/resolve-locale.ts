@@ -1,5 +1,5 @@
 /**
- * Reduce a multi-locale {@link Ownport} document to a single requested locale.
+ * Reduce a multi-locale {@link Takuhon} document to a single requested locale.
  *
  * Builds a flat candidate chain from the function arguments and `data.settings`,
  * expanding each entry's regional subtag (e.g. `'en-US' → ['en-US', 'en']`),
@@ -42,29 +42,29 @@ import type {
   LocalizedBody,
   LocalizedCareer,
   LocalizedLink,
-  LocalizedOwnport,
+  LocalizedTakuhon,
   LocalizedProfile,
   LocalizedProject,
   LocalizedTitle,
-  Ownport,
+  Takuhon,
   Profile,
   Project,
 } from './types.js';
 
 /**
- * Resolve a ownport document to a single locale.
+ * Resolve a takuhon document to a single locale.
  *
- * @param data    A ownport document (validated; ideally normalized first).
+ * @param data    A takuhon document (validated; ideally normalized first).
  * @param locale  Caller-resolved request locale (e.g. from `?lang=` or
  *                `Accept-Language`). Invalid tags are ignored.
  * @param fallbackLocale Caller-supplied secondary candidate when `locale`
  *                misses. Invalid tags are ignored.
  */
 export function resolveLocale(
-  data: Ownport,
+  data: Takuhon,
   locale?: string,
   fallbackLocale?: string,
-): LocalizedOwnport {
+): LocalizedTakuhon {
   const candidates = buildCandidates(data, locale, fallbackLocale);
   const displayPick = pickLocalizedWithTag(data.profile.displayName, candidates);
 
@@ -83,7 +83,7 @@ export function resolveLocale(
 }
 
 function buildCandidates(
-  data: Ownport,
+  data: Takuhon,
   locale: string | undefined,
   fallbackLocale: string | undefined,
 ): LocaleTag[] {

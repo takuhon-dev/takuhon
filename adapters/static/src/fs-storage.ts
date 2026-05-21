@@ -5,8 +5,8 @@ import {
   ConflictError,
   NotFoundError,
   StorageError,
-  type Ownport,
-  type OwnportStorage,
+  type Takuhon,
+  type TakuhonStorage,
 } from '@takuhon/core';
 
 import { resolveStoragePaths } from './paths.js';
@@ -25,11 +25,11 @@ export interface StaticVersionMetadata {
 }
 
 /**
- * Filesystem implementation of {@link OwnportStorage}. Stores the profile
+ * Filesystem implementation of {@link TakuhonStorage}. Stores the profile
  * document and its version metadata as two JSON files under a single base
  * directory:
  *
- * - `profile.json` holds the raw `Ownport` document.
+ * - `profile.json` holds the raw `Takuhon` document.
  * - `version.json` holds `{ version, updatedAt }` and powers HTTP `If-Match`
  *   optimistic locking exactly like the Cloudflare KV adapter.
  *
@@ -39,7 +39,7 @@ export interface StaticVersionMetadata {
  * worst — never at a newer one. Concurrent writers from multiple processes
  * are out of scope for the MVP; see the package README.
  */
-export class StaticOwnportStorage implements OwnportStorage {
+export class StaticTakuhonStorage implements TakuhonStorage {
   private readonly baseDir: string;
   private readonly profilePath: string;
   private readonly versionPath: string;
@@ -51,7 +51,7 @@ export class StaticOwnportStorage implements OwnportStorage {
     this.versionPath = paths.versionPath;
   }
 
-  async getProfile(): Promise<{ data: Ownport; version: string }> {
+  async getProfile(): Promise<{ data: Takuhon; version: string }> {
     let profileRaw: string;
     let versionRaw: string;
     try {
@@ -64,9 +64,9 @@ export class StaticOwnportStorage implements OwnportStorage {
       throw new StorageError(`Failed to read profile from "${this.baseDir}".`, { cause: e });
     }
 
-    let data: Ownport;
+    let data: Takuhon;
     try {
-      data = JSON.parse(profileRaw) as Ownport;
+      data = JSON.parse(profileRaw) as Takuhon;
     } catch (e) {
       throw new StorageError(`Failed to parse "${this.profilePath}".`, { cause: e });
     }
@@ -83,7 +83,7 @@ export class StaticOwnportStorage implements OwnportStorage {
     return { data, version: metadata.version };
   }
 
-  async saveProfile(data: Ownport, ifMatch?: string): Promise<{ version: string }> {
+  async saveProfile(data: Takuhon, ifMatch?: string): Promise<{ version: string }> {
     if (ifMatch !== undefined) {
       let currentVersion: string | undefined;
       try {
@@ -119,8 +119,8 @@ export class StaticOwnportStorage implements OwnportStorage {
   }
 }
 
-export function createStaticStorage(opts: StaticStorageOptions): StaticOwnportStorage {
-  return new StaticOwnportStorage(opts);
+export function createStaticStorage(opts: StaticStorageOptions): StaticTakuhonStorage {
+  return new StaticTakuhonStorage(opts);
 }
 
 async function atomicWriteFile(target: string, content: string): Promise<void> {

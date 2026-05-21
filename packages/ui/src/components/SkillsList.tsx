@@ -35,8 +35,8 @@ export function SkillsList({ skills }: SkillsListProps): React.JSX.Element | nul
   const groups = groupSkills(skills);
 
   return (
-    <section className={styles.section} aria-labelledby="ownport-skills-heading">
-      <h2 id="ownport-skills-heading" className={styles.heading}>
+    <section className={styles.section} aria-labelledby="takuhon-skills-heading">
+      <h2 id="takuhon-skills-heading" className={styles.heading}>
         Skills
       </h2>
       <div className={styles.groups}>

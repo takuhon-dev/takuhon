@@ -2,13 +2,13 @@
  * Module-private chain-building helper for the migration registry.
  *
  * Not re-exported from `@takuhon/core`'s public surface: the algorithm is an
- * implementation detail of {@link migrateOwnport}, and adding it to the
+ * implementation detail of {@link migrateTakuhon}, and adding it to the
  * public API would freeze its signature under semver. Unit tests import
  * this file directly to exercise the chain logic against synthetic
  * fixtures.
  */
 
-import type { Ownport } from '../types.js';
+import type { Takuhon } from '../types.js';
 
 import type { Migration } from './index.js';
 
@@ -21,12 +21,12 @@ import type { Migration } from './index.js';
 export function findMigrationChain(
   from: string,
   to: string,
-  registry: readonly Migration<Ownport, Ownport>[],
-): Migration<Ownport, Ownport>[] | null {
+  registry: readonly Migration<Takuhon, Takuhon>[],
+): Migration<Takuhon, Takuhon>[] | null {
   if (from === to) return [];
-  const byFrom = new Map<string, Migration<Ownport, Ownport>>();
+  const byFrom = new Map<string, Migration<Takuhon, Takuhon>>();
   for (const m of registry) byFrom.set(m.from, m);
-  const chain: Migration<Ownport, Ownport>[] = [];
+  const chain: Migration<Takuhon, Takuhon>[] = [];
   const visited = new Set<string>([from]);
   let cur = from;
   while (cur !== to) {

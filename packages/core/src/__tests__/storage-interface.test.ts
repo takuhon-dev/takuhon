@@ -4,51 +4,51 @@ import { ConflictError, NotFoundError, StorageError } from '../index.js';
 import type {
   AssetOptions,
   AssetRecord,
-  Ownport,
-  OwnportAssetStorage,
-  OwnportStorage,
+  Takuhon,
+  TakuhonAssetStorage,
+  TakuhonStorage,
 } from '../index.js';
 
-describe('OwnportStorage interface shape', () => {
-  it('getProfile() resolves to { data: Ownport; version: string }', () => {
-    expectTypeOf<OwnportStorage['getProfile']>().returns.resolves.toEqualTypeOf<{
-      data: Ownport;
+describe('TakuhonStorage interface shape', () => {
+  it('getProfile() resolves to { data: Takuhon; version: string }', () => {
+    expectTypeOf<TakuhonStorage['getProfile']>().returns.resolves.toEqualTypeOf<{
+      data: Takuhon;
       version: string;
     }>();
   });
 
   it('saveProfile() accepts (data, ifMatch?) and resolves to { version: string }', () => {
-    expectTypeOf<OwnportStorage['saveProfile']>().parameters.toEqualTypeOf<
-      [data: Ownport, ifMatch?: string]
+    expectTypeOf<TakuhonStorage['saveProfile']>().parameters.toEqualTypeOf<
+      [data: Takuhon, ifMatch?: string]
     >();
-    expectTypeOf<OwnportStorage['saveProfile']>().returns.resolves.toEqualTypeOf<{
+    expectTypeOf<TakuhonStorage['saveProfile']>().returns.resolves.toEqualTypeOf<{
       version: string;
     }>();
   });
 
   it('deleteProfile() takes no arguments and resolves to void', () => {
-    expectTypeOf<OwnportStorage['deleteProfile']>().parameters.toEqualTypeOf<[]>();
-    expectTypeOf<OwnportStorage['deleteProfile']>().returns.resolves.toEqualTypeOf<void>();
+    expectTypeOf<TakuhonStorage['deleteProfile']>().parameters.toEqualTypeOf<[]>();
+    expectTypeOf<TakuhonStorage['deleteProfile']>().returns.resolves.toEqualTypeOf<void>();
   });
 });
 
-describe('OwnportAssetStorage interface shape', () => {
+describe('TakuhonAssetStorage interface shape', () => {
   it('putAsset() accepts a File or Blob and optional AssetOptions', () => {
-    expectTypeOf<OwnportAssetStorage['putAsset']>().parameters.toEqualTypeOf<
+    expectTypeOf<TakuhonAssetStorage['putAsset']>().parameters.toEqualTypeOf<
       [file: File | Blob, options?: AssetOptions]
     >();
-    expectTypeOf<OwnportAssetStorage['putAsset']>().returns.resolves.toEqualTypeOf<AssetRecord>();
+    expectTypeOf<TakuhonAssetStorage['putAsset']>().returns.resolves.toEqualTypeOf<AssetRecord>();
   });
 
   it('getPublicUrl() accepts an assetId and resolves to a string', () => {
-    expectTypeOf<OwnportAssetStorage['getPublicUrl']>().parameters.toEqualTypeOf<
+    expectTypeOf<TakuhonAssetStorage['getPublicUrl']>().parameters.toEqualTypeOf<
       [assetId: string]
     >();
-    expectTypeOf<OwnportAssetStorage['getPublicUrl']>().returns.resolves.toEqualTypeOf<string>();
+    expectTypeOf<TakuhonAssetStorage['getPublicUrl']>().returns.resolves.toEqualTypeOf<string>();
   });
 
   it('listAssets() resolves to AssetRecord[]', () => {
-    expectTypeOf<OwnportAssetStorage['listAssets']>().returns.resolves.toEqualTypeOf<
+    expectTypeOf<TakuhonAssetStorage['listAssets']>().returns.resolves.toEqualTypeOf<
       AssetRecord[]
     >();
   });

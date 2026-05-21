@@ -7,7 +7,7 @@ export interface ResolvedStoragePaths {
 
 /**
  * Map a storage base directory to the conventional file locations used by
- * {@link StaticOwnportStorage}. Kept as a pure function so test setups can
+ * {@link StaticTakuhonStorage}. Kept as a pure function so test setups can
  * predict the layout without instantiating the storage class.
  */
 export function resolveStoragePaths(baseDir: string): ResolvedStoragePaths {

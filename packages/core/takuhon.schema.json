@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ownport.dev/schemas/0.1.0/takuhon.schema.json",
-  "title": "OwnPort Profile",
-  "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as ownport.json.",
+  "$id": "https://ownport.dev/schemas/0.1.0/ownport.schema.json",
+  "title": "Takuhon Profile",
+  "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,7 +20,7 @@
     "schemaVersion": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.-]+)?$",
-      "description": "Semantic version of the ownport schema this document conforms to."
+      "description": "Semantic version of the takuhon schema this document conforms to."
     },
     "profile": { "$ref": "#/$defs/Profile" },
     "links": {
@@ -288,7 +288,7 @@
         "showPoweredBy": {
           "type": "boolean",
           "default": true,
-          "description": "Display the 'Powered by ownport' attribution in the rendered profile."
+          "description": "Display the 'Powered by takuhon' attribution in the rendered profile."
         },
         "enableJsonLd": {
           "type": "boolean",
@@ -298,12 +298,12 @@
         "enableApi": {
           "type": "boolean",
           "default": true,
-          "description": "Expose the public read API endpoints (GET /api/profile, /api/jsonld, /api/schema, /ownport.json)."
+          "description": "Expose the public read API endpoints (GET /api/profile, /api/jsonld, /api/schema, /takuhon.json)."
         },
         "enableAnalytics": {
           "type": "boolean",
           "default": false,
-          "description": "Opt-in flag for first-party analytics. Default is false to keep ownport privacy-respecting by default."
+          "description": "Opt-in flag for first-party analytics. Default is false to keep takuhon privacy-respecting by default."
         }
       }
     },
@@ -318,7 +318,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 100,
-          "description": "Tool that produced this document (e.g. 'OwnPort', 'create-ownport@0.1.0')."
+          "description": "Tool that produced this document (e.g. 'Takuhon', 'create-takuhon@0.1.0')."
         },
         "contentLicense": { "$ref": "#/$defs/ContentLicense" }
       }

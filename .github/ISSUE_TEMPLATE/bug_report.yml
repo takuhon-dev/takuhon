@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a defect in ownport (incorrect behavior, crash, regression)
+description: Report a defect in takuhon (incorrect behavior, crash, regression)
 title: '[bug]: '
 labels: ['type:bug', 'triage']
 body:
@@ -34,7 +34,7 @@ body:
       label: Steps to reproduce
       description: Minimal steps to reliably reproduce the bug.
       placeholder: |
-        1. Install ownport vX.Y.Z
+        1. Install takuhon vX.Y.Z
         2. Run `pnpm ...`
         3. Observe `...`
     validations:

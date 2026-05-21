@@ -8,13 +8,13 @@ import {
   normalize,
   resolveLocale,
 } from '../index.js';
-import type { LocalizedOwnport, Ownport } from '../index.js';
+import type { LocalizedTakuhon, Takuhon } from '../index.js';
 
-function cloneExample(): Ownport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
+function cloneExample(): Takuhon {
+  return JSON.parse(JSON.stringify(exampleJson)) as Takuhon;
 }
 
-function prepare(locale?: string): LocalizedOwnport {
+function prepare(locale?: string): LocalizedTakuhon {
   return resolveLocale(normalize(cloneExample()), locale);
 }
 
@@ -22,11 +22,11 @@ function asRecord(value: object): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function getProfilePage(data: LocalizedOwnport): Record<string, unknown> {
+function getProfilePage(data: LocalizedTakuhon): Record<string, unknown> {
   return asRecord(generateProfilePageJsonLd(data));
 }
 
-function getPerson(data: LocalizedOwnport): Record<string, unknown> {
+function getPerson(data: LocalizedTakuhon): Record<string, unknown> {
   return asRecord(getProfilePage(data).mainEntity as object);
 }
 
@@ -435,7 +435,7 @@ describe('determinism and invariants', () => {
     expect(a).toBe(b);
   });
 
-  it('does not mutate the input LocalizedOwnport', () => {
+  it('does not mutate the input LocalizedTakuhon', () => {
     const data = prepare('en');
     const snapshot = JSON.stringify(data);
     generateJsonLd(data);

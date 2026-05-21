@@ -2,8 +2,8 @@ import {
   ConflictError,
   normalize,
   validate,
-  type Ownport,
-  type OwnportStorage,
+  type Takuhon,
+  type TakuhonStorage,
   type ValidationError,
 } from '@takuhon/core';
 import { Hono } from 'hono';
@@ -24,7 +24,7 @@ const ADMIN_API_CSP = ["default-src 'none'", "frame-ancestors 'none'", "base-uri
 );
 
 export interface AdminApiAppDeps {
-  storage: OwnportStorage;
+  storage: TakuhonStorage;
   /** Returns the configured admin token, or undefined if no secret is set. */
   getAdminToken: () => string | undefined;
   /** Allowlist of origins permitted for browser-originating admin requests. */
@@ -128,7 +128,7 @@ export function createAdminApiApp(deps: AdminApiAppDeps): Hono {
       });
     }
 
-    const data: Ownport = result.data;
+    const data: Takuhon = result.data;
     const ifMatchRaw = c.req.header('if-match');
     const ifMatch = ifMatchRaw !== undefined ? stripETag(ifMatchRaw) : undefined;
 

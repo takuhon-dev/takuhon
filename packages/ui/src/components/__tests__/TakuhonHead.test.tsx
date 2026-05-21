@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
-import { OwnportHead } from '../TakuhonHead.js';
+import { TakuhonHead } from '../TakuhonHead.js';
 
 const validated = validate(exampleJson);
 if (!validated.ok) {
@@ -15,26 +15,26 @@ const exampleJa = resolveLocale(validated.data, 'ja');
 const PAGE_URL = 'https://example.com/profile';
 const SITE_URL = 'https://example.com';
 
-describe('OwnportHead', () => {
+describe('TakuhonHead', () => {
   it('sets document.title from profile.displayName', () => {
-    render(<OwnportHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
+    render(<TakuhonHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
     expect(document.title).toBe('Pat Rivera');
   });
 
   it('emits meta description from profile.bio', () => {
-    render(<OwnportHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
+    render(<TakuhonHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
     const meta = document.head.querySelector('meta[name="description"]');
     expect(meta?.getAttribute('content')).toContain('Pat Rivera');
   });
 
   it('emits canonical with current resolvedLocale as ?lang', () => {
-    render(<OwnportHead data={exampleJa} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
+    render(<TakuhonHead data={exampleJa} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
     const canonical = document.head.querySelector('link[rel="canonical"]');
     expect(canonical?.getAttribute('href')).toBe('https://example.com/profile?lang=ja');
   });
 
   it('emits og:title, og:description, og:image, og:locale, and og:locale:alternate', () => {
-    render(<OwnportHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
+    render(<TakuhonHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
     const ogTitle = document.head.querySelector('meta[property="og:title"]');
     const ogDesc = document.head.querySelector('meta[property="og:description"]');
     const ogImage = document.head.querySelector('meta[property="og:image"]');
@@ -50,7 +50,7 @@ describe('OwnportHead', () => {
   });
 
   it('emits hreflang link for each available locale plus x-default', () => {
-    render(<OwnportHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
+    render(<TakuhonHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />);
     const alternates = document.head.querySelectorAll('link[rel="alternate"]');
     const entries = Array.from(alternates).map((l) => ({
       hreflang: l.getAttribute('hreflang'),
@@ -65,7 +65,7 @@ describe('OwnportHead', () => {
 
   it('emits a JSON-LD script by default and omits it when enableJsonLd is false', () => {
     const { unmount } = render(
-      <OwnportHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />,
+      <TakuhonHead data={exampleEn} siteUrl={SITE_URL} pageUrl={PAGE_URL} />,
     );
     const script = document.head.querySelector('script[type="application/ld+json"]');
     expect(script).not.toBeNull();
@@ -75,7 +75,7 @@ describe('OwnportHead', () => {
     document.head.innerHTML = '';
 
     render(
-      <OwnportHead
+      <TakuhonHead
         data={{ ...exampleEn, settings: { ...exampleEn.settings, enableJsonLd: false } }}
         siteUrl={SITE_URL}
         pageUrl={PAGE_URL}

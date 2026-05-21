@@ -20,7 +20,7 @@ describe.each([
   { name: 'creator-profile', data: creatorJson },
   { name: 'freelancer-profile', data: freelancerJson },
   { name: 'minimal-profile', data: minimalJson },
-])('examples/$name/ownport.json', ({ data }) => {
+])('examples/$name/takuhon.json', ({ data }) => {
   it('matches the bundled SCHEMA_VERSION', () => {
     expect(data.schemaVersion).toBe(SCHEMA_VERSION);
   });

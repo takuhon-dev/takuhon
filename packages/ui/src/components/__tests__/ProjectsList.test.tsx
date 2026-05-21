@@ -1,12 +1,12 @@
 import { resolveLocale } from '@takuhon/core';
-import type { Ownport } from '@takuhon/core';
+import type { Takuhon } from '@takuhon/core';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { ProjectsList } from '../ProjectsList.js';
 
-const example = resolveLocale(exampleJson as unknown as Ownport, 'en');
+const example = resolveLocale(exampleJson as unknown as Takuhon, 'en');
 
 describe('ProjectsList', () => {
   it('renders a labelled Projects section with one entry per project', () => {

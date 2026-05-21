@@ -1,5 +1,5 @@
 /**
- * Re-exports the canonical JSON Schema for ownport profiles.
+ * Re-exports the canonical JSON Schema for takuhon profiles.
  *
  * The schema source of truth lives at `packages/core/takuhon.schema.json`
  * (also distributed via the `@takuhon/core/schema.json` sub-path). This module

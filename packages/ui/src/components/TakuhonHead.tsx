@@ -1,8 +1,8 @@
-import { generateJsonLd, type LocalizedOwnport } from '@takuhon/core';
+import { generateJsonLd, type LocalizedTakuhon } from '@takuhon/core';
 import { useEffect } from 'react';
 
-export interface OwnportHeadProps {
-  data: LocalizedOwnport;
+export interface TakuhonHeadProps {
+  data: LocalizedTakuhon;
   siteUrl?: string;
   pageUrl?: string;
 }
@@ -54,7 +54,7 @@ function detectPageUrl(
   return siteUrl;
 }
 
-export function OwnportHead({ data, siteUrl, pageUrl }: OwnportHeadProps): React.JSX.Element {
+export function TakuhonHead({ data, siteUrl, pageUrl }: TakuhonHeadProps): React.JSX.Element {
   const resolvedSiteUrl = detectSiteUrl(siteUrl);
   const resolvedPageUrl = detectPageUrl(pageUrl, resolvedSiteUrl);
 

@@ -1,5 +1,5 @@
 /**
- * Canonicalize a {@link Ownport} document into the form downstream consumers
+ * Canonicalize a {@link Takuhon} document into the form downstream consumers
  * (`@takuhon/api`, `@takuhon/ui`, `@takuhon/jsonld`) can rely on without
  * re-checking shape invariants.
  *
@@ -28,25 +28,25 @@
 import type {
   LocalizedBody,
   LocalizedTitle,
-  Ownport,
-  NormalizedOwnport,
+  Takuhon,
+  NormalizedTakuhon,
   Profile,
 } from './types.js';
 
 /**
  * Return a normalized copy of `data`.
  *
- * @param data A ownport document that has already passed {@link validate}.
- * @returns A new {@link NormalizedOwnport} with localized empties dropped and
+ * @param data A takuhon document that has already passed {@link validate}.
+ * @returns A new {@link NormalizedTakuhon} with localized empties dropped and
  *          list fields sorted by `order`.
  */
-export function normalize(data: Ownport): NormalizedOwnport {
-  // A ownport document is structurally pure JSON (string/number/boolean/null +
+export function normalize(data: Takuhon): NormalizedTakuhon {
+  // A takuhon document is structurally pure JSON (string/number/boolean/null +
   // plain objects / arrays — no Date, Map, Set, BigInt, or functions), so a
   // round-trip through JSON gives an equivalent deep clone without depending
   // on `structuredClone`'s global type declaration (which moves between TS
   // `lib.es2022.d.ts` and `lib.dom.d.ts` across TypeScript major releases).
-  const out = JSON.parse(JSON.stringify(data)) as Ownport;
+  const out = JSON.parse(JSON.stringify(data)) as Takuhon;
 
   normalizeProfile(out.profile);
 

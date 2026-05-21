@@ -1,28 +1,28 @@
 body {
   margin: 0;
-  background-color: var(--ownport-color-bg);
-  color: var(--ownport-color-text);
-  font-family: var(--ownport-font-family);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
 }
 
 .skip-link {
   position: absolute;
-  inset-inline-start: var(--ownport-space-2);
-  inset-block-start: var(--ownport-space-2);
-  padding: var(--ownport-space-2) var(--ownport-space-3);
-  background-color: var(--ownport-color-primary);
-  color: var(--ownport-color-primary-contrast);
-  border-radius: var(--ownport-radius-sm);
+  inset-inline-start: var(--takuhon-space-2);
+  inset-block-start: var(--takuhon-space-2);
+  padding: var(--takuhon-space-2) var(--takuhon-space-3);
+  background-color: var(--takuhon-color-primary);
+  color: var(--takuhon-color-primary-contrast);
+  border-radius: var(--takuhon-radius-sm);
   text-decoration: none;
-  font-family: var(--ownport-font-family);
-  font-size: var(--ownport-font-size-sm);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
   transform: translateY(-200%);
-  transition: transform var(--ownport-transition-fast);
+  transition: transform var(--takuhon-transition-fast);
   z-index: 100;
 }
 
 .skip-link:focus-visible {
   transform: translateY(0);
-  outline: 2px solid var(--ownport-color-primary);
+  outline: 2px solid var(--takuhon-color-primary);
   outline-offset: 2px;
 }

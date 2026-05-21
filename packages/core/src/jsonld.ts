@@ -1,5 +1,5 @@
 /**
- * Generate Schema.org JSON-LD from a {@link LocalizedOwnport} document.
+ * Generate Schema.org JSON-LD from a {@link LocalizedTakuhon} document.
  *
  * Emits a `ProfilePage` whose `mainEntity` is the `Person` described by the
  * input. Mapping rules follow the published schema.org mapping spec; the
@@ -33,7 +33,7 @@ import type {
   LocalizedAvatar,
   LocalizedCareer,
   LocalizedLink,
-  LocalizedOwnport,
+  LocalizedTakuhon,
   LocalizedProject,
   Skill,
 } from './types.js';
@@ -62,11 +62,11 @@ const SAMEAS_IDENTITY_TYPES: ReadonlySet<LinkType> = new Set<LinkType>([
 /**
  * Build the `Person` JSON-LD object for `data`.
  *
- * @param data A locale-resolved ownport document.
+ * @param data A locale-resolved takuhon document.
  * @returns A Schema.org `Person` object. `@context` is included so the
  *          returned object is valid as a standalone JSON-LD document.
  */
-export function generatePersonJsonLd(data: LocalizedOwnport): object {
+export function generatePersonJsonLd(data: LocalizedTakuhon): object {
   const person = buildPerson(data, deriveCanonicalUrl(data));
   return { '@context': 'https://schema.org', ...person };
 }
@@ -75,9 +75,9 @@ export function generatePersonJsonLd(data: LocalizedOwnport): object {
  * Build the `ProfilePage` JSON-LD object for `data`, with `Person` inlined
  * as `mainEntity`.
  *
- * @param data A locale-resolved ownport document.
+ * @param data A locale-resolved takuhon document.
  */
-export function generateProfilePageJsonLd(data: LocalizedOwnport): object {
+export function generateProfilePageJsonLd(data: LocalizedTakuhon): object {
   const canonicalUrl = deriveCanonicalUrl(data);
   const person = buildPerson(data, canonicalUrl);
 
@@ -101,16 +101,16 @@ export function generateProfilePageJsonLd(data: LocalizedOwnport): object {
  * `Person` is inlined there as `mainEntity`. The array shape leaves room
  * for later additions (e.g. `WebSite`) without changing the public surface.
  */
-export function generateJsonLd(data: LocalizedOwnport): object[] {
+export function generateJsonLd(data: LocalizedTakuhon): object[] {
   return [generateProfilePageJsonLd(data)];
 }
 
-function deriveCanonicalUrl(data: LocalizedOwnport): string | undefined {
+function deriveCanonicalUrl(data: LocalizedTakuhon): string | undefined {
   const featured = data.links.find((l) => l.type === 'website' && l.featured === true);
   return featured?.url;
 }
 
-function buildPerson(data: LocalizedOwnport, canonicalUrl: string | undefined): object {
+function buildPerson(data: LocalizedTakuhon, canonicalUrl: string | undefined): object {
   const { profile, careers, projects, links, skills, contact } = data;
 
   const out: Record<string, unknown> = {};

@@ -10,8 +10,8 @@
       "ja": "オープンソースメンテナ / アクセシビリティ実践者"
     },
     "bio": {
-      "en": "Pat Rivera is a fictional persona used to exercise every field of the ownport profile schema. They maintain a handful of open-source libraries focused on accessibility tooling and frequently speak at local meetups.",
-      "ja": "Pat Rivera は ownport プロフィール schema の全フィールドを示すための架空の人物です。アクセシビリティ系のオープンソースライブラリを保守し、地域コミュニティで登壇しています。"
+      "en": "Pat Rivera is a fictional persona used to exercise every field of the takuhon profile schema. They maintain a handful of open-source libraries focused on accessibility tooling and frequently speak at local meetups.",
+      "ja": "Pat Rivera は takuhon プロフィール schema の全フィールドを示すための架空の人物です。アクセシビリティ系のオープンソースライブラリを保守し、地域コミュニティで登壇しています。"
     },
     "avatar": {
       "url": "/assets/avatar.webp",
@@ -188,7 +188,7 @@
   "meta": {
     "createdAt": "2026-01-15T09:00:00Z",
     "updatedAt": "2026-05-12T08:30:00Z",
-    "generator": "OwnPort",
+    "generator": "Takuhon",
     "contentLicense": {
       "spdxId": "CC-BY-4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",

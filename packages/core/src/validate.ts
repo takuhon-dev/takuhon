@@ -1,9 +1,9 @@
 /**
- * Schema validation for ownport profile documents.
+ * Schema validation for takuhon profile documents.
  *
  * Compiles the canonical {@link import('../takuhon.schema.json')} once at module
  * load and exposes a Result-style {@link validate} that returns either the
- * narrowed {@link Ownport} value or a list of structured {@link ValidationError}s.
+ * narrowed {@link Takuhon} value or a list of structured {@link ValidationError}s.
  * The validator is the canonical correctness boundary inside `@takuhon/core`:
  * `normalize` (commit 3) and the API layer (commit 11+) both rely on this
  * function to know the shape they are working with.
@@ -24,7 +24,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
 import { schema } from './schema.js';
-import type { Ownport } from './types.js';
+import type { Takuhon } from './types.js';
 
 /**
  * Schema versions this build of `@takuhon/core` accepts directly.
@@ -63,7 +63,7 @@ export interface ValidationError {
 
 /** Result of {@link validate}. Narrow on `ok` to access `data` or `errors`. */
 export type ValidationResult =
-  | { ok: true; data: Ownport }
+  | { ok: true; data: Takuhon }
   | { ok: false; errors: ValidationError[] };
 
 const ajv = new Ajv2020({
@@ -72,16 +72,16 @@ const ajv = new Ajv2020({
 });
 addFormats(ajv);
 
-// Per design decision #5 we skip `JSONSchemaType<Ownport>` and let Ajv compile
-// the schema object as-is; the `<Ownport>` type argument only records the
+// Per design decision #5 we skip `JSONSchemaType<Takuhon>` and let Ajv compile
+// the schema object as-is; the `<Takuhon>` type argument only records the
 // validated result type for downstream narrowing.
-const compiled = ajv.compile<Ownport>(schema);
+const compiled = ajv.compile<Takuhon>(schema);
 
 /**
- * Validate an arbitrary value against the bundled ownport schema.
+ * Validate an arbitrary value against the bundled takuhon schema.
  *
- * @param data unknown JSON-like value (typically parsed from a `ownport.json` file)
- * @returns A discriminated result. On success `data` is narrowed to {@link Ownport};
+ * @param data unknown JSON-like value (typically parsed from a `takuhon.json` file)
+ * @returns A discriminated result. On success `data` is narrowed to {@link Takuhon};
  *          on failure `errors` is a non-empty list of {@link ValidationError}s.
  */
 export function validate(data: unknown): ValidationResult {
@@ -94,7 +94,7 @@ export function validate(data: unknown): ValidationResult {
       errors: [
         {
           pointer: '',
-          message: 'ownport.json must be a JSON object.',
+          message: 'takuhon.json must be a JSON object.',
           keyword: 'type',
         },
       ],

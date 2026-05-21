@@ -31,7 +31,7 @@ export interface AuditEvent {
   };
   result: {
     status: number;
-    /** Opaque storage version emitted by `OwnportStorage.saveProfile`. */
+    /** Opaque storage version emitted by `TakuhonStorage.saveProfile`. */
     version?: string;
   };
 }

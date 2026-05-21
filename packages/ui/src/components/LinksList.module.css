@@ -8,7 +8,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ownport-space-2);
+  gap: var(--takuhon-space-2);
 }
 
 .item {
@@ -18,34 +18,34 @@
 .link {
   display: flex;
   align-items: center;
-  gap: var(--ownport-space-3);
-  min-height: var(--ownport-tap-target);
-  padding: var(--ownport-space-3) var(--ownport-space-4);
-  border: 1px solid var(--ownport-color-border);
-  border-radius: var(--ownport-radius-md);
-  background-color: var(--ownport-color-surface);
-  color: var(--ownport-color-text);
+  gap: var(--takuhon-space-3);
+  min-height: var(--takuhon-tap-target);
+  padding: var(--takuhon-space-3) var(--takuhon-space-4);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-md);
+  background-color: var(--takuhon-color-surface);
+  color: var(--takuhon-color-text);
   text-decoration: none;
-  font-size: var(--ownport-font-size-base);
+  font-size: var(--takuhon-font-size-base);
   transition:
-    border-color var(--ownport-transition-fast),
-    background-color var(--ownport-transition-fast);
+    border-color var(--takuhon-transition-fast),
+    background-color var(--takuhon-transition-fast);
 }
 
 .link[data-featured='true'] {
-  border-color: var(--ownport-color-primary);
-  background-color: var(--ownport-color-bg);
+  border-color: var(--takuhon-color-primary);
+  background-color: var(--takuhon-color-bg);
   font-weight: 600;
 }
 
 .link:hover,
 .link:focus-visible {
-  border-color: var(--ownport-color-primary);
-  background-color: var(--ownport-color-bg);
+  border-color: var(--takuhon-color-primary);
+  background-color: var(--takuhon-color-bg);
 }
 
 .link:focus-visible {
-  outline: 2px solid var(--ownport-color-primary);
+  outline: 2px solid var(--takuhon-color-primary);
   outline-offset: 2px;
 }
 

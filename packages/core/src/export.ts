@@ -1,16 +1,16 @@
 /**
- * Export and import for ownport profile documents.
+ * Export and import for takuhon profile documents.
  *
- * {@link exportOwnport} serialises a {@link Ownport} document into a transport
- * form ({@link ExportedOwnport}) that can be persisted to a file, an API
- * response, or any other byte-oriented sink. {@link importOwnport} is the
- * inverse: it validates the input and returns a {@link Ownport}.
+ * {@link exportTakuhon} serialises a {@link Takuhon} document into a transport
+ * form ({@link ExportedTakuhon}) that can be persisted to a file, an API
+ * response, or any other byte-oriented sink. {@link importTakuhon} is the
+ * inverse: it validates the input and returns a {@link Takuhon}.
  *
  * Scope of these helpers (deliberately narrow):
  * - Pure, in-memory data transforms — no I/O, no storage adapter coupling.
- * - {@link importOwnport} **does not** auto-migrate older `schemaVersion`
+ * - {@link importTakuhon} **does not** auto-migrate older `schemaVersion`
  *   values. Cross-version handling belongs to the CLI / API layer, which
- *   composes `importOwnport` + {@link migrateOwnport} + storage adapters as
+ *   composes `importTakuhon` + {@link migrateTakuhon} + storage adapters as
  *   spelled out in operational-lifecycle §5.3.
  * - Round-trip equivalence (operational-lifecycle §5.1) is preserved up to
  *   the documented `meta.updatedAt` exception.
@@ -19,19 +19,19 @@
  * are the storage / API layer's responsibility.
  */
 
-import type { Ownport } from './types.js';
+import type { Takuhon } from './types.js';
 import { validate, type ValidationError } from './validate.js';
 
 /**
- * Structural alias of {@link Ownport}: the transport form is the document
+ * Structural alias of {@link Takuhon}: the transport form is the document
  * itself. A wrapping envelope (e.g. `{ format, version, data, hash }`) is
  * intentionally avoided in Phase 1 — adding one later would be a breaking
  * change to the `GET /api/export` response shape and would require a major
  * version bump of `@takuhon/core`.
  */
-export type ExportedOwnport = Ownport;
+export type ExportedTakuhon = Takuhon;
 
-/** Options for {@link exportOwnport}. */
+/** Options for {@link exportTakuhon}. */
 export interface ExportOptions {
   /**
    * When `true` (default), `meta.updatedAt` is overwritten with the current
@@ -45,7 +45,7 @@ export interface ExportOptions {
 }
 
 /**
- * Thrown by {@link importOwnport} when the input fails schema validation
+ * Thrown by {@link importTakuhon} when the input fails schema validation
  * (including an unsupported `schemaVersion`). The `errors` field carries
  * the same {@link ValidationError} list that `validate()` would have
  * returned, so the API layer can map them onto RFC 7807.
@@ -61,12 +61,12 @@ export class ImportError extends Error {
 }
 
 /**
- * Serialise a {@link Ownport} into its transport form. The input is
+ * Serialise a {@link Takuhon} into its transport form. The input is
  * deep-cloned via `JSON.parse(JSON.stringify(...))`; the original is never
  * mutated.
  */
-export function exportOwnport(data: Ownport, options: ExportOptions = {}): ExportedOwnport {
-  const out = JSON.parse(JSON.stringify(data)) as ExportedOwnport;
+export function exportTakuhon(data: Takuhon, options: ExportOptions = {}): ExportedTakuhon {
+  const out = JSON.parse(JSON.stringify(data)) as ExportedTakuhon;
   if (options.updateTimestamp !== false) {
     out.meta = { ...out.meta, updatedAt: new Date().toISOString() };
   }
@@ -74,7 +74,7 @@ export function exportOwnport(data: Ownport, options: ExportOptions = {}): Expor
 }
 
 /**
- * Validate an {@link ExportedOwnport} and return it as a {@link Ownport}.
+ * Validate an {@link ExportedTakuhon} and return it as a {@link Takuhon}.
  *
  * On schema validation failure (including an unsupported `schemaVersion`)
  * throws an {@link ImportError} with the structured `errors` attached. The
@@ -82,12 +82,12 @@ export function exportOwnport(data: Ownport, options: ExportOptions = {}): Expor
  * caller mutations cannot reach back into the supplied document.
  *
  * Cross-version inputs (older `schemaVersion`) are out of scope: callers
- * (CLI / API layer) should run {@link migrateOwnport} before calling this.
+ * (CLI / API layer) should run {@link migrateTakuhon} before calling this.
  */
-export function importOwnport(data: ExportedOwnport): Ownport {
+export function importTakuhon(data: ExportedTakuhon): Takuhon {
   const result = validate(data);
   if (!result.ok) {
     throw new ImportError('imported document failed schema validation', { errors: result.errors });
   }
-  return JSON.parse(JSON.stringify(result.data)) as Ownport;
+  return JSON.parse(JSON.stringify(result.data)) as Takuhon;
 }

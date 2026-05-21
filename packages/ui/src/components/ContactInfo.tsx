@@ -11,8 +11,8 @@ export function ContactInfo({ contact }: ContactInfoProps): React.JSX.Element | 
   if (!showEmail && contact.formUrl === undefined) return null;
 
   return (
-    <section className={styles.section} aria-labelledby="ownport-contact-heading">
-      <h2 id="ownport-contact-heading" className={styles.heading}>
+    <section className={styles.section} aria-labelledby="takuhon-contact-heading">
+      <h2 id="takuhon-contact-heading" className={styles.heading}>
         Contact
       </h2>
       <ul className={styles.list}>

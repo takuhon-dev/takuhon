@@ -2,7 +2,7 @@
  * Inline HTML for the minimal admin editor served at `GET /admin`.
  *
  * Single-page, no build step: a token input, a JSON textarea preloaded from
- * `/ownport.json`, Save (PUT) and Delete (DELETE) buttons. The page operates
+ * `/takuhon.json`, Save (PUT) and Delete (DELETE) buttons. The page operates
  * under a strict CSP (`script-src 'self' 'nonce-<n>'`,
  * `style-src 'self' 'nonce-<n>'`, `require-trusted-types-for 'script'`), so
  * both the inline `<script>` and `<style>` blocks carry the request-scoped
@@ -14,7 +14,7 @@ export function renderAdminHtml(nonce: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ownport admin</title>
+<title>takuhon admin</title>
 <style nonce="${nonce}">
 body { font-family: system-ui, -apple-system, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #222; }
 h1 { font-size: 1.5rem; }
@@ -32,11 +32,11 @@ small.version { color: #555; }
 </style>
 </head>
 <body>
-<h1>ownport admin</h1>
-<p class="note">Edit the full <code>ownport.json</code> document and Save. Optimistic locking via <code>If-Match</code> guards concurrent edits; the token is never sent over the URL.</p>
+<h1>takuhon admin</h1>
+<p class="note">Edit the full <code>takuhon.json</code> document and Save. Optimistic locking via <code>If-Match</code> guards concurrent edits; the token is never sent over the URL.</p>
 <label for="token">Admin token</label>
 <input id="token" type="password" autocomplete="off" spellcheck="false">
-<label for="payload">ownport.json <small class="version" id="versionLabel"></small></label>
+<label for="payload">takuhon.json <small class="version" id="versionLabel"></small></label>
 <textarea id="payload" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
 <div class="row">
   <button id="save" type="button">Save</button>
@@ -68,8 +68,8 @@ small.version { color: #555; }
   }
   async function loadCurrent() {
     try {
-      var res = await fetch('/ownport.json', { cache: 'no-store' });
-      if (!res.ok) { setStatus('Failed to load /ownport.json: ' + res.status, false); return; }
+      var res = await fetch('/takuhon.json', { cache: 'no-store' });
+      if (!res.ok) { setStatus('Failed to load /takuhon.json: ' + res.status, false); return; }
       setVersion(res.headers.get('etag'));
       var json = await res.json();
       payloadEl.value = JSON.stringify(json, null, 2);

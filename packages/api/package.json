@@ -1,9 +1,9 @@
 {
   "name": "@takuhon/api",
   "version": "0.1.0",
-  "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for ownport",
+  "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for takuhon",
   "license": "MIT",
-  "author": "ownport contributors",
+  "author": "takuhon contributors",
   "homepage": "https://github.com/ownport-dev/ownport/tree/main/packages/api#readme",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
     "url": "https://github.com/ownport-dev/ownport/issues"
   },
   "keywords": [
-    "ownport",
+    "takuhon",
     "profile",
     "api",
     "hono",

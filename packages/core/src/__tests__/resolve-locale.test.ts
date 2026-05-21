@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { resolveLocale } from '../index.js';
-import type { Ownport } from '../index.js';
+import type { Takuhon } from '../index.js';
 
-function cloneExample(): Ownport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
+function cloneExample(): Takuhon {
+  return JSON.parse(JSON.stringify(exampleJson)) as Takuhon;
 }
 
 describe('resolveLocale() argument-driven chain', () => {

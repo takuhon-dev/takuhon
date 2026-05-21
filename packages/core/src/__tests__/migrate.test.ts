@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
-import { migrateOwnport, MigrationError, migrations } from '../index.js';
-import type { Ownport } from '../index.js';
+import { migrateTakuhon, MigrationError, migrations } from '../index.js';
+import type { Takuhon } from '../index.js';
 
-function cloneExample(): Ownport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
+function cloneExample(): Takuhon {
+  return JSON.parse(JSON.stringify(exampleJson)) as Takuhon;
 }
 
-describe('migrateOwnport', () => {
+describe('migrateTakuhon', () => {
   it('returns a structural clone when sourceVersion === targetVersion', () => {
     const input = cloneExample();
-    const out = migrateOwnport(input, input.schemaVersion);
+    const out = migrateTakuhon(input, input.schemaVersion);
     expect(out).toEqual(input);
     // Mutating the result does not touch the input.
     out.profile.displayName = { en: 'mutated' };
@@ -20,14 +20,14 @@ describe('migrateOwnport', () => {
 
   it('throws MigrationError when no chain exists in the Phase 1 registry', () => {
     const input = cloneExample();
-    expect(() => migrateOwnport(input, '0.2.0')).toThrow(MigrationError);
+    expect(() => migrateTakuhon(input, '0.2.0')).toThrow(MigrationError);
   });
 
   it('error message names both source and target versions', () => {
     const input = cloneExample();
     let caught: unknown;
     try {
-      migrateOwnport(input, '9.9.9');
+      migrateTakuhon(input, '9.9.9');
     } catch (err) {
       caught = err;
     }
@@ -39,7 +39,7 @@ describe('migrateOwnport', () => {
   it('does not mutate the input even when migrate throws', () => {
     const input = cloneExample();
     const snapshot = JSON.stringify(input);
-    expect(() => migrateOwnport(input, '0.2.0')).toThrow();
+    expect(() => migrateTakuhon(input, '0.2.0')).toThrow();
     expect(JSON.stringify(input)).toBe(snapshot);
   });
 

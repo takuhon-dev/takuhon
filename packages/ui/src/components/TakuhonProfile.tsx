@@ -1,4 +1,4 @@
-import type { LocalizedOwnport } from '@takuhon/core';
+import type { LocalizedTakuhon } from '@takuhon/core';
 
 import '../styles/tokens.css';
 
@@ -11,11 +11,11 @@ import { ProjectsList } from './ProjectsList.js';
 import { SkillsList } from './SkillsList.js';
 import styles from './TakuhonProfile.module.css';
 
-export interface OwnportProfileProps {
-  data: LocalizedOwnport;
+export interface TakuhonProfileProps {
+  data: LocalizedTakuhon;
 }
 
-export function OwnportProfile({ data }: OwnportProfileProps): React.JSX.Element {
+export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element {
   const showFooter = data.settings.showPoweredBy !== false;
 
   return (

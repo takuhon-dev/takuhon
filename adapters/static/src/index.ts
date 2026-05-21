@@ -1,5 +1,5 @@
 export {
-  StaticOwnportStorage,
+  StaticTakuhonStorage,
   createStaticStorage,
   type StaticStorageOptions,
   type StaticVersionMetadata,

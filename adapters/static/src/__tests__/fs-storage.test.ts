@@ -2,28 +2,28 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { ConflictError, NotFoundError, StorageError, type Ownport } from '@takuhon/core';
+import { ConflictError, NotFoundError, StorageError, type Takuhon } from '@takuhon/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
-import { StaticOwnportStorage } from '../fs-storage.js';
+import { StaticTakuhonStorage } from '../fs-storage.js';
 import { resolveStoragePaths } from '../paths.js';
 
-const sample = exampleJson as unknown as Ownport;
+const sample = exampleJson as unknown as Takuhon;
 
-describe('StaticOwnportStorage', () => {
+describe('StaticTakuhonStorage', () => {
   let baseDir: string;
 
   beforeEach(async () => {
-    baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ownport-static-'));
+    baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'takuhon-static-'));
   });
 
   afterEach(async () => {
     await fs.rm(baseDir, { recursive: true, force: true });
   });
 
-  function makeStorage(dir: string = baseDir): StaticOwnportStorage {
-    return new StaticOwnportStorage({ baseDir: dir });
+  function makeStorage(dir: string = baseDir): StaticTakuhonStorage {
+    return new StaticTakuhonStorage({ baseDir: dir });
   }
 
   it('getProfile() throws NotFoundError when baseDir is empty', async () => {

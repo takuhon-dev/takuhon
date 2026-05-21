@@ -1,12 +1,12 @@
 import { resolveLocale } from '@takuhon/core';
-import type { Ownport } from '@takuhon/core';
+import type { Takuhon } from '@takuhon/core';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { ProfileHeader } from '../ProfileHeader.js';
 
-const example = resolveLocale(exampleJson as unknown as Ownport, 'en');
+const example = resolveLocale(exampleJson as unknown as Takuhon, 'en');
 
 describe('ProfileHeader', () => {
   it('renders displayName as level-1 heading', () => {

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ERROR_SLUGS, buildProblem } from '../error-envelope.js';
 
 describe('error-envelope', () => {
-  it('builds the type URI from the slug under https://ownport.dev/errors/', () => {
+  it('builds the type URI from the slug under https://takuhon.dev/errors/', () => {
     const out = buildProblem({
       slug: ERROR_SLUGS.notFound,
       status: 404,
@@ -11,7 +11,7 @@ describe('error-envelope', () => {
       detail: 'route missing',
       instance: '/api/missing',
     });
-    expect(out.type).toBe('https://ownport.dev/errors/not-found');
+    expect(out.type).toBe('https://takuhon.dev/errors/not-found');
   });
 
   it('preserves status / title / detail / instance verbatim', () => {

@@ -1,5 +1,5 @@
 /**
- * Persistence contracts for ownport profile documents and binary assets.
+ * Persistence contracts for takuhon profile documents and binary assets.
  *
  * Adapters (KV / R2 / filesystem / SQLite / …) implement these interfaces to
  * plug into `@takuhon/api`. All methods are async; failures surface as
@@ -9,37 +9,37 @@
  * Design notes:
  * - `version` is an opaque ETag-like token (UUID, hash, monotonic counter —
  *   the adapter chooses). It powers HTTP `If-Match` style optimistic locking
- *   and is unrelated to {@link Ownport.schemaVersion}, which describes the
+ *   and is unrelated to {@link Takuhon.schemaVersion}, which describes the
  *   document's data-model version.
- * - `getProfile()` returns a raw {@link Ownport}, not a normalized or
+ * - `getProfile()` returns a raw {@link Takuhon}, not a normalized or
  *   locale-resolved one. Normalization and locale resolution belong to the
  *   API / render layer; storage only persists.
  * - `saveProfile(data, ifMatch?)` rejects with {@link ConflictError} when
  *   `ifMatch` is supplied and does not equal the current stored version.
  *   When `ifMatch` is omitted, the adapter's policy decides whether to
  *   overwrite unconditionally; per-implementation docs spell this out.
- * - `OwnportAssetStorage` is intentionally a separate interface so deployments
+ * - `TakuhonAssetStorage` is intentionally a separate interface so deployments
  *   that don't host user-uploaded media (e.g. static export) can omit it.
- * - The naming standardises on the lowercase "Ownport" word (cf.
- *   {@link Ownport}, {@link LocalizedOwnport}, `normalize`, `validate`) even
- *   where upstream documents write "OwnPort".
+ * - The naming standardises on the lowercase "Takuhon" word (cf.
+ *   {@link Takuhon}, {@link LocalizedTakuhon}, `normalize`, `validate`) even
+ *   where upstream documents write "Takuhon".
  */
 
-import type { Ownport } from './types.js';
+import type { Takuhon } from './types.js';
 
 /**
- * Persistence contract for the single profile document of a ownport instance.
+ * Persistence contract for the single profile document of a takuhon instance.
  *
  * Implementations: Cloudflare KV (Phase 3), filesystem (Phase 3+), in-memory
  * test doubles, and future SQL adapters.
  */
-export interface OwnportStorage {
+export interface TakuhonStorage {
   /**
    * Read the current profile document and its opaque version token.
    *
    * @throws {NotFoundError} when no profile has been saved yet.
    */
-  getProfile(): Promise<{ data: Ownport; version: string }>;
+  getProfile(): Promise<{ data: Takuhon; version: string }>;
 
   /**
    * Replace the profile document. The returned `version` is the new opaque
@@ -51,7 +51,7 @@ export interface OwnportStorage {
    * @throws {ConflictError} when `ifMatch` is supplied and does not equal
    *                         the current stored version
    */
-  saveProfile(data: Ownport, ifMatch?: string): Promise<{ version: string }>;
+  saveProfile(data: Takuhon, ifMatch?: string): Promise<{ version: string }>;
 
   /**
    * Remove the profile document. Idempotent: no error when nothing is stored.
@@ -60,7 +60,7 @@ export interface OwnportStorage {
 }
 
 /**
- * Metadata for a stored binary asset, returned by {@link OwnportAssetStorage}.
+ * Metadata for a stored binary asset, returned by {@link TakuhonAssetStorage}.
  *
  * `url` is the relative path used inside the document (`/assets/...`);
  * `publicUrl` is the absolute URL a browser can fetch. The two are kept
@@ -80,7 +80,7 @@ export interface AssetRecord {
 }
 
 /**
- * Caller hints for {@link OwnportAssetStorage.putAsset}. Both fields are
+ * Caller hints for {@link TakuhonAssetStorage.putAsset}. Both fields are
  * optional; when omitted, the adapter falls back to the `File` / `Blob`
  * metadata. Adapters are responsible for magic-byte verification, EXIF
  * stripping, and dimension limits — callers must not pre-process.
@@ -98,7 +98,7 @@ export interface AssetOptions {
  * takes only an `assetId` today; a future options object (e.g. `expiresIn`
  * for signed URLs) would be added in a backward-compatible way.
  */
-export interface OwnportAssetStorage {
+export interface TakuhonAssetStorage {
   putAsset(file: File | Blob, options?: AssetOptions): Promise<AssetRecord>;
   /** @throws {NotFoundError} when no asset exists for `assetId`. */
   getPublicUrl(assetId: string): Promise<string>;

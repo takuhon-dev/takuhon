@@ -11,7 +11,7 @@ export function Footer(): React.JSX.Element {
           target="_blank"
           rel="noopener noreferrer"
         >
-          ownport
+          takuhon
         </a>
       </p>
     </footer>

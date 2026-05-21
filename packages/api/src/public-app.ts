@@ -5,22 +5,22 @@ import {
   normalize,
   resolveLocale,
   schema,
-  type Ownport,
-  type OwnportStorage,
+  type Takuhon,
+  type TakuhonStorage,
 } from '@takuhon/core';
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
 
 export interface PublicAppDeps {
-  storage: OwnportStorage;
+  storage: TakuhonStorage;
   /**
    * Returned when storage reports NotFoundError. Adapters that ship a
    * bundled example fixture (e.g. @takuhon/cloudflare) pass a thunk that
    * returns the validated document so initial-onboarding requests still
    * succeed before the first admin write.
    */
-  fallback?: () => Ownport;
+  fallback?: () => Takuhon;
 }
 
 const FALLBACK_VERSION = 'bundled-fixture';
@@ -38,7 +38,7 @@ const PUBLIC_CSP = [
   'upgrade-insecure-requests',
 ].join('; ');
 
-async function loadProfile(deps: PublicAppDeps): Promise<{ data: Ownport; version: string }> {
+async function loadProfile(deps: PublicAppDeps): Promise<{ data: Takuhon; version: string }> {
   try {
     return await deps.storage.getProfile();
   } catch (e) {
@@ -81,7 +81,7 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     }),
   );
 
-  app.get('/', (c) => c.text('ownport — visit /api/profile or /api/schema\n'));
+  app.get('/', (c) => c.text('takuhon — visit /api/profile or /api/schema\n'));
 
   app.get('/api/profile', async (c) => {
     const lang = c.req.query('lang');
@@ -113,14 +113,14 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     return c.body(JSON.stringify(ld));
   });
 
-  app.get('/ownport.json', async (c) => {
+  app.get('/takuhon.json', async (c) => {
     const { data, version } = await loadProfile(deps);
     c.header('etag', `"${version}"`);
     c.header('cache-control', 'public, max-age=300');
     return c.json(data);
   });
 
-  app.get('/.well-known/ownport.json', (c) => {
+  app.get('/.well-known/takuhon.json', (c) => {
     c.header('cache-control', 'public, max-age=3600');
     return c.json({
       schemaVersion: SCHEMA_VERSION,
@@ -128,7 +128,7 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       profile: '/api/profile',
       jsonld: '/api/jsonld',
       export: '/api/export',
-      canonical: '/ownport.json',
+      canonical: '/takuhon.json',
     });
   });
 

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { findMigrationChain } from '../migrations/_chain.js';
 import type { Migration } from '../migrations/index.js';
-import type { Ownport } from '../types.js';
+import type { Takuhon } from '../types.js';
 
-function step(from: string, to: string): Migration<Ownport, Ownport> {
+function step(from: string, to: string): Migration<Takuhon, Takuhon> {
   return {
     from,
     to,

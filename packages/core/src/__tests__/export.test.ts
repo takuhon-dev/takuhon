@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
-import { exportOwnport, ImportError, importOwnport, validate } from '../index.js';
-import type { Ownport } from '../index.js';
+import { exportTakuhon, ImportError, importTakuhon, validate } from '../index.js';
+import type { Takuhon } from '../index.js';
 
-function cloneExample(): Ownport {
-  return JSON.parse(JSON.stringify(exampleJson)) as Ownport;
+function cloneExample(): Takuhon {
+  return JSON.parse(JSON.stringify(exampleJson)) as Takuhon;
 }
 
-describe('exportOwnport', () => {
+describe('exportTakuhon', () => {
   it('returns a structural clone (mutating the output does not touch input)', () => {
     const input = cloneExample();
-    const out = exportOwnport(input, { updateTimestamp: false });
+    const out = exportTakuhon(input, { updateTimestamp: false });
     out.profile.displayName = { en: 'mutated' };
     expect(input.profile.displayName).not.toEqual({ en: 'mutated' });
   });
@@ -20,7 +20,7 @@ describe('exportOwnport', () => {
     const input = cloneExample();
     input.meta.updatedAt = '2020-01-01T00:00:00Z';
     const before = Date.now();
-    const out = exportOwnport(input);
+    const out = exportTakuhon(input);
     const after = Date.now();
     const updated = Date.parse(out.meta.updatedAt ?? '');
     expect(Number.isFinite(updated)).toBe(true);
@@ -31,27 +31,27 @@ describe('exportOwnport', () => {
   it('leaves meta.updatedAt untouched when updateTimestamp: false', () => {
     const input = cloneExample();
     input.meta.updatedAt = '2020-01-01T00:00:00Z';
-    const out = exportOwnport(input, { updateTimestamp: false });
+    const out = exportTakuhon(input, { updateTimestamp: false });
     expect(out.meta.updatedAt).toBe('2020-01-01T00:00:00Z');
   });
 
   it('preserves meta.generator verbatim', () => {
     const input = cloneExample();
     input.meta.generator = 'my-tool@1.2.3';
-    const out = exportOwnport(input);
+    const out = exportTakuhon(input);
     expect(out.meta.generator).toBe('my-tool@1.2.3');
   });
 
   it('output round-trips through validate()', () => {
-    const out = exportOwnport(cloneExample());
+    const out = exportTakuhon(cloneExample());
     const result = validate(out);
     expect(result.ok).toBe(true);
   });
 });
 
-describe('importOwnport', () => {
-  it('returns a Ownport for a valid input', () => {
-    const out = importOwnport(cloneExample());
+describe('importTakuhon', () => {
+  it('returns a Takuhon for a valid input', () => {
+    const out = importTakuhon(cloneExample());
     expect(out.schemaVersion).toBe('0.1.0');
     expect(out.profile.displayName).toBeDefined();
   });
@@ -61,7 +61,7 @@ describe('importOwnport', () => {
     delete broken.profile;
     let caught: unknown;
     try {
-      importOwnport(broken as unknown as Ownport);
+      importTakuhon(broken as unknown as Takuhon);
     } catch (err) {
       caught = err;
     }
@@ -74,28 +74,28 @@ describe('importOwnport', () => {
   it('throws ImportError for an unsupported schemaVersion', () => {
     const futuristic = cloneExample();
     futuristic.schemaVersion = '9.9.9';
-    expect(() => importOwnport(futuristic)).toThrow(ImportError);
+    expect(() => importTakuhon(futuristic)).toThrow(ImportError);
   });
 
   it('does not mutate the input on success', () => {
     const input = cloneExample();
     const snapshot = JSON.stringify(input);
-    importOwnport(input);
+    importTakuhon(input);
     expect(JSON.stringify(input)).toBe(snapshot);
   });
 });
 
 describe('roundtrip', () => {
-  it('importOwnport(exportOwnport(x, { updateTimestamp: false })) deep-equals x', () => {
+  it('importTakuhon(exportTakuhon(x, { updateTimestamp: false })) deep-equals x', () => {
     const input = cloneExample();
-    const out = importOwnport(exportOwnport(input, { updateTimestamp: false }));
+    const out = importTakuhon(exportTakuhon(input, { updateTimestamp: false }));
     expect(out).toEqual(input);
   });
 
   it('two consecutive exports with updateTimestamp: false are deep-equal', () => {
     const input = cloneExample();
-    const first = exportOwnport(input, { updateTimestamp: false });
-    const second = exportOwnport(first, { updateTimestamp: false });
+    const first = exportTakuhon(input, { updateTimestamp: false });
+    const second = exportTakuhon(first, { updateTimestamp: false });
     expect(second).toEqual(first);
   });
 });

@@ -1,55 +1,55 @@
 :root {
-  --ownport-color-bg: #ffffff;
-  --ownport-color-surface: #f6f7f9;
-  --ownport-color-text: #1f2933;
-  --ownport-color-text-muted: #52606d;
-  --ownport-color-primary: #2563eb;
-  --ownport-color-primary-contrast: #ffffff;
-  --ownport-color-border: #d8dee7;
-  --ownport-color-accent: #4f46e5;
+  --takuhon-color-bg: #ffffff;
+  --takuhon-color-surface: #f6f7f9;
+  --takuhon-color-text: #1f2933;
+  --takuhon-color-text-muted: #52606d;
+  --takuhon-color-primary: #2563eb;
+  --takuhon-color-primary-contrast: #ffffff;
+  --takuhon-color-border: #d8dee7;
+  --takuhon-color-accent: #4f46e5;
 
-  --ownport-space-1: 4px;
-  --ownport-space-2: 8px;
-  --ownport-space-3: 12px;
-  --ownport-space-4: 16px;
-  --ownport-space-5: 24px;
-  --ownport-space-6: 32px;
+  --takuhon-space-1: 4px;
+  --takuhon-space-2: 8px;
+  --takuhon-space-3: 12px;
+  --takuhon-space-4: 16px;
+  --takuhon-space-5: 24px;
+  --takuhon-space-6: 32px;
 
-  --ownport-radius-sm: 6px;
-  --ownport-radius-md: 12px;
-  --ownport-radius-lg: 20px;
-  --ownport-radius-full: 9999px;
+  --takuhon-radius-sm: 6px;
+  --takuhon-radius-md: 12px;
+  --takuhon-radius-lg: 20px;
+  --takuhon-radius-full: 9999px;
 
-  --ownport-font-family:
+  --takuhon-font-family:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --ownport-font-size-sm: 14px;
-  --ownport-font-size-base: 16px;
-  --ownport-font-size-lg: 18px;
-  --ownport-font-size-xl: 22px;
-  --ownport-font-size-2xl: 28px;
-  --ownport-line-height: 1.6;
+  --takuhon-font-size-sm: 14px;
+  --takuhon-font-size-base: 16px;
+  --takuhon-font-size-lg: 18px;
+  --takuhon-font-size-xl: 22px;
+  --takuhon-font-size-2xl: 28px;
+  --takuhon-line-height: 1.6;
 
-  --ownport-tap-target: 44px;
-  --ownport-max-content-width: 480px;
+  --takuhon-tap-target: 44px;
+  --takuhon-max-content-width: 480px;
 
-  --ownport-transition-fast: 120ms ease;
+  --takuhon-transition-fast: 120ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ownport-color-bg: #0f172a;
-    --ownport-color-surface: #1e293b;
-    --ownport-color-text: #e2e8f0;
-    --ownport-color-text-muted: #94a3b8;
-    --ownport-color-primary: #60a5fa;
-    --ownport-color-primary-contrast: #0f172a;
-    --ownport-color-border: #334155;
-    --ownport-color-accent: #818cf8;
+    --takuhon-color-bg: #0f172a;
+    --takuhon-color-surface: #1e293b;
+    --takuhon-color-text: #e2e8f0;
+    --takuhon-color-text-muted: #94a3b8;
+    --takuhon-color-primary: #60a5fa;
+    --takuhon-color-primary-contrast: #0f172a;
+    --takuhon-color-border: #334155;
+    --takuhon-color-accent: #818cf8;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --ownport-transition-fast: 0ms;
+    --takuhon-transition-fast: 0ms;
   }
 }

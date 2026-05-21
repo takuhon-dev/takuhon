@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { LocaleSwitcher } from '../LocaleSwitcher.js';
-import { OwnportHead } from '../TakuhonHead.js';
-import { OwnportProfile } from '../TakuhonProfile.js';
+import { TakuhonHead } from '../TakuhonHead.js';
+import { TakuhonProfile } from '../TakuhonProfile.js';
 
 const validated = validate(exampleJson);
 if (!validated.ok) {
@@ -19,8 +19,8 @@ async function audit(node: Element): Promise<axe.AxeResults> {
 }
 
 describe('axe-core a11y audit', () => {
-  it('OwnportProfile has no detectable a11y violations', async () => {
-    const { container } = render(<OwnportProfile data={example} />);
+  it('TakuhonProfile has no detectable a11y violations', async () => {
+    const { container } = render(<TakuhonProfile data={example} />);
     expect(await audit(container)).toHaveNoViolations();
   });
 
@@ -31,9 +31,9 @@ describe('axe-core a11y audit', () => {
     expect(await audit(container)).toHaveNoViolations();
   });
 
-  it('OwnportHead does not introduce body-level a11y violations', async () => {
+  it('TakuhonHead does not introduce body-level a11y violations', async () => {
     const { container } = render(
-      <OwnportHead data={example} siteUrl="https://example.com" pageUrl="https://example.com/" />,
+      <TakuhonHead data={example} siteUrl="https://example.com" pageUrl="https://example.com/" />,
     );
     expect(await audit(container)).toHaveNoViolations();
   });

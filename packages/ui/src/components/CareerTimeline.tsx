@@ -24,8 +24,8 @@ export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Elem
   const ordered = sortCareers(careers);
 
   return (
-    <section className={styles.section} aria-labelledby="ownport-career-heading">
-      <h2 id="ownport-career-heading" className={styles.heading}>
+    <section className={styles.section} aria-labelledby="takuhon-career-heading">
+      <h2 id="takuhon-career-heading" className={styles.heading}>
         Career
       </h2>
       <ol className={styles.list}>

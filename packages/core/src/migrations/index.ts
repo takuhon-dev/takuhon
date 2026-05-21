@@ -1,8 +1,8 @@
 /**
  * Forward migration registry for `@takuhon/core`.
  *
- * Each migration is a pure function from a ownport document at version `from`
- * to one at version `to`. The registry is consulted by {@link migrateOwnport}
+ * Each migration is a pure function from a takuhon document at version `from`
+ * to one at version `to`. The registry is consulted by {@link migrateTakuhon}
  * to build a chain when the requested target is more than one step away
  * (`0.1.0 → 0.3.0` is composed of `0.1.0→0.2.0` and `0.2.0→0.3.0`).
  *
@@ -16,10 +16,10 @@
  *
  * The chain-building algorithm lives in `_chain.ts` and is intentionally
  * not re-exported from `@takuhon/core` — it is an implementation detail of
- * {@link migrateOwnport}.
+ * {@link migrateTakuhon}.
  */
 
-import type { Ownport } from '../types.js';
+import type { Takuhon } from '../types.js';
 
 /**
  * A forward migration entry. `from` and `to` are semver strings matching
@@ -36,4 +36,4 @@ export interface Migration<From, To> {
  * Forward migrations bundled with this build of `@takuhon/core`. Empty in
  * Phase 1; the first entry will land alongside the v0.2.0 schema bump.
  */
-export const migrations: readonly Migration<Ownport, Ownport>[] = [];
+export const migrations: readonly Migration<Takuhon, Takuhon>[] = [];

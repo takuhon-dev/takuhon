@@ -1,13 +1,13 @@
 /**
- * @takuhon/ui — React mobile-first profile UI for ownport.
+ * @takuhon/ui — React mobile-first profile UI for takuhon.
  *
  * All components accept a single locale-resolved input shape from `@takuhon/core`
- * (`LocalizedOwnport` or one of its sub-types) and render without state of their
+ * (`LocalizedTakuhon` or one of its sub-types) and render without state of their
  * own. CSS Modules co-located with each component are emitted into `dist/` as
  * plain files and must be imported by the consumer's bundler.
  */
 
-export { OwnportProfile, type OwnportProfileProps } from './components/TakuhonProfile.js';
+export { TakuhonProfile, type TakuhonProfileProps } from './components/TakuhonProfile.js';
 export { ProfileHeader, type ProfileHeaderProps } from './components/ProfileHeader.js';
 export { LinksList, type LinksListProps } from './components/LinksList.js';
 export { CareerTimeline, type CareerTimelineProps } from './components/CareerTimeline.js';
@@ -16,4 +16,4 @@ export { SkillsList, type SkillsListProps } from './components/SkillsList.js';
 export { ContactInfo, type ContactInfoProps } from './components/ContactInfo.js';
 export { Footer } from './components/Footer.js';
 export { LocaleSwitcher, type LocaleSwitcherProps } from './components/LocaleSwitcher.js';
-export { OwnportHead, type OwnportHeadProps } from './components/TakuhonHead.js';
+export { TakuhonHead, type TakuhonHeadProps } from './components/TakuhonHead.js';

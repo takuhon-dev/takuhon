@@ -10,8 +10,8 @@
       "ja": "印刷と墨で表現するイラストレーター・zine 作家"
     },
     "bio": {
-      "en": "Maya Okuda is a fictional persona showcasing the ownport schema from a creative practitioner's perspective. They run a small studio in Kyoto, publish zines twice a year, and accept select commissions and exhibition invitations.",
-      "ja": "奥田真矢は、ownport スキーマをクリエイティブな実践者の視点で表すための架空の人物です。京都で小さなスタジオを営み、年に二度 zine を刊行し、選んだ依頼や展示の招待を受けます。"
+      "en": "Maya Okuda is a fictional persona showcasing the takuhon schema from a creative practitioner's perspective. They run a small studio in Kyoto, publish zines twice a year, and accept select commissions and exhibition invitations.",
+      "ja": "奥田真矢は、takuhon スキーマをクリエイティブな実践者の視点で表すための架空の人物です。京都で小さなスタジオを営み、年に二度 zine を刊行し、選んだ依頼や展示の招待を受けます。"
     },
     "avatar": {
       "url": "/assets/avatar.webp",
@@ -235,7 +235,7 @@
   "meta": {
     "createdAt": "2025-01-10T09:00:00Z",
     "updatedAt": "2026-05-10T09:00:00Z",
-    "generator": "OwnPort",
+    "generator": "Takuhon",
     "contentLicense": {
       "spdxId": "CC-BY-NC-4.0",
       "url": "https://creativecommons.org/licenses/by-nc/4.0/",

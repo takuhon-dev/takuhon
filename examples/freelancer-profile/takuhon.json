@@ -10,8 +10,8 @@
       "es": "Consultor independiente de backend y devops"
     },
     "bio": {
-      "en": "Diego Hernández is a fictional persona showcasing the ownport schema for an independent consultant who runs several engagements in parallel. They lead small backend and platform projects on three-to-six month contracts, with overlapping engagements that all stay 'current' simultaneously.",
-      "es": "Diego Hernández es un personaje ficticio que ejemplifica el esquema de ownport para una persona consultora independiente con varias colaboraciones en paralelo. Lidera proyectos de backend y plataforma con contratos de tres a seis meses, manteniendo varios compromisos vigentes al mismo tiempo."
+      "en": "Diego Hernández is a fictional persona showcasing the takuhon schema for an independent consultant who runs several engagements in parallel. They lead small backend and platform projects on three-to-six month contracts, with overlapping engagements that all stay 'current' simultaneously.",
+      "es": "Diego Hernández es un personaje ficticio que ejemplifica el esquema de takuhon para una persona consultora independiente con varias colaboraciones en paralelo. Lidera proyectos de backend y plataforma con contratos de tres a seis meses, manteniendo varios compromisos vigentes al mismo tiempo."
     },
     "location": {
       "country": "MX",
@@ -278,7 +278,7 @@
   "meta": {
     "createdAt": "2024-07-01T09:00:00Z",
     "updatedAt": "2026-05-15T09:00:00Z",
-    "generator": "OwnPort",
+    "generator": "Takuhon",
     "contentLicense": {
       "spdxId": "CC-BY-4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",

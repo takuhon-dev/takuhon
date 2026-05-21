@@ -1,13 +1,13 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--ownport-space-4);
-  max-width: var(--ownport-max-content-width);
+  gap: var(--takuhon-space-4);
+  max-width: var(--takuhon-max-content-width);
   margin-inline: auto;
-  padding: var(--ownport-space-4);
-  background-color: var(--ownport-color-bg);
-  color: var(--ownport-color-text);
-  font-family: var(--ownport-font-family);
-  font-size: var(--ownport-font-size-base);
-  line-height: var(--ownport-line-height);
+  padding: var(--takuhon-space-4);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  line-height: var(--takuhon-line-height);
 }

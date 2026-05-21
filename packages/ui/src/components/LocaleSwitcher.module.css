@@ -1,30 +1,30 @@
 .wrapper {
   display: flex;
   justify-content: flex-end;
-  padding-block: var(--ownport-space-2);
+  padding-block: var(--takuhon-space-2);
 }
 
 .select {
-  min-height: var(--ownport-tap-target);
-  padding-inline: var(--ownport-space-3);
-  padding-block: var(--ownport-space-2);
-  border: 1px solid var(--ownport-color-border);
-  border-radius: var(--ownport-radius-sm);
-  background-color: var(--ownport-color-bg);
-  color: var(--ownport-color-text);
-  font-family: var(--ownport-font-family);
-  font-size: var(--ownport-font-size-base);
-  line-height: var(--ownport-line-height);
+  min-height: var(--takuhon-tap-target);
+  padding-inline: var(--takuhon-space-3);
+  padding-block: var(--takuhon-space-2);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  line-height: var(--takuhon-line-height);
   transition:
-    border-color var(--ownport-transition-fast),
-    box-shadow var(--ownport-transition-fast);
+    border-color var(--takuhon-transition-fast),
+    box-shadow var(--takuhon-transition-fast);
 }
 
 .select:hover {
-  border-color: var(--ownport-color-primary);
+  border-color: var(--takuhon-color-primary);
 }
 
 .select:focus-visible {
-  outline: 2px solid var(--ownport-color-primary);
+  outline: 2px solid var(--takuhon-color-primary);
   outline-offset: 2px;
 }

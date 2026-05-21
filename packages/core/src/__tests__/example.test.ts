@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { SCHEMA_VERSION } from '../index.js';
-import type { LinkCustom, Ownport } from '../types.js';
+import type { LinkCustom, Takuhon } from '../types.js';
 
 // JSON imports widen string literals (e.g. `links[].type` becomes `string` instead
-// of `LinkType`), so a direct `const example: Ownport = exampleJson` assignment is
+// of `LinkType`), so a direct `const example: Takuhon = exampleJson` assignment is
 // rejected by TypeScript even when the data is otherwise compatible. Cast through
 // the type at the boundary; deeper drift detection (every value matches the schema)
 // arrives with the Ajv-based `validate()` test suite in the next commit.
-const example = exampleJson as Ownport;
+const example = exampleJson as Takuhon;
 
 describe('examples/personal-profile/takuhon.json', () => {
   it('matches the bundled SCHEMA_VERSION', () => {

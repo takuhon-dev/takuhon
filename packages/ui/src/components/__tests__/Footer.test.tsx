@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 import { Footer } from '../Footer.js';
 
 describe('Footer', () => {
-  it('renders the "Powered by ownport" attribution', () => {
+  it('renders the "Powered by takuhon" attribution', () => {
     render(<Footer />);
-    expect(screen.getByRole('contentinfo')).toHaveTextContent(/powered by ownport/i);
+    expect(screen.getByRole('contentinfo')).toHaveTextContent(/powered by takuhon/i);
   });
 
-  it('links the ownport name to the upstream repository', () => {
+  it('links the takuhon name to the upstream repository', () => {
     render(<Footer />);
-    const link = screen.getByRole('link', { name: /ownport/i });
+    const link = screen.getByRole('link', { name: /takuhon/i });
     expect(link).toHaveAttribute('href', 'https://github.com/ownport-dev/ownport');
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
   });
