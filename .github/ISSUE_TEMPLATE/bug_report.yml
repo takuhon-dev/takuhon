@@ -9,7 +9,7 @@ body:
         Thanks for reporting a bug. Please fill in the sections below to help us reproduce and fix it.
 
         If this is a **security vulnerability**, do not file it here — use a private security advisory instead:
-        https://github.com/ownport-dev/ownport/security/advisories/new
+        https://github.com/takuhon-dev/takuhon/security/advisories/new
 
   - type: input
     id: package

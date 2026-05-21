@@ -16,7 +16,7 @@ This Code of Conduct applies within all project spaces, and also applies when an
 
 Instances of unacceptable behavior may be reported to the project maintainers by:
 
-- Opening a private GitHub Security Advisory (preferred for sensitive reports): https://github.com/ownport-dev/ownport/security/advisories/new
+- Opening a private GitHub Security Advisory (preferred for sensitive reports): https://github.com/takuhon-dev/takuhon/security/advisories/new
 - Or emailing the maintainers via the contact listed at the project repository
 
 All complaints will be reviewed and investigated promptly and fairly. Project maintainers are obligated to respect the privacy and security of the reporter.

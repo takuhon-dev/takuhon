@@ -12,7 +12,7 @@ describe('Footer', () => {
   it('links the takuhon name to the upstream repository', () => {
     render(<Footer />);
     const link = screen.getByRole('link', { name: /takuhon/i });
-    expect(link).toHaveAttribute('href', 'https://github.com/ownport-dev/ownport');
+    expect(link).toHaveAttribute('href', 'https://github.com/takuhon-dev/takuhon');
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
   });
 });

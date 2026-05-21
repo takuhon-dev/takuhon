@@ -10,7 +10,7 @@ Please **do not open a public GitHub issue** for security vulnerabilities.
 
 Report security issues via GitHub Security Advisories:
 
-> https://github.com/ownport-dev/ownport/security/advisories/new
+> https://github.com/takuhon-dev/takuhon/security/advisories/new
 
 Include:
 

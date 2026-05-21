@@ -7,7 +7,7 @@ export function Footer(): React.JSX.Element {
         Powered by{' '}
         <a
           className={styles.link}
-          href="https://github.com/ownport-dev/ownport"
+          href="https://github.com/takuhon-dev/takuhon"
           target="_blank"
           rel="noopener noreferrer"
         >

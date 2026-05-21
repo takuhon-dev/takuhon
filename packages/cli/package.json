@@ -4,14 +4,14 @@
   "description": "create-takuhon scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "MIT",
   "author": "takuhon contributors",
-  "homepage": "https://github.com/ownport-dev/ownport/tree/main/packages/cli#readme",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/cli#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ownport-dev/ownport.git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
     "directory": "packages/cli"
   },
   "bugs": {
-    "url": "https://github.com/ownport-dev/ownport/issues"
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
   },
   "keywords": [
     "takuhon",

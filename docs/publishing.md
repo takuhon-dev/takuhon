@@ -11,7 +11,7 @@ This guide describes how to publish the `@ownport/*` packages to npm via the Git
    - Expiration: 90 days (rotate periodically)
 
 2. Add the token as a GitHub Secret:
-   - Visit https://github.com/ownport-dev/ownport/settings/secrets/actions
+   - Visit https://github.com/takuhon-dev/takuhon/settings/secrets/actions
    - Name: `NPM_TOKEN`
    - Value: the token issued in step 1
 
@@ -60,7 +60,7 @@ After v0.1.0 is published, configure a Trusted Publisher for each `@ownport/*` p
 
 1. Visit https://www.npmjs.com/package/@ownport/core/access (repeat for `@ownport/api`, `@ownport/ui`, `@ownport/cli`, `@ownport/cloudflare`).
 2. Configure Trusted Publisher:
-   - Repository: `ownport-dev/ownport`
+   - Repository: `takuhon-dev/takuhon`
    - Workflow filename: `publish.yml`
    - Environment: (leave blank)
 3. Once all packages are linked, remove the legacy access token:

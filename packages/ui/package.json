@@ -4,14 +4,14 @@
   "description": "React mobile-first profile UI and minimal admin editor components for takuhon",
   "license": "MIT",
   "author": "takuhon contributors",
-  "homepage": "https://github.com/ownport-dev/ownport/tree/main/packages/ui#readme",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/ui#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ownport-dev/ownport.git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
     "directory": "packages/ui"
   },
   "bugs": {
-    "url": "https://github.com/ownport-dev/ownport/issues"
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
   },
   "keywords": [
     "takuhon",
