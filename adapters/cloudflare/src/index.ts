@@ -7,31 +7,31 @@ import {
   type AuditLogger,
   type CachePurger,
 } from '@takuhon/api';
-import { validate, type Ownport } from '@takuhon/core';
+import { validate, type Takuhon } from '@takuhon/core';
 import { Hono } from 'hono';
 
 import exampleJson from '../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
-import { KvOwnportStorage } from './kv-storage.js';
+import { KvTakuhonStorage } from './kv-storage.js';
 
 export interface Env {
-  OWNPORT_KV: KVNamespace;
+  TAKUHON_KV: KVNamespace;
   /**
-   * Admin bearer token. Provision via `wrangler secret put OWNPORT_ADMIN_TOKEN`.
+   * Admin bearer token. Provision via `wrangler secret put TAKUHON_ADMIN_TOKEN`.
    * Leave unset to disable admin writes entirely (every PUT/DELETE returns 401).
    */
-  OWNPORT_ADMIN_TOKEN?: string;
+  TAKUHON_ADMIN_TOKEN?: string;
   /**
    * Comma-separated Origin allowlist for browser-originating admin requests.
    * Empty / unset disables the check (deploy without a configured allowlist is
    * acceptable when the admin UI is same-origin; documented in the README).
    */
-  OWNPORT_ADMIN_ORIGIN?: string;
+  TAKUHON_ADMIN_ORIGIN?: string;
 }
 
-function bundledFallback(): Ownport {
+function bundledFallback(): Takuhon {
   const r = validate(exampleJson);
   if (!r.ok) throw new Error('Bundled fixture failed validation.');
   return r.data;
@@ -48,7 +48,7 @@ function parseOrigins(raw: string | undefined): string[] {
 export default {
   fetch(request: Request, env: Env): Response | Promise<Response> {
     const url = new URL(request.url);
-    const storage = new KvOwnportStorage(env.OWNPORT_KV);
+    const storage = new KvTakuhonStorage(env.TAKUHON_KV);
     const cachePurger: CachePurger = new CloudflareCachePurger(() => caches.default, {
       origin: url.origin,
     });
@@ -67,8 +67,8 @@ export default {
       '/api/admin',
       createAdminApiApp({
         storage,
-        getAdminToken: () => env.OWNPORT_ADMIN_TOKEN,
-        getAdminOrigins: () => parseOrigins(env.OWNPORT_ADMIN_ORIGIN),
+        getAdminToken: () => env.TAKUHON_ADMIN_TOKEN,
+        getAdminOrigins: () => parseOrigins(env.TAKUHON_ADMIN_ORIGIN),
         cachePurger,
         auditLogger,
       }),

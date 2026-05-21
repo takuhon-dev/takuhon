@@ -1,19 +1,19 @@
-import { ConflictError, NotFoundError, type Ownport } from '@takuhon/core';
+import { ConflictError, NotFoundError, type Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
-import { KV_KEY, KvOwnportStorage, type KvMetadata } from '../kv-storage.js';
+import { KV_KEY, KvTakuhonStorage, type KvMetadata } from '../kv-storage.js';
 import { FakeKV } from '../test-utils/fake-kv.js';
 
-function makeStorage(): { storage: KvOwnportStorage; kv: FakeKV } {
+function makeStorage(): { storage: KvTakuhonStorage; kv: FakeKV } {
   const kv = new FakeKV();
-  const storage = new KvOwnportStorage(kv as unknown as KVNamespace);
+  const storage = new KvTakuhonStorage(kv as unknown as KVNamespace);
   return { storage, kv };
 }
 
-const sample = exampleJson as unknown as Ownport;
+const sample = exampleJson as unknown as Takuhon;
 
-describe('KvOwnportStorage', () => {
+describe('KvTakuhonStorage', () => {
   it('getProfile() throws NotFoundError when KV is empty', async () => {
     const { storage } = makeStorage();
     await expect(storage.getProfile()).rejects.toBeInstanceOf(NotFoundError);

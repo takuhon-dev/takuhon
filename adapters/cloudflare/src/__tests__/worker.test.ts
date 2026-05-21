@@ -1,4 +1,4 @@
-import type { Ownport } from '@takuhon/core';
+import type { Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
@@ -8,7 +8,7 @@ import { FakeKV } from '../test-utils/fake-kv.js';
 
 function makeEnv(): { env: Env; kv: FakeKV } {
   const kv = new FakeKV();
-  return { env: { OWNPORT_KV: kv as unknown as KVNamespace }, kv };
+  return { env: { TAKUHON_KV: kv as unknown as KVNamespace }, kv };
 }
 
 function call(url: string, env: Env, init?: RequestInit): Promise<Response> {
@@ -20,7 +20,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     const res = await call('https://worker.example/', makeEnv().env);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('ownport');
+    expect(await res.text()).toContain('takuhon');
   });
 
   it('GET /api/profile falls back to bundled fixture when KV is empty', async () => {
@@ -47,10 +47,10 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(res.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
   });
 
-  it('GET /api/profile reads from KV when OWNPORT_DATA is populated', async () => {
+  it('GET /api/profile reads from KV when TAKUHON_DATA is populated', async () => {
     const { env, kv } = makeEnv();
-    const base = exampleJson as Ownport;
-    const stored: Ownport = {
+    const base = exampleJson as Takuhon;
+    const stored: Takuhon = {
       ...base,
       profile: {
         ...base.profile,
@@ -73,8 +73,8 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.$schema).toBeTruthy();
   });
 
-  it('GET /ownport.json returns the raw Ownport (no wrap, all locales embedded)', async () => {
-    const res = await call('https://worker.example/ownport.json', makeEnv().env);
+  it('GET /takuhon.json returns the raw Takuhon (no wrap, all locales embedded)', async () => {
+    const res = await call('https://worker.example/takuhon.json', makeEnv().env);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/application\/json/);
     const body: any = await res.json();
@@ -84,14 +84,14 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.meta.contentLicense).toBeTruthy();
   });
 
-  it('GET /ownport.json carries ETag and Cache-Control: public, max-age=300', async () => {
-    const res = await call('https://worker.example/ownport.json', makeEnv().env);
+  it('GET /takuhon.json carries ETag and Cache-Control: public, max-age=300', async () => {
+    const res = await call('https://worker.example/takuhon.json', makeEnv().env);
     expect(res.headers.get('etag')).toMatch(/^".+"$/);
     expect(res.headers.get('cache-control')).toBe('public, max-age=300');
   });
 
-  it('GET /.well-known/ownport.json returns the 6-field metadata document', async () => {
-    const res = await call('https://worker.example/.well-known/ownport.json', makeEnv().env);
+  it('GET /.well-known/takuhon.json returns the 6-field metadata document', async () => {
+    const res = await call('https://worker.example/.well-known/takuhon.json', makeEnv().env);
     expect(res.status).toBe(200);
     const body: any = await res.json();
     expect(body.schemaVersion).toBe('0.1.0');
@@ -99,32 +99,32 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.profile).toBe('/api/profile');
     expect(body.jsonld).toBe('/api/jsonld');
     expect(body.export).toBe('/api/export');
-    expect(body.canonical).toBe('/ownport.json');
+    expect(body.canonical).toBe('/takuhon.json');
   });
 
-  it('GET /.well-known/ownport.json carries Cache-Control: public, max-age=3600', async () => {
-    const res = await call('https://worker.example/.well-known/ownport.json', makeEnv().env);
+  it('GET /.well-known/takuhon.json carries Cache-Control: public, max-age=3600', async () => {
+    const res = await call('https://worker.example/.well-known/takuhon.json', makeEnv().env);
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
   });
 
-  it('GET /unknown returns 404 with type=https://ownport.dev/errors/not-found', async () => {
+  it('GET /unknown returns 404 with type=https://takuhon.dev/errors/not-found', async () => {
     const res = await call('https://worker.example/does-not-exist', makeEnv().env);
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
-    expect(body.type).toBe('https://ownport.dev/errors/not-found');
+    expect(body.type).toBe('https://takuhon.dev/errors/not-found');
     expect(body.status).toBe(404);
     expect(body.instance).toBe('/does-not-exist');
   });
 
-  it('POST /api/profile returns 405 with type=https://ownport.dev/errors/method-not-allowed', async () => {
+  it('POST /api/profile returns 405 with type=https://takuhon.dev/errors/method-not-allowed', async () => {
     const res = await call('https://worker.example/api/profile', makeEnv().env, {
       method: 'POST',
     });
     expect(res.status).toBe(405);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
-    expect(body.type).toBe('https://ownport.dev/errors/method-not-allowed');
+    expect(body.type).toBe('https://takuhon.dev/errors/method-not-allowed');
   });
 
   it('GET /api/jsonld returns a JSON-LD document with ProfilePage type', async () => {

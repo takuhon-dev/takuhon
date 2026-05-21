@@ -1,31 +1,31 @@
-name = "ownport-cloudflare"
+name = "takuhon-cloudflare"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Replace the placeholder ids after running:
-#   wrangler kv namespace create OWNPORT_KV
-#   wrangler kv namespace create OWNPORT_KV --preview
+#   wrangler kv namespace create TAKUHON_KV
+#   wrangler kv namespace create TAKUHON_KV --preview
 [[kv_namespaces]]
-binding = "OWNPORT_KV"
+binding = "TAKUHON_KV"
 id = "REPLACE_WITH_PRODUCTION_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID"
 
 # Admin Origin allowlist (comma-separated). Empty value disables the check.
-# Example for production: OWNPORT_ADMIN_ORIGIN = "https://admin.example.com"
+# Example for production: TAKUHON_ADMIN_ORIGIN = "https://admin.example.com"
 #
 # The admin bearer token MUST be provisioned as a Wrangler secret, never in
 # this file:
-#   wrangler secret put OWNPORT_ADMIN_TOKEN
+#   wrangler secret put TAKUHON_ADMIN_TOKEN
 # Use 32+ bytes of entropy, e.g. `openssl rand -base64 32`.
 #
 # Rate limiting for /api/admin/* is configured in the Cloudflare dashboard
 # (Security → WAF → Rate limiting Rules), not here. Recommended profile:
 # 10 requests/min keyed on the Authorization header. See adapter README.
 [vars]
-OWNPORT_ADMIN_ORIGIN = ""
+TAKUHON_ADMIN_ORIGIN = ""
 
 # R2 bucket will be added in Phase 3.5 for asset uploads:
 # [[r2_buckets]]
-# binding = "OWNPORT_R2"
+# binding = "TAKUHON_R2"
 # bucket_name = "..."

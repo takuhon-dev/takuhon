@@ -1,7 +1,7 @@
 {
   "name": "@takuhon/cloudflare",
   "version": "0.1.0",
-  "description": "Cloudflare Workers adapter for ownport — public API, Workers Assets, KV, R2 integrations",
+  "description": "Cloudflare Workers adapter for takuhon — public API, Workers Assets, KV, R2 integrations",
   "license": "MIT",
   "private": true,
   "type": "module",

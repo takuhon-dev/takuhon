@@ -1,6 +1,6 @@
-import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@takuhon/core';
+import { ConflictError, NotFoundError, type Takuhon, type TakuhonStorage } from '@takuhon/core';
 
-export const KV_KEY = 'OWNPORT_DATA';
+export const KV_KEY = 'TAKUHON_DATA';
 
 export interface KvMetadata {
   version: string;
@@ -8,8 +8,8 @@ export interface KvMetadata {
 }
 
 /**
- * Cloudflare KV implementation of the `OwnportStorage` contract. Stores the
- * profile document as JSON under a single key (`OWNPORT_DATA`) and tracks the
+ * Cloudflare KV implementation of the `TakuhonStorage` contract. Stores the
+ * profile document as JSON under a single key (`TAKUHON_DATA`) and tracks the
  * optimistic-locking token inside KV value metadata.
  *
  * `version` is a fresh UUIDv4 on every successful write. Callers compare it
@@ -17,20 +17,20 @@ export interface KvMetadata {
  * `ConflictError` with `currentVersion` so the API layer can build the RFC
  * 7807 envelope without an extra round trip.
  */
-export class KvOwnportStorage implements OwnportStorage {
+export class KvTakuhonStorage implements TakuhonStorage {
   constructor(private readonly kv: KVNamespace) {}
 
-  async getProfile(): Promise<{ data: Ownport; version: string }> {
-    const result = await this.kv.getWithMetadata<Ownport, KvMetadata>(KV_KEY, 'json');
+  async getProfile(): Promise<{ data: Takuhon; version: string }> {
+    const result = await this.kv.getWithMetadata<Takuhon, KvMetadata>(KV_KEY, 'json');
     if (result.value === null || !result.metadata?.version) {
       throw new NotFoundError(`No profile is stored at KV key "${KV_KEY}".`);
     }
     return { data: result.value, version: result.metadata.version };
   }
 
-  async saveProfile(data: Ownport, ifMatch?: string): Promise<{ version: string }> {
+  async saveProfile(data: Takuhon, ifMatch?: string): Promise<{ version: string }> {
     if (ifMatch !== undefined) {
-      const current = await this.kv.getWithMetadata<Ownport, KvMetadata>(KV_KEY, 'json');
+      const current = await this.kv.getWithMetadata<Takuhon, KvMetadata>(KV_KEY, 'json');
       const currentVersion = current.metadata?.version;
       if (currentVersion !== ifMatch) {
         throw new ConflictError(
