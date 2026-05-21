@@ -2,9 +2,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { describe, expect, it } from 'vitest';
 
-import creatorJson from '../../../../examples/creator-profile/ownport.json' with { type: 'json' };
-import freelancerJson from '../../../../examples/freelancer-profile/ownport.json' with { type: 'json' };
-import minimalJson from '../../../../examples/minimal-profile/ownport.json' with { type: 'json' };
+import creatorJson from '../../../../examples/creator-profile/takuhon.json' with { type: 'json' };
+import freelancerJson from '../../../../examples/freelancer-profile/takuhon.json' with { type: 'json' };
+import minimalJson from '../../../../examples/minimal-profile/takuhon.json' with { type: 'json' };
 import { SCHEMA_VERSION } from '../index.js';
 import { schema } from '../schema.js';
 

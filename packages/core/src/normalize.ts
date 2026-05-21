@@ -1,6 +1,6 @@
 /**
  * Canonicalize a {@link Ownport} document into the form downstream consumers
- * (`@ownport/api`, `@ownport/ui`, `@ownport/jsonld`) can rely on without
+ * (`@takuhon/api`, `@takuhon/ui`, `@takuhon/jsonld`) can rely on without
  * re-checking shape invariants.
  *
  * Two transformations only:
@@ -21,7 +21,7 @@
  *   `resolveLocale`'s case-insensitive lookup; the second would silently rewrite
  *   author input and is out of scope for Phase 1.
  * - `normalize(normalize(x))` deep-equals `normalize(x)` (idempotent), and the
- *   output re-validates against `ownport.schema.json`. Both invariants are
+ *   output re-validates against `takuhon.schema.json`. Both invariants are
  *   enforced by the unit tests.
  */
 

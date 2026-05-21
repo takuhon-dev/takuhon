@@ -27,7 +27,7 @@ import { validate, type ValidationError } from './validate.js';
  * itself. A wrapping envelope (e.g. `{ format, version, data, hash }`) is
  * intentionally avoided in Phase 1 — adding one later would be a breaking
  * change to the `GET /api/export` response shape and would require a major
- * version bump of `@ownport/core`.
+ * version bump of `@takuhon/core`.
  */
 export type ExportedOwnport = Ownport;
 

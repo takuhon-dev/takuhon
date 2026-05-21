@@ -1,4 +1,4 @@
-import type { Skill } from '@ownport/core';
+import type { Skill } from '@takuhon/core';
 
 import styles from './SkillsList.module.css';
 

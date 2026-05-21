@@ -1,5 +1,5 @@
 {
-  "name": "@ownport/static",
+  "name": "@takuhon/static",
   "version": "0.1.0",
   "description": "Filesystem-backed adapter for ownport — implements OwnportStorage on Node.js fs",
   "license": "MIT",
@@ -12,6 +12,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ownport/core": "workspace:*"
+    "@takuhon/core": "workspace:*"
   }
 }

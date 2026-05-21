@@ -1,7 +1,7 @@
 /**
  * TypeScript types for ownport profile data.
  *
- * These mirror the canonical contract defined in `ownport.schema.json`. The
+ * These mirror the canonical contract defined in `takuhon.schema.json`. The
  * published shape is sanity-checked at commit 1 by `__tests__/schema.test.ts`
  * (top-level keys, `$defs`, required fields, hybrid `additionalProperties`
  * splits, Spec §6 invariants) and by `__tests__/example.test.ts` (the bundled

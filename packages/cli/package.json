@@ -1,5 +1,5 @@
 {
-  "name": "@ownport/cli",
+  "name": "@takuhon/cli",
   "version": "0.1.0",
   "description": "create-ownport scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "MIT",
@@ -30,8 +30,8 @@
     }
   },
   "bin": {
-    "ownport": "./dist/index.js",
-    "create-ownport": "./dist/init.js"
+    "takuhon": "./dist/index.js",
+    "create-takuhon": "./dist/init.js"
   },
   "files": [
     "dist",
@@ -51,6 +51,6 @@
     "build": "tsup src/index.ts src/init.ts --format esm --dts --clean --sourcemap"
   },
   "dependencies": {
-    "@ownport/core": "workspace:*"
+    "@takuhon/core": "workspace:*"
   }
 }

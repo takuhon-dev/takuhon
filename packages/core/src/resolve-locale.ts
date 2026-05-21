@@ -12,7 +12,7 @@
  * Design notes:
  * - Function arguments (`locale`, `fallbackLocale`) take precedence over
  *   `settings.*`, in line with the spec's 7-tier list: HTTP-derived locales
- *   (#1-#4) are resolved upstream by `@ownport/api` and arrive here as
+ *   (#1-#4) are resolved upstream by `@takuhon/api` and arrive here as
  *   `locale` / `fallbackLocale`; `settings.defaultLocale` (#5),
  *   `settings.fallbackLocale` (#6), and `settings.availableLocales[0]` (#7)
  *   fill the tail.

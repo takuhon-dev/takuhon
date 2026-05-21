@@ -1,9 +1,9 @@
-import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@ownport/core';
+import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@takuhon/core';
 
 /**
  * In-memory OwnportStorage for tests that need a runtime-agnostic backing
- * store. Mirrors the contract of @ownport/cloudflare's FakeKV-backed adapter
- * but lives inside @ownport/api so unit tests stay free of adapter imports.
+ * store. Mirrors the contract of @takuhon/cloudflare's FakeKV-backed adapter
+ * but lives inside @takuhon/api so unit tests stay free of adapter imports.
  */
 export class FakeStorage implements OwnportStorage {
   private state: { data: Ownport; version: string } | null = null;

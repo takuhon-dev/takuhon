@@ -1,9 +1,9 @@
-import { resolveLocale } from '@ownport/core';
-import type { Ownport } from '@ownport/core';
+import { resolveLocale } from '@takuhon/core';
+import type { Ownport } from '@takuhon/core';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { ProfileHeader } from '../ProfileHeader.js';
 
 const example = resolveLocale(exampleJson as unknown as Ownport, 'en');

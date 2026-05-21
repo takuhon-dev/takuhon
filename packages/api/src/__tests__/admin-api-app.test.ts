@@ -1,7 +1,7 @@
-import { normalize, validate, type Ownport } from '@ownport/core';
+import { normalize, validate, type Ownport } from '@takuhon/core';
 import { describe, expect, it, vi } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { createAdminApiApp } from '../admin/admin-api-app.js';
 import { noopAuditLogger, type AuditLogger } from '../admin/audit-logger.js';
 import { noopCachePurger, type CachePurger } from '../admin/cache-purger.js';

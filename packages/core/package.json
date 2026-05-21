@@ -1,5 +1,5 @@
 {
-  "name": "@ownport/core",
+  "name": "@takuhon/core",
   "version": "0.1.0",
   "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for ownport",
   "license": "MIT",
@@ -29,12 +29,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema.json": "./ownport.schema.json",
+    "./schema.json": "./takuhon.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "ownport.schema.json",
+    "takuhon.schema.json",
     "README.md",
     "LICENSE",
     "NOTICE"

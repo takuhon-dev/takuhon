@@ -1,5 +1,5 @@
 {
-  "name": "@ownport/ui",
+  "name": "@takuhon/ui",
   "version": "0.1.0",
   "description": "React mobile-first profile UI and minimal admin editor components for ownport",
   "license": "MIT",
@@ -48,7 +48,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ownport/core": "workspace:*"
+    "@takuhon/core": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=19",

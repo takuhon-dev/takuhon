@@ -1,5 +1,5 @@
 /**
- * Forward migration registry for `@ownport/core`.
+ * Forward migration registry for `@takuhon/core`.
  *
  * Each migration is a pure function from a ownport document at version `from`
  * to one at version `to`. The registry is consulted by {@link migrateOwnport}
@@ -15,7 +15,7 @@
  *   when applicable, and schema-pass against the target version's schema
  *
  * The chain-building algorithm lives in `_chain.ts` and is intentionally
- * not re-exported from `@ownport/core` — it is an implementation detail of
+ * not re-exported from `@takuhon/core` — it is an implementation detail of
  * {@link migrateOwnport}.
  */
 
@@ -33,7 +33,7 @@ export interface Migration<From, To> {
 }
 
 /**
- * Forward migrations bundled with this build of `@ownport/core`. Empty in
+ * Forward migrations bundled with this build of `@takuhon/core`. Empty in
  * Phase 1; the first entry will land alongside the v0.2.0 schema bump.
  */
 export const migrations: readonly Migration<Ownport, Ownport>[] = [];

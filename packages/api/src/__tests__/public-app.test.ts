@@ -1,7 +1,7 @@
-import { normalize, validate, type Ownport } from '@ownport/core';
+import { normalize, validate, type Ownport } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { createPublicApp } from '../public-app.js';
 import { FakeStorage } from '../test-utils/fake-storage.js';
 

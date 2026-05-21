@@ -1,5 +1,5 @@
 {
-  "name": "@ownport/cloudflare",
+  "name": "@takuhon/cloudflare",
   "version": "0.1.0",
   "description": "Cloudflare Workers adapter for ownport — public API, Workers Assets, KV, R2 integrations",
   "license": "MIT",
@@ -13,8 +13,8 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
-    "@ownport/api": "workspace:*",
-    "@ownport/core": "workspace:*",
+    "@takuhon/api": "workspace:*",
+    "@takuhon/core": "workspace:*",
     "hono": "^4.12.19"
   },
   "devDependencies": {

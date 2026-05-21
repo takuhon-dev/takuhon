@@ -1,4 +1,4 @@
-import type { LocalizedLink } from '@ownport/core';
+import type { LocalizedLink } from '@takuhon/core';
 
 import styles from './LinksList.module.css';
 

@@ -9,12 +9,12 @@
  * between Node, Workers, and modern browsers.
  */
 
-/** Same shape as `ownport.schema.json`'s `propertyNames` for localized maps. */
+/** Same shape as `takuhon.schema.json`'s `propertyNames` for localized maps. */
 const BCP47_PATTERN = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]+)*$/;
 
 /**
  * Return whether a string has the structural shape of a BCP-47 tag accepted
- * by `ownport.schema.json`. This is a syntactic check only — `'zz'` passes
+ * by `takuhon.schema.json`. This is a syntactic check only — `'zz'` passes
  * because it matches the regex even though it is not a registered subtag.
  * Semantic validity (registered language / region) is intentionally out of
  * scope; consumers that want it should compose `Intl.Locale` on top.

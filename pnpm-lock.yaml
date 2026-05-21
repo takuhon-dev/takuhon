@@ -65,10 +65,10 @@ importers:
 
   adapters/cloudflare:
     dependencies:
-      '@ownport/api':
+      '@takuhon/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@ownport/core':
+      '@takuhon/core':
         specifier: workspace:*
         version: link:../../packages/core
       hono:
@@ -84,16 +84,16 @@ importers:
 
   adapters/static:
     dependencies:
-      '@ownport/core':
+      '@takuhon/core':
         specifier: workspace:*
         version: link:../../packages/core
 
   apps/playground:
     dependencies:
-      '@ownport/core':
+      '@takuhon/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ownport/ui':
+      '@takuhon/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -112,7 +112,7 @@ importers:
 
   packages/api:
     dependencies:
-      '@ownport/core':
+      '@takuhon/core':
         specifier: workspace:*
         version: link:../core
       hono:
@@ -121,7 +121,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@ownport/core':
+      '@takuhon/core':
         specifier: workspace:*
         version: link:../core
 
@@ -136,7 +136,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@ownport/core':
+      '@takuhon/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

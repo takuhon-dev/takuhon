@@ -1,6 +1,6 @@
 # @ownport/core
 
-JSON Schema (`ownport.schema.json`), Ajv-backed validation, normalization, locale resolution, JSON-LD generation, storage/asset interfaces, and migration registry for ownport.
+JSON Schema (`takuhon.schema.json`), Ajv-backed validation, normalization, locale resolution, JSON-LD generation, storage/asset interfaces, and migration registry for ownport.
 
 ## Installation
 

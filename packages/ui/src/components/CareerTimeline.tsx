@@ -1,4 +1,4 @@
-import type { LocalizedCareer } from '@ownport/core';
+import type { LocalizedCareer } from '@takuhon/core';
 
 import styles from './CareerTimeline.module.css';
 

@@ -2,7 +2,7 @@
  * Persistence contracts for ownport profile documents and binary assets.
  *
  * Adapters (KV / R2 / filesystem / SQLite / …) implement these interfaces to
- * plug into `@ownport/api`. All methods are async; failures surface as
+ * plug into `@takuhon/api`. All methods are async; failures surface as
  * exceptions in the {@link StorageError} family so the API layer can map them
  * onto RFC 7807 problem details.
  *

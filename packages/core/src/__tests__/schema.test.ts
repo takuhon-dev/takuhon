@@ -38,7 +38,7 @@ const expectedDefs = [
   'YearMonth',
 ] as const;
 
-describe('ownport.schema.json structural shape', () => {
+describe('takuhon.schema.json structural shape', () => {
   it('declares JSON Schema 2020-12', () => {
     expect(schema.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
   });

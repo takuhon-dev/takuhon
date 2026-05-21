@@ -6,11 +6,11 @@ import {
   problemResponse,
   type AuditLogger,
   type CachePurger,
-} from '@ownport/api';
-import { validate, type Ownport } from '@ownport/core';
+} from '@takuhon/api';
+import { validate, type Ownport } from '@takuhon/core';
 import { Hono } from 'hono';
 
-import exampleJson from '../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';

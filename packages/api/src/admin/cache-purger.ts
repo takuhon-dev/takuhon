@@ -1,7 +1,7 @@
 /**
  * Cache invalidation contract for admin write paths.
  *
- * `@ownport/api` stays adapter-neutral, so the actual edge-cache calls live
+ * `@takuhon/api` stays adapter-neutral, so the actual edge-cache calls live
  * in each adapter (Cloudflare's `caches.default.delete`, future runtimes'
  * equivalents). Tests inject a recording implementation to assert that the
  * admin handlers fire the right purge after a successful write.

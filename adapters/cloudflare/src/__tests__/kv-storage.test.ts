@@ -1,7 +1,7 @@
-import { ConflictError, NotFoundError, type Ownport } from '@ownport/core';
+import { ConflictError, NotFoundError, type Ownport } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { KV_KEY, KvOwnportStorage, type KvMetadata } from '../kv-storage.js';
 import { FakeKV } from '../test-utils/fake-kv.js';
 

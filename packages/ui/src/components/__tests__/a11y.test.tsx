@@ -1,12 +1,12 @@
-import { resolveLocale, validate } from '@ownport/core';
+import { resolveLocale, validate } from '@takuhon/core';
 import { render } from '@testing-library/react';
 import axe from 'axe-core';
 import { describe, expect, it, vi } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { LocaleSwitcher } from '../LocaleSwitcher.js';
-import { OwnportHead } from '../OwnportHead.js';
-import { OwnportProfile } from '../OwnportProfile.js';
+import { OwnportHead } from '../TakuhonHead.js';
+import { OwnportProfile } from '../TakuhonProfile.js';
 
 const validated = validate(exampleJson);
 if (!validated.ok) {

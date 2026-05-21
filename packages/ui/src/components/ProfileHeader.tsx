@@ -1,4 +1,4 @@
-import type { LocalizedProfile } from '@ownport/core';
+import type { LocalizedProfile } from '@takuhon/core';
 
 import styles from './ProfileHeader.module.css';
 

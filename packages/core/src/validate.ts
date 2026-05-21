@@ -1,10 +1,10 @@
 /**
  * Schema validation for ownport profile documents.
  *
- * Compiles the canonical {@link import('../ownport.schema.json')} once at module
+ * Compiles the canonical {@link import('../takuhon.schema.json')} once at module
  * load and exposes a Result-style {@link validate} that returns either the
  * narrowed {@link Ownport} value or a list of structured {@link ValidationError}s.
- * The validator is the canonical correctness boundary inside `@ownport/core`:
+ * The validator is the canonical correctness boundary inside `@takuhon/core`:
  * `normalize` (commit 3) and the API layer (commit 11+) both rely on this
  * function to know the shape they are working with.
  *
@@ -27,7 +27,7 @@ import { schema } from './schema.js';
 import type { Ownport } from './types.js';
 
 /**
- * Schema versions this build of `@ownport/core` accepts directly.
+ * Schema versions this build of `@takuhon/core` accepts directly.
  *
  * The migration registry (Phase 1 commit 6+) will translate older `schemaVersion`
  * values into the current one before validation runs, so this list reflects the

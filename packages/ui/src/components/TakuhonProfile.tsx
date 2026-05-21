@@ -1,4 +1,4 @@
-import type { LocalizedOwnport } from '@ownport/core';
+import type { LocalizedOwnport } from '@takuhon/core';
 
 import '../styles/tokens.css';
 
@@ -6,10 +6,10 @@ import { CareerTimeline } from './CareerTimeline.js';
 import { ContactInfo } from './ContactInfo.js';
 import { Footer } from './Footer.js';
 import { LinksList } from './LinksList.js';
-import styles from './OwnportProfile.module.css';
 import { ProfileHeader } from './ProfileHeader.js';
 import { ProjectsList } from './ProjectsList.js';
 import { SkillsList } from './SkillsList.js';
+import styles from './TakuhonProfile.module.css';
 
 export interface OwnportProfileProps {
   data: LocalizedOwnport;

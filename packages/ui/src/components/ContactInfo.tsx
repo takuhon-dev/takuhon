@@ -1,4 +1,4 @@
-import type { Contact } from '@ownport/core';
+import type { Contact } from '@takuhon/core';
 
 import styles from './ContactInfo.module.css';
 

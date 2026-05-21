@@ -2,10 +2,10 @@ import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { ConflictError, NotFoundError, StorageError, type Ownport } from '@ownport/core';
+import { ConflictError, NotFoundError, StorageError, type Ownport } from '@takuhon/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { StaticOwnportStorage } from '../fs-storage.js';
 import { resolveStoragePaths } from '../paths.js';
 

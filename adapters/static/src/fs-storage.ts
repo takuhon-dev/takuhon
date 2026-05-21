@@ -7,7 +7,7 @@ import {
   StorageError,
   type Ownport,
   type OwnportStorage,
-} from '@ownport/core';
+} from '@takuhon/core';
 
 import { resolveStoragePaths } from './paths.js';
 

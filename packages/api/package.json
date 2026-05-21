@@ -1,5 +1,5 @@
 {
-  "name": "@ownport/api",
+  "name": "@takuhon/api",
   "version": "0.1.0",
   "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for ownport",
   "license": "MIT",
@@ -48,7 +48,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ownport/core": "workspace:*",
+    "@takuhon/core": "workspace:*",
     "hono": "^4.12.19"
   }
 }

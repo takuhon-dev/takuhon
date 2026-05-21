@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { SCHEMA_VERSION } from '../index.js';
 import type { LinkCustom, Ownport } from '../types.js';
 
@@ -11,7 +11,7 @@ import type { LinkCustom, Ownport } from '../types.js';
 // arrives with the Ajv-based `validate()` test suite in the next commit.
 const example = exampleJson as Ownport;
 
-describe('examples/personal-profile/ownport.json', () => {
+describe('examples/personal-profile/takuhon.json', () => {
   it('matches the bundled SCHEMA_VERSION', () => {
     expect(example.schemaVersion).toBe(SCHEMA_VERSION);
   });

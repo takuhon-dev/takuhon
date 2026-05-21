@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @ownport/cli — ownport CLI (dev/validate/sync/export/migrate/restore).
+ * @takuhon/cli — ownport CLI (dev/validate/sync/export/migrate/restore).
  *
  * This is the Phase 1 skeleton. Real implementations land in subsequent commits.
  */

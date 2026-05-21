@@ -1,4 +1,4 @@
-import type { LocaleTag } from '@ownport/core';
+import type { LocaleTag } from '@takuhon/core';
 
 import styles from './LocaleSwitcher.module.css';
 

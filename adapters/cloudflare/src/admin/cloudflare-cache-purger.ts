@@ -1,4 +1,4 @@
-import type { CachePurger } from '@ownport/api';
+import type { CachePurger } from '@takuhon/api';
 
 export interface CloudflareCachePurgerOptions {
   /**

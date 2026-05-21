@@ -1,4 +1,4 @@
-import type { AuditEvent, AuditLogger } from '@ownport/api';
+import type { AuditEvent, AuditLogger } from '@takuhon/api';
 
 /**
  * `AuditLogger` that writes a single line of JSON per event to `console.log`.

@@ -1,7 +1,7 @@
-import type { Ownport } from '@ownport/core';
+import type { Ownport } from '@takuhon/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import worker, { type Env } from '../index.js';
 import { KV_KEY, type KvMetadata } from '../kv-storage.js';
 import { FakeCache } from '../test-utils/fake-cache.js';

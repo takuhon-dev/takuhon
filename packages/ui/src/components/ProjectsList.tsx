@@ -1,4 +1,4 @@
-import type { LocalizedProject } from '@ownport/core';
+import type { LocalizedProject } from '@takuhon/core';
 
 import styles from './ProjectsList.module.css';
 

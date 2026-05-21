@@ -1,4 +1,4 @@
-import { generateJsonLd, type LocalizedOwnport } from '@ownport/core';
+import { generateJsonLd, type LocalizedOwnport } from '@takuhon/core';
 import { useEffect } from 'react';
 
 export interface OwnportHeadProps {

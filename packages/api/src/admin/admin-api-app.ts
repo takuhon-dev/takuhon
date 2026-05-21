@@ -5,7 +5,7 @@ import {
   type Ownport,
   type OwnportStorage,
   type ValidationError,
-} from '@ownport/core';
+} from '@takuhon/core';
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse, type ProblemFieldError } from '../error-envelope.js';

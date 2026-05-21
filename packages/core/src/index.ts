@@ -1,5 +1,5 @@
 /**
- * @ownport/core — canonical JSON Schema, hand-written TypeScript types,
+ * @takuhon/core — canonical JSON Schema, hand-written TypeScript types,
  * Ajv-backed validation, document normalization, and locale resolution for
  * ownport profile data.
  *
@@ -91,7 +91,7 @@ export type {
 } from './types.js';
 
 /**
- * Version of the ownport schema bundled with this build of `@ownport/core`.
+ * Version of the ownport schema bundled with this build of `@takuhon/core`.
  * A ownport profile document's `schemaVersion` field must be migrate-compatible
  * with this version. See operational-lifecycle docs for the migration policy.
  */

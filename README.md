@@ -26,7 +26,7 @@ This bootstraps the monorepo and runs all checks against the empty package skele
 
 | Package         | Purpose                                                                                                                                             |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@ownport/core` | JSON Schema (`ownport.schema.json`), validation, normalization, locale resolution, JSON-LD generation, storage/asset interfaces, migration registry |
+| `@ownport/core` | JSON Schema (`takuhon.schema.json`), validation, normalization, locale resolution, JSON-LD generation, storage/asset interfaces, migration registry |
 | `@ownport/api`  | Hono-based HTTP handlers, RFC 7807 error envelope, response builders                                                                                |
 | `@ownport/ui`   | React mobile-first profile UI + minimal admin editor                                                                                                |
 | `@ownport/cli`  | `create-ownport` scaffolding + dev/validate/sync/export/migrate/restore commands                                                                    |

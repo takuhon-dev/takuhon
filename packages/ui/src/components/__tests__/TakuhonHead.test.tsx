@@ -1,9 +1,9 @@
-import { resolveLocale, validate } from '@ownport/core';
+import { resolveLocale, validate } from '@takuhon/core';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../../examples/personal-profile/ownport.json' with { type: 'json' };
-import { OwnportHead } from '../OwnportHead.js';
+import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
+import { OwnportHead } from '../TakuhonHead.js';
 
 const validated = validate(exampleJson);
 if (!validated.ok) {

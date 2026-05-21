@@ -1,9 +1,9 @@
-import { resolveLocale, validate, type LocaleTag, type Ownport } from '@ownport/core';
-import { LocaleSwitcher, OwnportHead, OwnportProfile } from '@ownport/ui';
+import { resolveLocale, validate, type LocaleTag, type Ownport } from '@takuhon/core';
+import { LocaleSwitcher, OwnportHead, OwnportProfile } from '@takuhon/ui';
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import exampleJson from '../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import './index.css';
 
 const COOKIE_NAME = 'ownport_locale';

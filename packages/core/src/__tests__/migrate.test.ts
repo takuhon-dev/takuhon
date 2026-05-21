@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import exampleJson from '../../../../examples/personal-profile/ownport.json' with { type: 'json' };
+import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { migrateOwnport, MigrationError, migrations } from '../index.js';
 import type { Ownport } from '../index.js';
 

@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@ownport/core';
+import { ConflictError, NotFoundError, type Ownport, type OwnportStorage } from '@takuhon/core';
 
 export const KV_KEY = 'OWNPORT_DATA';
 

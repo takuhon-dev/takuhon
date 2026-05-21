@@ -7,7 +7,7 @@ import {
   schema,
   type Ownport,
   type OwnportStorage,
-} from '@ownport/core';
+} from '@takuhon/core';
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
@@ -16,7 +16,7 @@ export interface PublicAppDeps {
   storage: OwnportStorage;
   /**
    * Returned when storage reports NotFoundError. Adapters that ship a
-   * bundled example fixture (e.g. @ownport/cloudflare) pass a thunk that
+   * bundled example fixture (e.g. @takuhon/cloudflare) pass a thunk that
    * returns the validated document so initial-onboarding requests still
    * succeed before the first admin write.
    */
