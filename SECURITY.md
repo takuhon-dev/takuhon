@@ -8,9 +8,15 @@ The Takuhon project is in an early development phase (pre-v1.0). Security fixes 
 
 Please **do not open a public GitHub issue** for security vulnerabilities.
 
-Report security issues via GitHub Security Advisories:
+The preferred reporting channel is GitHub Private Vulnerability Reporting (PVR):
 
 > https://github.com/takuhon-dev/takuhon/security/advisories/new
+
+If the PVR channel is unavailable to you (no GitHub account, or PVR not yet enabled when you read this), email the maintainers instead:
+
+> **hello@takuhon.org**
+
+Either channel works; PVR is preferred because it gives you a private threaded conversation with the maintainers and a clear path to CVE assignment.
 
 Include:
 

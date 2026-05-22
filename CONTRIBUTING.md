@@ -94,7 +94,7 @@ If you are unsure which license applies to the file you are modifying, check the
 
 - **Bugs**: use the bug report template at https://github.com/takuhon-dev/takuhon/issues/new
 - **Features / discussions**: open an issue or start a GitHub Discussion
-- **Security vulnerabilities**: see [SECURITY.md](SECURITY.md) (please do not open public issues for security reports)
+- **Security vulnerabilities**: report via GitHub Private Vulnerability Reporting at https://github.com/takuhon-dev/takuhon/security/advisories/new, or email **hello@takuhon.org** if PVR is unavailable to you. See [SECURITY.md](SECURITY.md) for the full policy. Please do not open public issues for security reports.
 
 ## Release process
 
