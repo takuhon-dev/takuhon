@@ -58,4 +58,4 @@ These land in subsequent Phase 2 sub-phases.
 
 ## License
 
-[MIT](./LICENSE).
+[Apache-2.0](./LICENSE).

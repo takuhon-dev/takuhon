@@ -2,7 +2,7 @@
   "name": "@takuhon/core",
   "version": "0.1.0",
   "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for takuhon",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Takuhon contributors",
   "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/core#readme",
   "repository": {

@@ -109,4 +109,4 @@ The Phase 1 milestones (validate, normalize, resolve-locale, JSON-LD) target Wor
 
 ## License
 
-[MIT](./LICENSE).
+[Apache-2.0](./LICENSE).

@@ -54,6 +54,6 @@ See [docs/publishing.md](docs/publishing.md) for the npm release workflow, inclu
 
 ## License
 
-- Core packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`) and most adapters: **MIT** — see `LICENSE`.
-- WordPress adapter (when distributed): **GPL-2.0-or-later** (required by WordPress derivative-work licensing).
+- Core packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`) and most adapters: **Apache-2.0** — see `LICENSE` and `NOTICE`.
+- WordPress adapter (when distributed): **GPL-2.0-or-later** (required by WordPress derivative-work licensing; combinable with Apache-2.0 core via the `or-later` clause).
 - Profile content (`takuhon.json`) license is chosen by the instance owner at scaffolding time (`meta.contentLicense`, no default).

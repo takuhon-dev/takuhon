@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Local Vite playground that renders @takuhon/ui against the personal-profile example",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -85,8 +85,8 @@ Coding conventions are defined in `eslint.config.js`, `.prettierrc`, and `tsconf
 
 By submitting a contribution, you agree that:
 
-- Your contribution to `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, and most adapters will be licensed under the **MIT License** (matching the receiving package).
-- Your contribution to the WordPress adapter (when distributed via wp.org or as a derivative) will be licensed under **GPL-2.0-or-later** (required by WordPress derivative-work licensing).
+- Your contribution to `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, and most adapters will be licensed under the **Apache License 2.0** (matching the receiving package). By submitting, you agree to Apache 2.0's terms, including the explicit patent grant and the no-retaliation clause for patent litigation.
+- Your contribution to the WordPress adapter (when distributed via wp.org or as a derivative) will be licensed under **GPL-2.0-or-later** (required by WordPress derivative-work licensing; combinable with the Apache-2.0 core packages via the `or-later` clause).
 
 If you are unsure which license applies to the file you are modifying, check the `license` field in the nearest `package.json`.
 

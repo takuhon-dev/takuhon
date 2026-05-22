@@ -2,7 +2,7 @@
   "name": "@takuhon/cli",
   "version": "0.1.0",
   "description": "create-takuhon scaffolding plus dev/validate/sync/export/migrate/restore commands",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Takuhon contributors",
   "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/cli#readme",
   "repository": {

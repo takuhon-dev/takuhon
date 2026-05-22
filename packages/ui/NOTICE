@@ -1,9 +1,10 @@
-Takuhon
-======
+@takuhon/ui
+Copyright 2026 Takuhon contributors
 
-Copyright (c) 2026 Takuhon contributors
+This product includes software developed by the Takuhon project
+(https://github.com/takuhon-dev/takuhon).
 
-This product includes software developed by the Takuhon project.
+Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-Third-party dependencies and their respective licenses are documented in each
-package's node_modules listing and will be summarized here in future releases.
+Third-party dependencies retain their own licenses; see this package's
+node_modules listing for details.

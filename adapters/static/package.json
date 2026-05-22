@@ -2,7 +2,7 @@
   "name": "@takuhon/static",
   "version": "0.1.0",
   "description": "Filesystem-backed adapter for takuhon — implements TakuhonStorage on Node.js fs",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
