@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { validate } from '@takuhon/core';
+import ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { TargetDirectoryExistsError, writeProject } from '../scaffold/index.js';
@@ -37,6 +38,7 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
       'README.md',
       '.gitignore',
       '.env.example',
+      'tsconfig.json',
       'src/index.ts',
     ]);
 
@@ -64,6 +66,63 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     expect(worker).toContain('validate(takuhonJson)');
     // Default-exports the result of createTakuhonWorker (the shape wrangler expects).
     expect(worker).toMatch(/export default createTakuhonWorker\(\{\s*fallback/);
+  });
+
+  it('generates a src/index.ts that parses cleanly (no syntax errors)', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const worker = await readFile(join(targetDir, 'src', 'index.ts'), 'utf8');
+
+    // `transpileModule` parses + lowers without resolving module imports, so
+    // it catches syntax errors (unbalanced braces, malformed template literals,
+    // unterminated strings) without needing a tsconfig + the @takuhon/* deps
+    // resolvable on disk. We treat any Error-level syntactic diagnostic as a
+    // failure; type-level diagnostics are out of scope here because the
+    // referenced packages are not installed inside the tmpdir under test.
+    const result = ts.transpileModule(worker, {
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        strict: true,
+        resolveJsonModule: true,
+        isolatedModules: true,
+        verbatimModuleSyntax: true,
+      },
+      reportDiagnostics: true,
+    });
+
+    const errors = (result.diagnostics ?? []).filter(
+      (d) => d.category === ts.DiagnosticCategory.Error,
+    );
+    expect(errors).toEqual([]);
+  });
+
+  it('generates a tsconfig.json with the settings the Worker entry depends on', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const raw = await readFile(join(targetDir, 'tsconfig.json'), 'utf8');
+    const config = JSON.parse(raw) as {
+      compilerOptions?: Record<string, unknown>;
+      include?: unknown;
+    };
+
+    // Critical compiler flags for the generated src/index.ts to type-check:
+    expect(config.compilerOptions?.resolveJsonModule).toBe(true);
+    expect(config.compilerOptions?.moduleResolution).toBe('Bundler');
+    expect(config.compilerOptions?.module).toBe('ESNext');
+    expect(config.compilerOptions?.strict).toBe(true);
+    expect(config.compilerOptions?.noEmit).toBe(true);
+    // Source files are picked up from src/ (where src/index.ts lives).
+    expect(config.include).toEqual(['src/**/*']);
   });
 
   it('produces a takuhon.json that validates against @takuhon/core', async () => {

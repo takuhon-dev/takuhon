@@ -2,10 +2,10 @@
  * Generator for the README.md placed in a freshly scaffolded project.
  *
  * Aims to give a first-time user enough to (1) fill in their profile data,
- * (2) provision Cloudflare KV + admin secret, and (3) deploy. The Worker
- * source file (`src/index.ts`) is not yet emitted by `create-takuhon`; that
- * lands in a follow-up phase. The README links the user to the published
- * `@takuhon/cloudflare` adapter README as the next reference point.
+ * (2) provision Cloudflare KV + admin secret, and (3) `pnpm dev` / `pnpm
+ * deploy` once the upstream `@takuhon/*` packages are reachable. Cross-
+ * references the published `@takuhon/cloudflare` adapter README as the
+ * next-step reference for the route map.
  */
 
 import type { ContentLicenseFragment } from '../licenses.js';

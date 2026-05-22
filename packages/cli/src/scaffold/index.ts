@@ -2,11 +2,11 @@
  * Top-level scaffolding orchestrator for `create-takuhon`.
  *
  * `writeProject` is the single entry point used by `init.ts`. It creates the
- * target directory (must not already exist), then writes the seven files
+ * target directory (must not already exist), then writes the eight files
  * that make up the scaffold: `takuhon.json`, `wrangler.toml`, `package.json`,
- * `README.md`, `.gitignore`, `.env.example`, and `src/index.ts` (the
- * Cloudflare Worker entry composed via `createTakuhonWorker` from
- * `@takuhon/cloudflare`).
+ * `README.md`, `.gitignore`, `.env.example`, `tsconfig.json`, and
+ * `src/index.ts` (the Cloudflare Worker entry composed via
+ * `createTakuhonWorker` from `@takuhon/cloudflare`).
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -19,6 +19,7 @@ import { renderGitignore } from './gitignore.js';
 import { renderPackageJson } from './package-json.js';
 import { renderReadme } from './readme.js';
 import { renderTakuhonJson } from './takuhon-json.js';
+import { renderTsconfigJson } from './tsconfig-json.js';
 import { renderWorkerIndexTs } from './worker-index-ts.js';
 import { renderWranglerToml } from './wrangler-toml.js';
 
@@ -76,6 +77,7 @@ export async function writeProject(opts: WriteProjectOptions): Promise<WriteProj
     { path: 'README.md', content: renderReadme({ projectName, license }) },
     { path: '.gitignore', content: renderGitignore() },
     { path: '.env.example', content: renderEnvExample() },
+    { path: 'tsconfig.json', content: renderTsconfigJson() },
     { path: 'src/index.ts', content: renderWorkerIndexTs() },
   ];
 

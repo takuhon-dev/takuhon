@@ -26,7 +26,7 @@ import takuhonJson from '../takuhon.json' with { type: 'json' };
 const fallback = validate(takuhonJson);
 if (!fallback.ok) {
   throw new Error(
-    'Bundled takuhon.json failed validation: ' +
+    'Project takuhon.json failed validation: ' +
       fallback.errors.map((e) => \`\${e.pointer}: \${e.message}\`).join('; '),
   );
 }
