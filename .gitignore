@@ -146,68 +146,41 @@ temp/
 *.rej
 .direnv/
 
-# ===== AI assistant instructions / agent local state =====
-# Internal AI-agent configuration. Repo-specific conventions, paths, and
-# assistant directives that are not meaningful to public OSS consumers —
-# keep them out of the published repository.
-
-# Generic agent convention files
+# ===== AI assistant / agent local state =====
+# Per-contributor agent configuration, instruction files, and runtime caches.
+# These are workstation-local — they should not ship to the published repo
+# or to npm tarballs. Patterns cover the major editor agents and CLI
+# assistants in current circulation.
 AGENTS.md
 AGENTS.local.md
-
-# Anthropic Claude
 CLAUDE.md
 .claude/
-
-# Google Gemini
 GEMINI.md
-
-# GitHub Copilot
 .github/copilot-instructions.md
-
-# Cursor IDE
 .cursor/
 .cursorrules
 .cursorignore
-
-# Windsurf
 .windsurf/
 .windsurfrules
-
-# Aider
 .aider*
-
-# Continue.dev
 .continue/
-
-# Codeium
 .codeium/
-
-# Zed Editor
 .zed/
-
-# Cline
 .cline*
 .clinerules*
-
-# Roo Code
 .roo/
 .roomodes*
-
-# Kilocode
 .kilocode/
-
-# Tabnine
 .tabnine/
-
-# JetBrains Junie
 .junie/
-
-# Generic agent runtime state
 .agents/local/
 .agents/tmp/
 
-# Basou - default ignore (Y-2 Section 1.3 / Y-1.5 Section 5.1)
+# ===== Local tooling state =====
+# Sibling-project / workflow tooling that some contributors run alongside
+# the takuhon checkout. The patterns are intentionally narrow (no `.basou/`
+# wildcard) so any shared artefacts a contributor explicitly commits still
+# go through.
 .basou/logs/
 .basou/raw/
 .basou/tmp/

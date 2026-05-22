@@ -74,12 +74,13 @@ Takuhon (拓本) lets you own your profile as a portable JSON document and publi
 The Worker entry at \`src/index.ts\` composes the takuhon adapter via
 \`createTakuhonWorker\` and serves your \`takuhon.json\` as the fallback when
 KV has no stored profile yet. Until the \`@takuhon/*\` packages are on npm,
-clone the upstream repo and link them into this directory:
+clone the upstream repo and link them into this directory (substitute
+your own absolute path for \`<takuhon-repo-path>\`):
 
 \`\`\`sh
-git clone https://github.com/takuhon-dev/takuhon ~/projects/takuhon
-( cd ~/projects/takuhon && pnpm install && pnpm build )
-pnpm link ~/projects/takuhon/packages/api ~/projects/takuhon/packages/core ~/projects/takuhon/adapters/cloudflare
+git clone https://github.com/takuhon-dev/takuhon <takuhon-repo-path>
+( cd <takuhon-repo-path> && pnpm install && pnpm build )
+pnpm link <takuhon-repo-path>/packages/api <takuhon-repo-path>/packages/core <takuhon-repo-path>/adapters/cloudflare
 \`\`\`
 
 Then:
