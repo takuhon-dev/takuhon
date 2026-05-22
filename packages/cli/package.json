@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "create-takuhon scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "MIT",
-  "author": "takuhon contributors",
+  "author": "Takuhon contributors",
   "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/cli#readme",
   "repository": {
     "type": "git",

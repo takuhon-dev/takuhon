@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for takuhon",
   "license": "MIT",
-  "author": "takuhon contributors",
+  "author": "Takuhon contributors",
   "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/api#readme",
   "repository": {
     "type": "git",

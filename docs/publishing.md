@@ -1,13 +1,13 @@
 # Publishing to npm
 
-This guide describes how to publish the `@ownport/*` packages to npm via the GitHub Actions workflow defined in `.github/workflows/publish.yml`.
+This guide describes how to publish the `@takuhon/*` packages to npm via the GitHub Actions workflow defined in `.github/workflows/publish.yml`.
 
 ## One-time setup (org owner)
 
 1. Create an npm Granular Access Token:
    - Visit https://www.npmjs.com/settings/<your-username>/tokens
    - Permissions: **Read and write** packages
-   - Scope: `@ownport/*`
+   - Scope: `@takuhon/*`
    - Expiration: 90 days (rotate periodically)
 
 2. Add the token as a GitHub Secret:
@@ -47,18 +47,18 @@ This token-based setup is required only until the org switches to npm Trusted Pu
 5. Verify the published packages:
 
    ```bash
-   npm view @ownport/core version
-   npm view @ownport/api version
-   npm view @ownport/ui version
-   npm view @ownport/cli version
-   npm view @ownport/cloudflare version
+   npm view @takuhon/core version
+   npm view @takuhon/api version
+   npm view @takuhon/ui version
+   npm view @takuhon/cli version
+   npm view @takuhon/cloudflare version
    ```
 
 ## Switch to Trusted Publishing (after first publish)
 
-After v0.1.0 is published, configure a Trusted Publisher for each `@ownport/*` package on npm:
+After v0.1.0 is published, configure a Trusted Publisher for each `@takuhon/*` package on npm:
 
-1. Visit https://www.npmjs.com/package/@ownport/core/access (repeat for `@ownport/api`, `@ownport/ui`, `@ownport/cli`, `@ownport/cloudflare`).
+1. Visit https://www.npmjs.com/package/@takuhon/core/access (repeat for `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`).
 2. Configure Trusted Publisher:
    - Repository: `takuhon-dev/takuhon`
    - Workflow filename: `publish.yml`
@@ -73,11 +73,11 @@ Future publishes then use the OIDC handshake automatically. The `permissions.id-
 
 | Error                                                            | Cause                                              | Fix                                                                        |
 | ---------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------- |
-| `403 Forbidden - PUT https://registry.npmjs.org/@ownport%2fcore` | `NPM_TOKEN` scope insufficient or expired          | Re-issue the token with `@ownport/*` scope and `Read and write` permission |
+| `403 Forbidden - PUT https://registry.npmjs.org/@takuhon%2fcore` | `NPM_TOKEN` scope insufficient or expired          | Re-issue the token with `@takuhon/*` scope and `Read and write` permission |
 | `409 Conflict - Package already exists`                          | Version already published (re-publish disallowed)  | Bump to a new version and retry                                            |
 | `E402 Payment Required`                                          | Tried to publish a private package on a free org   | Ensure `--access=public` flag is present (workflow already sets this)      |
 | `provenance flag requires id-token`                              | OIDC permission missing                            | Verify `permissions.id-token: write` is set on the publish job             |
-| `npm ERR! 404 Not Found - @ownport`                              | npm org `ownport` not configured for the publisher | Confirm org settings on npmjs.com; ensure members have publish rights      |
+| `npm ERR! 404 Not Found - @takuhon`                              | npm org `takuhon` not configured for the publisher | Confirm org settings on npmjs.com; ensure members have publish rights      |
 
 ## Notes
 

@@ -1,22 +1,22 @@
-# @ownport/cloudflare
+# @takuhon/cloudflare
 
-Cloudflare Workers adapter for ownport. Wires the framework-agnostic Hono
-handlers from `@ownport/api` to a Workers KV-backed profile store, the colo-
+Cloudflare Workers adapter for Takuhon. Wires the framework-agnostic Hono
+handlers from `@takuhon/api` to a Workers KV-backed profile store, the colo-
 local edge cache, and `console.log`-based audit logging.
 
 ## Routes
 
 | Method   | Path                        | Source                                       |
 | -------- | --------------------------- | -------------------------------------------- |
-| `GET`    | `/`                         | `@ownport/api` `createPublicApp`             |
-| `GET`    | `/api/profile`              | `@ownport/api` `createPublicApp` (KV-backed) |
-| `GET`    | `/api/schema`               | `@ownport/api` `createPublicApp`             |
-| `GET`    | `/api/jsonld`               | `@ownport/api` `createPublicApp`             |
-| `GET`    | `/ownport.json`             | `@ownport/api` `createPublicApp`             |
-| `GET`    | `/.well-known/ownport.json` | `@ownport/api` `createPublicApp`             |
-| `GET`    | `/admin`                    | `@ownport/api` `createAdminUiApp` (HTML)     |
-| `PUT`    | `/api/admin/profile`        | `@ownport/api` `createAdminApiApp`           |
-| `DELETE` | `/api/admin/profile`        | `@ownport/api` `createAdminApiApp`           |
+| `GET`    | `/`                         | `@takuhon/api` `createPublicApp`             |
+| `GET`    | `/api/profile`              | `@takuhon/api` `createPublicApp` (KV-backed) |
+| `GET`    | `/api/schema`               | `@takuhon/api` `createPublicApp`             |
+| `GET`    | `/api/jsonld`               | `@takuhon/api` `createPublicApp`             |
+| `GET`    | `/takuhon.json`             | `@takuhon/api` `createPublicApp`             |
+| `GET`    | `/.well-known/takuhon.json` | `@takuhon/api` `createPublicApp`             |
+| `GET`    | `/admin`                    | `@takuhon/api` `createAdminUiApp` (HTML)     |
+| `PUT`    | `/api/admin/profile`        | `@takuhon/api` `createAdminApiApp`           |
+| `DELETE` | `/api/admin/profile`        | `@takuhon/api` `createAdminApiApp`           |
 
 `POST` / `PATCH` on admin paths returns `405 Method Not Allowed`. Schema
 validation failures return `422 Unprocessable Entity` with an `errors[]`
@@ -26,7 +26,7 @@ list of JSON-Schema-style fragment pointers.
 
 ```sh
 pnpm install
-pnpm --filter @ownport/cloudflare dev   # wrangler dev
+pnpm --filter @takuhon/cloudflare dev   # wrangler dev
 ```
 
 Visit `http://127.0.0.1:8787/`. The first request returns the bundled
@@ -38,8 +38,8 @@ provision an admin token (next section).
 ### 1. Create the KV namespace
 
 ```sh
-wrangler kv namespace create OWNPORT_KV
-wrangler kv namespace create OWNPORT_KV --preview
+wrangler kv namespace create TAKUHON_KV
+wrangler kv namespace create TAKUHON_KV --preview
 ```
 
 Copy the printed ids into `wrangler.toml` (replace the
@@ -53,7 +53,7 @@ control. Set it as a Wrangler secret:
 ```sh
 # 32 bytes of entropy, base64-encoded (43 chars).
 TOKEN=$(openssl rand -base64 32)
-echo "$TOKEN" | wrangler secret put OWNPORT_ADMIN_TOKEN
+echo "$TOKEN" | wrangler secret put TAKUHON_ADMIN_TOKEN
 ```
 
 Store `$TOKEN` securely (1Password, vault, etc.). Without it, every
@@ -65,7 +65,7 @@ Store `$TOKEN` securely (1Password, vault, etc.). Without it, every
 # Generate a new token, push it as the new secret, then update any clients
 # that hold the old one. There is no grace period — once the secret
 # changes, requests bearing the old token are rejected.
-echo "$NEW_TOKEN" | wrangler secret put OWNPORT_ADMIN_TOKEN
+echo "$NEW_TOKEN" | wrangler secret put TAKUHON_ADMIN_TOKEN
 ```
 
 ### 3. Pin the admin Origin allowlist (optional but recommended)
@@ -75,7 +75,7 @@ writes:
 
 ```toml
 [vars]
-OWNPORT_ADMIN_ORIGIN = "https://admin.example.com,https://localhost:3000"
+TAKUHON_ADMIN_ORIGIN = "https://admin.example.com,https://localhost:3000"
 ```
 
 Empty value disables the check — acceptable when `/admin` is the only
@@ -99,7 +99,7 @@ in the dashboard:
 ### 5. Deploy
 
 ```sh
-pnpm --filter @ownport/cloudflare typecheck   # local TS check
+pnpm --filter @takuhon/cloudflare typecheck   # local TS check
 wrangler deploy
 ```
 
@@ -124,7 +124,7 @@ bearer token. The raw token never leaves the request boundary.
 
 After a successful admin write, the Worker calls `caches.default.delete`
 for `/`, `/api/profile`, `/api/profile?lang=en|ja`, `/api/jsonld`,
-`/api/jsonld?lang=en|ja`, and `/ownport.json`. **This clears the current
+`/api/jsonld?lang=en|ja`, and `/takuhon.json`. **This clears the current
 colo's cache only**; other colos honour the response's `Cache-Control`
 `s-maxage=300` (5 minutes) before refreshing.
 
@@ -150,7 +150,7 @@ edit JSON, save. The token never appears in the URL or cookies.
 
 ### Disabling admin entirely
 
-Leave `OWNPORT_ADMIN_TOKEN` unset. Every admin write returns `401`. The
+Leave `TAKUHON_ADMIN_TOKEN` unset. Every admin write returns `401`. The
 `/admin` UI is still served but its Save / Delete actions will fail
 identically; treat that as a feature-flag for read-only deployments.
 
@@ -162,4 +162,4 @@ identically; treat that as a feature-flag for read-only deployments.
 | `POST /api/admin/assets` (R2)      | Not yet wired                         | Phase 3.5     |
 | Global cache purge (REST API)      | Colo-local only via `Cache.delete`    | Phase 5+      |
 | CORS preflight for cross-origin    | Not handled (admin UI is same-origin) | Phase 5+      |
-| CLI scaffolding (`create-ownport`) | Minimal Wrangler bootstrap            | Phase 3.6     |
+| CLI scaffolding (`create-takuhon`) | Minimal Wrangler bootstrap            | Phase 3.6     |

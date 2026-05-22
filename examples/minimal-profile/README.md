@@ -13,4 +13,4 @@ This example highlights:
 
 It doubles as a test fixture in `packages/core/src/__tests__/examples-fixtures.test.ts` and is a useful sanity check that the schema's required surface really is small enough to start from.
 
-Copy this template when you want to publish the smallest valid ownport profile and grow it gradually.
+Copy this template when you want to publish the smallest valid Takuhon profile and grow it gradually.

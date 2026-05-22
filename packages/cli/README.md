@@ -1,5 +1,5 @@
-# @ownport/cli
+# @takuhon/cli
 
-The ownport CLI, including `create-ownport` scaffolding and the `ownport` command (dev/validate/sync/export/migrate/restore).
+The Takuhon CLI, including `create-takuhon` scaffolding and the `takuhon` command (dev/validate/sync/export/migrate/restore).
 
 > Phase 1 skeleton. Implementations land in subsequent commits.

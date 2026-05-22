@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "React mobile-first profile UI and minimal admin editor components for takuhon",
   "license": "MIT",
-  "author": "takuhon contributors",
+  "author": "Takuhon contributors",
   "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/ui#readme",
   "repository": {
     "type": "git",

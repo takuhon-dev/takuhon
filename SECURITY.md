@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The ownport project is in an early development phase (pre-v1.0). Security fixes are applied to the latest `main` branch only. Once a stable release is published, this policy will be updated to cover supported version windows.
+The Takuhon project is in an early development phase (pre-v1.0). Security fixes are applied to the latest `main` branch only. Once a stable release is published, this policy will be updated to cover supported version windows.
 
 ## Reporting a Vulnerability
 
