@@ -1,0 +1,36 @@
+# gitleaks configuration for the takuhon repo.
+#
+# Inherits the default rule set (`useDefault = true`) and adds project-
+# specific allowlists for known-safe matches that would otherwise be
+# false positives. The allowlist is intentionally narrow — anything not
+# explicitly listed here is treated as a potential secret and must be
+# investigated.
+
+title = "takuhon repo gitleaks config"
+
+[extend]
+# Start from the upstream default rule set (API tokens, passwords,
+# private keys, high-entropy strings, etc.). We only add allowlists on
+# top; we never relax detection rules.
+useDefault = true
+
+[allowlist]
+description = "Project-specific safe patterns (commit metadata, public URLs)"
+
+# `Co-Authored-By: Claude ...` and similar AI-model trailers are git
+# metadata, not secrets. The impl AGENTS.md documents these trailers as
+# a permitted exception to the "no AI tool names in source/comments"
+# rule.
+regexes = [
+  '''Co-Authored-By: (Claude|Codex|GitHub Copilot)[^<]*<noreply@(anthropic|openai|github)\.com>''',
+]
+
+# Allowlisted paths whose content is reviewed line-by-line by the
+# project owner before each release. Keep this list short and specific.
+paths = [
+  # The verbatim Apache-2.0 license body legally must remain unchanged;
+  # gitleaks occasionally false-positives on the boilerplate URL.
+  '''^LICENSE$''',
+  '''^packages/[^/]+/LICENSE$''',
+  '''^adapters/[^/]+/LICENSE$''',
+]
