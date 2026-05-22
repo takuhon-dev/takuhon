@@ -99,12 +99,22 @@ jobs:
             fi
           done
 
-      - name: Publish (dry-run)
+      # The publish steps below filter to `@takuhon/*` scoped packages only.
+      # The bare-name `takuhon` redirect package (`packages/takuhon/`) is
+      # published in a separate operator-driven step (Phase D of the OSS
+      # publish plan) because:
+      #   1. Its dependency on `@takuhon/cli` via `workspace:*` resolves to
+      #      a registry version that must exist before the bare-name shim
+      #      is installable.
+      #   2. npm's similar-name policy may block the bare-name and require
+      #      a manual dispute; we do not want that to abort the scoped
+      #      publish flow.
+      - name: Publish (dry-run, scoped packages only)
         if: ${{ inputs.dry_run == true }}
-        run: pnpm -r publish --access=public --no-git-checks --dry-run
+        run: pnpm --filter '@takuhon/*' publish --access=public --no-git-checks --dry-run
 
-      - name: Publish (real)
+      - name: Publish (real, scoped packages only)
         if: ${{ inputs.dry_run != true }}
-        run: pnpm -r publish --access=public --provenance --no-git-checks
+        run: pnpm --filter '@takuhon/*' publish --access=public --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
