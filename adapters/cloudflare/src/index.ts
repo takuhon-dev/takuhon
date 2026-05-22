@@ -31,10 +31,16 @@ export interface Env {
   TAKUHON_ADMIN_ORIGIN?: string;
 }
 
-function bundledFallback(): Takuhon {
-  const r = validate(exampleJson);
-  if (!r.ok) throw new Error('Bundled fixture failed validation.');
-  return r.data;
+/** Options accepted by {@link createTakuhonWorker}. */
+export interface CreateTakuhonWorkerOptions {
+  /**
+   * Lazy producer for the fallback Takuhon document served when KV has no
+   * stored profile yet. Called at most once per Worker invocation, on the
+   * cold path where the storage layer returns no entry. Implementations
+   * typically import a bundled `takuhon.json`, validate it once, and return
+   * the resulting value.
+   */
+  readonly fallback: () => Takuhon;
 }
 
 function parseOrigins(raw: string | undefined): string[] {
@@ -45,37 +51,62 @@ function parseOrigins(raw: string | undefined): string[] {
     .filter((s) => s !== '');
 }
 
-export default {
-  fetch(request: Request, env: Env): Response | Promise<Response> {
-    const url = new URL(request.url);
-    const storage = new KvTakuhonStorage(env.TAKUHON_KV);
-    const cachePurger: CachePurger = new CloudflareCachePurger(() => caches.default, {
-      origin: url.origin,
-    });
-    const auditLogger: AuditLogger = consoleAuditLogger;
+/**
+ * Build a Cloudflare Worker handler for the takuhon adapter. Wires
+ * `@takuhon/api`'s public/admin app factories to the KV-backed storage,
+ * Cloudflare edge cache purger, and console audit logger that ship with
+ * this package.
+ *
+ * This is the entry point used by projects scaffolded with
+ * `create-takuhon`: their `src/index.ts` imports `createTakuhonWorker`,
+ * passes a `fallback` that loads the project's own `takuhon.json`, and
+ * `export default`s the returned handler. The default export of this
+ * module is a convenience that calls the same factory with the monorepo's
+ * bundled `personal-profile` fixture.
+ */
+export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
+  fetch: (request: Request, env: Env) => Response | Promise<Response>;
+} {
+  return {
+    fetch(request: Request, env: Env): Response | Promise<Response> {
+      const url = new URL(request.url);
+      const storage = new KvTakuhonStorage(env.TAKUHON_KV);
+      const cachePurger: CachePurger = new CloudflareCachePurger(() => caches.default, {
+        origin: url.origin,
+      });
+      const auditLogger: AuditLogger = consoleAuditLogger;
 
-    const router = new Hono();
-    router.notFound((c) =>
-      problemResponse(c, {
-        slug: ERROR_SLUGS.notFound,
-        status: 404,
-        title: 'Not Found',
-        detail: `No route matches ${new URL(c.req.url).pathname}.`,
-      }),
-    );
-    router.route(
-      '/api/admin',
-      createAdminApiApp({
-        storage,
-        getAdminToken: () => env.TAKUHON_ADMIN_TOKEN,
-        getAdminOrigins: () => parseOrigins(env.TAKUHON_ADMIN_ORIGIN),
-        cachePurger,
-        auditLogger,
-      }),
-    );
-    router.route('/admin', createAdminUiApp());
-    router.route('/', createPublicApp({ storage, fallback: bundledFallback }));
+      const router = new Hono();
+      router.notFound((c) =>
+        problemResponse(c, {
+          slug: ERROR_SLUGS.notFound,
+          status: 404,
+          title: 'Not Found',
+          detail: `No route matches ${new URL(c.req.url).pathname}.`,
+        }),
+      );
+      router.route(
+        '/api/admin',
+        createAdminApiApp({
+          storage,
+          getAdminToken: () => env.TAKUHON_ADMIN_TOKEN,
+          getAdminOrigins: () => parseOrigins(env.TAKUHON_ADMIN_ORIGIN),
+          cachePurger,
+          auditLogger,
+        }),
+      );
+      router.route('/admin', createAdminUiApp());
+      router.route('/', createPublicApp({ storage, fallback: opts.fallback }));
 
-    return router.fetch(request, env);
-  },
-};
+      return router.fetch(request, env);
+    },
+  };
+}
+
+function bundledFallback(): Takuhon {
+  const r = validate(exampleJson);
+  if (!r.ok) throw new Error('Bundled fixture failed validation.');
+  return r.data;
+}
+
+export default createTakuhonWorker({ fallback: bundledFallback });
