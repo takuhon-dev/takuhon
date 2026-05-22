@@ -1,0 +1,43 @@
+{
+  "name": "takuhon",
+  "version": "0.1.0",
+  "description": "Takuhon — open-source portable profile server. This bare-name package is a thin redirect to @takuhon/cli; install it (`npm i -g takuhon`) to expose the `takuhon` CLI globally.",
+  "license": "Apache-2.0",
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/takuhon#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "packages/takuhon"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "profile",
+    "cli",
+    "create-takuhon",
+    "scaffolding"
+  ],
+  "type": "module",
+  "bin": {
+    "takuhon": "./bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@takuhon/cli": "workspace:*"
+  }
+}

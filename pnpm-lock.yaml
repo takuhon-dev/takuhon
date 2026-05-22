@@ -137,6 +137,12 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.20.0)
 
+  packages/takuhon:
+    dependencies:
+      '@takuhon/cli':
+        specifier: workspace:*
+        version: link:../cli
+
   packages/ui:
     dependencies:
       '@takuhon/core':
