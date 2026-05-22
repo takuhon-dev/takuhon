@@ -58,6 +58,47 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Pre-publish tarball sanity check
+        # Inspect the tarball that would ship to npm for each publishable
+        # package and fail if it contains any of:
+        #   - stale brand identifiers from earlier renames (meport,
+        #     ownport-dev, ownport)
+        #   - host-machine absolute paths from the build environment
+        #     (the runner home path /home/runner/ is the expected build
+        #     location and is excluded; anything else is suspicious)
+        # This guards against developer-side leakage when local dist/ is
+        # not rebuilt from scratch; CI always starts from a fresh checkout
+        # so the check should normally be a no-op. Uses `pnpm pack` rather
+        # than `npm pack` so workspace: dependency specifiers resolve
+        # correctly.
+        run: |
+          set -euo pipefail
+          extract_root="$(mktemp -d)"
+          trap 'rm -rf "$extract_root"' EXIT
+          for pkg in packages/core packages/api packages/ui packages/cli; do
+            echo "=== inspecting $pkg ==="
+            extract_dir="$extract_root/${pkg##*/}"
+            mkdir -p "$extract_dir"
+            tarball="$(cd "$pkg" && pnpm pack --pack-destination "$extract_dir" | tail -n 1)"
+            echo "Tarball: $tarball"
+            tar -tzf "$tarball" | sed 's/^/  /'
+            tar -xzf "$tarball" -C "$extract_dir"
+
+            # Brand-identifier leak check (word-boundary anchored)
+            if grep -r -E '\b(meport|ownport-dev|ownport)\b' "$extract_dir/package" 2>/dev/null; then
+              echo "::error file=$pkg::Found stale brand identifiers in published tarball — rebuild dist/ from a clean state"
+              exit 1
+            fi
+
+            # Host-path leak check (exclude expected GitHub-runner path)
+            suspicious_paths="$(grep -r -E '/Users/|/home/' "$extract_dir/package" 2>/dev/null | grep -v '/home/runner/' || true)"
+            if [ -n "$suspicious_paths" ]; then
+              echo "::error file=$pkg::Found host-machine absolute paths in published tarball:"
+              printf '%s\n' "$suspicious_paths"
+              exit 1
+            fi
+          done
+
       - name: Publish (dry-run)
         if: ${{ inputs.dry_run == true }}
         run: pnpm -r publish --access=public --no-git-checks --dry-run

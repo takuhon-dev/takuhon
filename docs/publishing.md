@@ -79,8 +79,40 @@ Future publishes then use the OIDC handshake automatically. The `permissions.id-
 | `provenance flag requires id-token`                              | OIDC permission missing                            | Verify `permissions.id-token: write` is set on the publish job             |
 | `npm ERR! 404 Not Found - @takuhon`                              | npm org `takuhon` not configured for the publisher | Confirm org settings on npmjs.com; ensure members have publish rights      |
 
+## Pre-publish tarball sanity check
+
+Before each publish (real or dry-run), the workflow inspects the tarball that
+would ship to npm for every publishable package. The step fails the workflow
+if either pattern shows up in the tarball contents:
+
+- **Stale brand identifiers** — `meport`, `ownport-dev`, or `ownport` left
+  over in `dist/`. This catches the developer-side risk of publishing a
+  locally-built dist that pre-dates the rebrand. CI always builds from a
+  clean checkout, so the check should normally be a no-op; if it fires,
+  the local cache is leaking into the build somehow and the publish should
+  be retried from CI.
+- **Host-machine absolute paths** — `/Users/...` or non-runner `/home/...`
+  paths that source maps may inadvertently embed. The check excludes the
+  GitHub-runner home path (`/home/runner/...`), which is by definition
+  expected and reveals no maintainer information.
+
+If you need to reproduce the check locally before pushing a tag:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+for pkg in packages/core packages/api packages/ui packages/cli; do
+  ( cd "$pkg" && npm pack --dry-run )
+done
+```
+
+Inspect the listed files for anything unexpected (test fixtures, internal
+config, stray markdown). The `files` array in each package.json is the
+source of truth for what ships.
+
 ## Notes
 
 - Do not publish from a local machine; always go through the workflow.
 - Do not run `npm publish` directly — use `pnpm -r publish` so workspace dependencies resolve correctly.
 - The workflow runs the same checks as CI before publish, so a failure here also indicates a regression.
+- The Pre-publish tarball sanity check is mandatory; do not skip it by editing the workflow.

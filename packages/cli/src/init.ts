@@ -151,9 +151,9 @@ void main(process.argv.slice(2))
     process.exit(code);
   })
   .catch((err: unknown) => {
-    // Render only the message — full stack traces can leak absolute paths
-    // (`/Users/...`, monorepo-internal layout) into a published binary's
-    // stderr output.
+    // Render only the message — full stack traces can leak host-machine
+    // absolute paths and monorepo-internal layout into a published
+    // binary's stderr output.
     process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
     process.exit(1);
   });
