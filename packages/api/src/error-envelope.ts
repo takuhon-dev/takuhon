@@ -23,7 +23,7 @@ export const ERROR_SLUGS = {
 
 export type ErrorSlug = (typeof ERROR_SLUGS)[keyof typeof ERROR_SLUGS];
 
-const TYPE_BASE = 'https://takuhon.dev/errors';
+const TYPE_BASE = 'https://takuhon.org/errors';
 
 export interface ProblemFieldError {
   path: string;

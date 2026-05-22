@@ -108,22 +108,22 @@ describe('createPublicApp', () => {
     expect(body.canonical).toBe('/takuhon.json');
   });
 
-  it('GET /unknown returns RFC 7807 with type=https://takuhon.dev/errors/not-found', async () => {
+  it('GET /unknown returns RFC 7807 with type=https://takuhon.org/errors/not-found', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/does-not-exist');
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/not-found');
+    expect(body.type).toBe('https://takuhon.org/errors/not-found');
     expect(body.instance).toBe('/does-not-exist');
   });
 
-  it('POST /api/profile returns 405 with type=https://takuhon.dev/errors/method-not-allowed', async () => {
+  it('POST /api/profile returns 405 with type=https://takuhon.org/errors/method-not-allowed', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/api/profile', { method: 'POST' });
     expect(res.status).toBe(405);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/method-not-allowed');
+    expect(body.type).toBe('https://takuhon.org/errors/method-not-allowed');
     expect(body.instance).toBe('/api/profile');
   });
 

@@ -90,7 +90,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(409);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/conflict');
+    expect(body.type).toBe('https://takuhon.org/errors/conflict');
     expect(body.currentVersion).toBe('v1');
   });
 
@@ -113,7 +113,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(403);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/forbidden');
+    expect(body.type).toBe('https://takuhon.org/errors/forbidden');
   });
 
   it('returns 415 when Content-Type is not application/json', async () => {
@@ -125,7 +125,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(415);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/unsupported-media-type');
+    expect(body.type).toBe('https://takuhon.org/errors/unsupported-media-type');
   });
 
   it('returns 400 on malformed JSON body', async () => {
@@ -137,7 +137,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(400);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/bad-request');
+    expect(body.type).toBe('https://takuhon.org/errors/bad-request');
   });
 
   it('returns 422 with JSON Pointer errors on schema violation', async () => {
@@ -149,7 +149,7 @@ describe('createAdminApiApp PUT /profile', () => {
     });
     expect(res.status).toBe(422);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/validation-failed');
+    expect(body.type).toBe('https://takuhon.org/errors/validation-failed');
     expect(Array.isArray(body.errors)).toBe(true);
     expect(body.errors.length).toBeGreaterThan(0);
     for (const fieldErr of body.errors as { path: string; message: string }[]) {
@@ -240,7 +240,7 @@ describe('createAdminApiApp method and route handling', () => {
     });
     expect(res.status).toBe(405);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/method-not-allowed');
+    expect(body.type).toBe('https://takuhon.org/errors/method-not-allowed');
   });
 
   it('returns 404 on unknown admin route under valid auth', async () => {
@@ -251,6 +251,6 @@ describe('createAdminApiApp method and route handling', () => {
     });
     expect(res.status).toBe(404);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/not-found');
+    expect(body.type).toBe('https://takuhon.org/errors/not-found');
   });
 });

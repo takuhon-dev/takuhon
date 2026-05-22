@@ -49,7 +49,7 @@ describe('bearerMiddleware', () => {
     const res = await fetchPath(makeApp('secret'), '/protected');
     expect(res.status).toBe(401);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/unauthorized');
+    expect(body.type).toBe('https://takuhon.org/errors/unauthorized');
   });
 
   it('rejects requests with wrong token with 401', async () => {
@@ -128,7 +128,7 @@ describe('originMiddleware', () => {
     });
     expect(res.status).toBe(403);
     const body: any = await res.json();
-    expect(body.type).toBe('https://takuhon.dev/errors/forbidden');
+    expect(body.type).toBe('https://takuhon.org/errors/forbidden');
   });
 
   it('allows requests without an Origin header (CLI / server-to-server)', async () => {
