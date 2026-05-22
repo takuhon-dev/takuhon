@@ -21,8 +21,13 @@ description = "Project-specific safe patterns (commit metadata, public URLs)"
 # metadata, not secrets. The impl AGENTS.md documents these trailers as
 # a permitted exception to the "no AI tool names in source/comments"
 # rule.
+#
+# The pattern is anchored to a full git trailer line (start-of-line
+# `Co-Authored-By:` plus end-of-line). Without anchoring, the broad
+# `[^<]*` middle could match arbitrary text and inadvertently allow a
+# token-bearing line that happens to contain the trailer prefix.
 regexes = [
-  '''Co-Authored-By: (Claude|Codex|GitHub Copilot)[^<]*<noreply@(anthropic|openai|github)\.com>''',
+  '''^Co-Authored-By: (Claude|Codex|GitHub Copilot)[^<\n]*<noreply@(anthropic|openai|github)\.com>$''',
 ]
 
 # Allowlisted paths whose content is reviewed line-by-line by the

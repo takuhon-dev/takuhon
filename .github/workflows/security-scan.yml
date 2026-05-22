@@ -68,7 +68,8 @@ jobs:
           # The symlink target referenced inside .git/ is excluded; we
           # only scan tracked files.
           if git grep -nE 'takuhon-planning/|basou-planning/|kozou-planning/|\bY-[0-9]+(\.[0-9]+)? Section ' -- . \
-              ':!.git/**' ; then
+              ':!.git/**' \
+              ':!.github/workflows/security-scan.yml' ; then
             echo "::error::Planning-repo path or internal-doc identifier leaked into tracked files. See matches above."
             exit 1
           fi
@@ -104,9 +105,13 @@ jobs:
           #   - CHANGELOG.md (documents the pre-publish guard itself)
           #   - this workflow + publish.yml (define the very patterns we
           #     search for, so they would always self-match)
+          # NOTE: git pathspec does not perform shell brace expansion, so
+          # `:!**/*.test.{ts,tsx}` would only exclude `.ts` files. We
+          # specify both extensions explicitly.
           if git grep -nE '(^|[^A-Za-z0-9])(/Users/|/home/[a-z][a-z0-9_-]*/)' -- . \
               ':!.git/**' \
-              ':!**/*.test.{ts,tsx}' \
+              ':!**/*.test.ts' \
+              ':!**/*.test.tsx' \
               ':!docs/publishing.md' \
               ':!CHANGELOG.md' \
               ':!.github/workflows/security-scan.yml' \
@@ -184,7 +189,8 @@ jobs:
           # Extend this list as new internal identifiers are introduced
           # to the planning side.
           if git grep -nE '\bY-[0-9]+(\.[0-9]+)? Section [0-9]+(\.[0-9]+)?|caronima\.internal|caronima\.local' -- . \
-              ':!.git/**' ; then
+              ':!.git/**' \
+              ':!.github/workflows/security-scan.yml' ; then
             echo "::error::Caronima-internal identifier leaked into tracked files. See matches above."
             exit 1
           fi
