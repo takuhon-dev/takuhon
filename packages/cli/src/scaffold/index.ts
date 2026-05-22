@@ -2,17 +2,15 @@
  * Top-level scaffolding orchestrator for `create-takuhon`.
  *
  * `writeProject` is the single entry point used by `init.ts`. It creates the
- * target directory (must not already exist), then writes the six files that
- * make up a Phase 3.5 MVP scaffold: `takuhon.json`, `wrangler.toml`,
- * `package.json`, `README.md`, `.gitignore`, `.env.example`.
- *
- * The Worker source file (`src/index.ts`) is *not* emitted by this MVP; it
- * lands in a follow-up phase. The generated README points the user at the
- * `@takuhon/cloudflare` adapter docs in the meantime.
+ * target directory (must not already exist), then writes the seven files
+ * that make up the scaffold: `takuhon.json`, `wrangler.toml`, `package.json`,
+ * `README.md`, `.gitignore`, `.env.example`, and `src/index.ts` (the
+ * Cloudflare Worker entry composed via `createTakuhonWorker` from
+ * `@takuhon/cloudflare`).
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import type { ContentLicenseFragment } from '../licenses.js';
 
@@ -21,6 +19,7 @@ import { renderGitignore } from './gitignore.js';
 import { renderPackageJson } from './package-json.js';
 import { renderReadme } from './readme.js';
 import { renderTakuhonJson } from './takuhon-json.js';
+import { renderWorkerIndexTs } from './worker-index-ts.js';
 import { renderWranglerToml } from './wrangler-toml.js';
 
 export interface WriteProjectOptions {
@@ -77,10 +76,16 @@ export async function writeProject(opts: WriteProjectOptions): Promise<WriteProj
     { path: 'README.md', content: renderReadme({ projectName, license }) },
     { path: '.gitignore', content: renderGitignore() },
     { path: '.env.example', content: renderEnvExample() },
+    { path: 'src/index.ts', content: renderWorkerIndexTs() },
   ];
 
   for (const { path, content } of files) {
-    await writeFile(join(targetDir, path), content, 'utf8');
+    const fullPath = join(targetDir, path);
+    const parent = dirname(fullPath);
+    if (parent !== targetDir) {
+      await mkdir(parent, { recursive: true });
+    }
+    await writeFile(fullPath, content, 'utf8');
   }
 
   return { files: files.map((f) => f.path) };

@@ -20,7 +20,7 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     await rm(workDir, { recursive: true, force: true });
   });
 
-  it('creates the target directory and writes all six MVP files in order', async () => {
+  it('creates the target directory and writes all scaffold files in order', async () => {
     const result = await writeProject({
       targetDir,
       projectName: 'my-profile',
@@ -37,12 +37,33 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
       'README.md',
       '.gitignore',
       '.env.example',
+      'src/index.ts',
     ]);
 
     for (const relative of result.files) {
       const entry = await stat(join(targetDir, relative));
       expect(entry.isFile()).toBe(true);
     }
+  });
+
+  it('generates a src/index.ts that composes the takuhon Worker via @takuhon/cloudflare', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const worker = await readFile(join(targetDir, 'src', 'index.ts'), 'utf8');
+
+    // Imports the public factory from @takuhon/cloudflare.
+    expect(worker).toContain("import { createTakuhonWorker } from '@takuhon/cloudflare'");
+    // Pulls the project's own takuhon.json via a relative JSON import.
+    expect(worker).toContain("import takuhonJson from '../takuhon.json' with { type: 'json' }");
+    // Validates the bundled JSON before constructing the fallback.
+    expect(worker).toContain("import { validate } from '@takuhon/core'");
+    expect(worker).toContain('validate(takuhonJson)');
+    // Default-exports the result of createTakuhonWorker (the shape wrangler expects).
+    expect(worker).toMatch(/export default createTakuhonWorker\(\{\s*fallback/);
   });
 
   it('produces a takuhon.json that validates against @takuhon/core', async () => {
