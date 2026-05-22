@@ -14,6 +14,7 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/.tsbuildinfo',
       '**/coverage/**',
+      '**/.wrangler/**',
       '**/*.d.ts',
       'eslint.config.js',
       '**/*.config.{js,ts,mjs,cjs}',
