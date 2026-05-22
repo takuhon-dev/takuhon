@@ -2,21 +2,20 @@
  * Content-license metadata and helpers for the `create-takuhon` scaffolding
  * flow.
  *
- * Authoritative spec lives in the planning repo at `docs/license.md`:
- *   - §2.2 lists the accepted `spdxId` values for `meta.contentLicense`.
- *   - §2.3 defines the interactive prompt offered by `create-takuhon`.
- *
- * `LICENSE_OPTIONS` mirrors §2.3 (four prompt rows; "Custom" is handled
- * separately by the prompt flow). `buildContentLicense` shapes the chosen
- * identifier into the `meta.contentLicense` fragment that lands in the
- * generated `takuhon.json`.
+ * The four entries in `LICENSE_OPTIONS` are the curated choices the
+ * interactive picker offers. "Custom" is handled separately by the prompt
+ * flow as a free-form SPDX text input. `buildContentLicense` shapes the
+ * chosen identifier into the `meta.contentLicense` fragment that lands in
+ * the generated `takuhon.json`. The Takuhon profile JSON Schema accepts any
+ * SPDX expression in `meta.contentLicense.spdxId`; unknown identifiers fall
+ * through with `spdxId` only, and downstream UI rendering is best-effort.
  */
 
 /** A single row in the interactive license selector. */
 export interface LicenseOption {
   /** Short label shown as the selectable label in the prompt. */
   readonly label: string;
-  /** Longer hint shown next to the label (parenthesized in §2.3). */
+  /** Longer hint shown alongside the label in the prompt UI. */
   readonly hint: string;
   /** SPDX identifier written to `takuhon.json` `meta.contentLicense.spdxId`. */
   readonly spdxId: string;
@@ -25,9 +24,9 @@ export interface LicenseOption {
 }
 
 /**
- * The four selectable options from planning doc §2.3. "Custom" is not in this
- * list because it triggers a free-form text prompt rather than mapping to a
- * fixed SPDX identifier here.
+ * The four curated license choices shown by the interactive picker. "Custom"
+ * is not in this list because it triggers a free-form text prompt rather than
+ * mapping to a fixed SPDX identifier here.
  */
 export const LICENSE_OPTIONS: readonly LicenseOption[] = [
   {
@@ -56,10 +55,15 @@ export const LICENSE_OPTIONS: readonly LicenseOption[] = [
 ];
 
 /**
- * Canonical URL lookup for SPDX identifiers we recognise but don't list in the
- * prompt (planning doc §2.2 table). Used by `buildContentLicense` so that a
- * user who passes `--license CC-BY-SA-4.0` (or selects it via `Custom`) still
- * gets a usable `url` field in the generated `takuhon.json`.
+ * Canonical URL lookup for SPDX identifiers we recognise but don't list in
+ * the interactive picker. Used by `buildContentLicense` so that a user who
+ * passes `--license CC-BY-SA-4.0` (or selects it via `Custom`) still gets a
+ * usable `url` field in the generated `takuhon.json`.
+ *
+ * URLs for non-CC SPDX identifiers point at the canonical SPDX license page
+ * (`spdx.org/licenses/<id>.html`). Creative Commons identifiers use the
+ * `creativecommons.org` deed URL because that is the page humans expect to
+ * land on (the SPDX page is metadata-only).
  */
 const KNOWN_URL_BY_SPDX: Readonly<Record<string, string>> = {
   'CC0-1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
@@ -69,7 +73,7 @@ const KNOWN_URL_BY_SPDX: Readonly<Record<string, string>> = {
   'CC-BY-NC-4.0': 'https://creativecommons.org/licenses/by-nc/4.0/',
   'CC-BY-NC-SA-4.0': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
   'CC-BY-NC-ND-4.0': 'https://creativecommons.org/licenses/by-nc-nd/4.0/',
-  MIT: 'https://opensource.org/licenses/MIT',
+  MIT: 'https://spdx.org/licenses/MIT.html',
 };
 
 /** Shape written to `takuhon.json` under `meta.contentLicense`. */
@@ -83,10 +87,10 @@ export interface ContentLicenseFragment {
  * Translate a chosen SPDX identifier into the `meta.contentLicense` fragment
  * for `takuhon.json`.
  *
- * - `Proprietary` is given a `rights` sentinel and no `url` (planning doc §2.2).
+ * - `Proprietary` is given a `rights` sentinel and no `url`.
  * - Known SPDX identifiers get a canonical `url`.
  * - Anything else is written as `{ spdxId }` only — the schema accepts
- *   arbitrary SPDX expressions, and UI rendering is best-effort (§2.2).
+ *   arbitrary SPDX expressions, and UI rendering is best-effort.
  */
 export function buildContentLicense(spdxId: string): ContentLicenseFragment {
   if (spdxId === 'Proprietary') {

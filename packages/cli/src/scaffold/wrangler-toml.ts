@@ -1,16 +1,23 @@
 /**
  * Generator for `wrangler.toml` in a freshly scaffolded project.
  *
- * Mirrors the reference layout used by `adapters/cloudflare/wrangler.toml` in
- * this monorepo: a single KV namespace `TAKUHON_KV`, placeholder ids the user
+ * The layout mirrors the reference Cloudflare adapter shipped in this
+ * monorepo: a single KV namespace `TAKUHON_KV`, placeholder ids the user
  * fills in after running `wrangler kv namespace create`, and the
  * `TAKUHON_ADMIN_ORIGIN` var defaulting to "" (disabled). The admin bearer
  * token is provisioned as a Wrangler secret and is therefore not in this file.
  */
 
-/** Worker names must match `^[a-z0-9][a-z0-9-]{0,62}$` for Cloudflare. */
+/**
+ * Validate a Cloudflare Worker name.
+ *
+ * Cloudflare itself accepts mixed-case DNS labels (1–63 chars, must not
+ * start or end with a hyphen). This validator additionally enforces a
+ * lowercase convention chosen for the scaffolder so that the resulting
+ * `workers.dev` subdomain is predictable and matches the npm `name` field.
+ */
 export function isValidWorkerName(name: string): boolean {
-  return /^[a-z0-9][a-z0-9-]{0,62}$/.test(name);
+  return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(name);
 }
 
 /**

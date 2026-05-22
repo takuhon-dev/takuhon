@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { LICENSE_OPTIONS, buildContentLicense, isValidSpdxInput } from '../licenses.js';
 
 describe('LICENSE_OPTIONS', () => {
-  it('exposes the four prompt rows from planning doc license.md §2.3 in order', () => {
+  it('exposes the four curated license options in interactive-picker order', () => {
     expect(LICENSE_OPTIONS.map((o) => o.spdxId)).toEqual([
       'CC-BY-4.0',
       'CC-BY-NC-4.0',
@@ -42,7 +42,7 @@ describe('buildContentLicense()', () => {
     });
   });
 
-  it('emits spdxId + rights (no url) for Proprietary, per planning doc §2.2', () => {
+  it('emits spdxId + rights (no url) for Proprietary', () => {
     const result = buildContentLicense('Proprietary');
     expect(result.spdxId).toBe('Proprietary');
     expect(result.url).toBeUndefined();
@@ -53,10 +53,10 @@ describe('buildContentLicense()', () => {
     expect(buildContentLicense('CC-BY-SA-4.0').url).toBe(
       'https://creativecommons.org/licenses/by-sa/4.0/',
     );
-    expect(buildContentLicense('MIT').url).toBe('https://opensource.org/licenses/MIT');
+    expect(buildContentLicense('MIT').url).toBe('https://spdx.org/licenses/MIT.html');
   });
 
-  it('emits spdxId only for unknown SPDX expressions (best-effort UI per §2.2)', () => {
+  it('emits spdxId only for unknown SPDX expressions (best-effort UI)', () => {
     const result = buildContentLicense('MIT OR Apache-2.0');
     expect(result).toEqual({ spdxId: 'MIT OR Apache-2.0' });
     expect(result.url).toBeUndefined();
@@ -65,7 +65,7 @@ describe('buildContentLicense()', () => {
 });
 
 describe('isValidSpdxInput()', () => {
-  it('accepts canonical SPDX identifiers used by the prompt + §2.2 table', () => {
+  it('accepts canonical SPDX identifiers used by the prompt and other common licenses', () => {
     for (const id of [
       'CC-BY-4.0',
       'CC-BY-NC-4.0',

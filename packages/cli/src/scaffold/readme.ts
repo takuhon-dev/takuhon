@@ -39,6 +39,15 @@ A [Takuhon](https://github.com/takuhon-dev/takuhon) profile deployment, running 
 
 > **Status**: pre-deploy. Edit \`takuhon.json\`, provision Cloudflare KV, then \`pnpm deploy\`.
 
+> **Heads-up — Takuhon is in a pre-publish phase.**
+>
+> The \`@takuhon/api\`, \`@takuhon/core\`, and \`@takuhon/cloudflare\` packages
+> referenced in \`package.json\` are not yet on the npm registry, and this
+> scaffold does **not** yet emit a Worker entry file at \`src/index.ts\`.
+> \`pnpm install\` and \`pnpm dev\` will therefore fail in this directory until
+> both ship. In the meantime, see *Develop* below for the workspace-link
+> recipe.
+
 ## What is Takuhon?
 
 Takuhon (拓本) lets you own your profile as a portable JSON document and publish it as a mobile-first profile page plus a public API (JSON-LD for AI agents and search engines included).
@@ -64,8 +73,24 @@ Takuhon (拓本) lets you own your profile as a portable JSON document and publi
 
 ## Develop
 
+Until the \`@takuhon/*\` packages are on npm, clone the upstream repo and link
+them into this directory:
+
 \`\`\`sh
-pnpm install
+git clone https://github.com/takuhon-dev/takuhon ~/projects/takuhon
+( cd ~/projects/takuhon && pnpm install && pnpm build )
+pnpm link ~/projects/takuhon/packages/api ~/projects/takuhon/packages/core ~/projects/takuhon/adapters/cloudflare
+\`\`\`
+
+You also need to author a Worker entry at \`src/index.ts\` (referenced by
+\`wrangler.toml\`'s \`main\` field). Start from
+[\`adapters/cloudflare/src/index.ts\`](https://github.com/takuhon-dev/takuhon/blob/main/adapters/cloudflare/src/index.ts)
+in the upstream repo and adapt it to import \`takuhon.json\` from this
+directory.
+
+Once both prerequisites are in place:
+
+\`\`\`sh
 pnpm dev   # runs \`wrangler dev\` locally
 \`\`\`
 

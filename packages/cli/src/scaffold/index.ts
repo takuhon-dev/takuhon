@@ -38,14 +38,17 @@ export interface WriteProjectResult {
 }
 
 /**
- * Error thrown when the target directory already exists. The caller can
- * surface a friendly message; the `code` is stable for testing.
+ * Error thrown when the target directory already exists. The caller is
+ * expected to render a friendly message that references the user-supplied
+ * path; the `code` is stable for tests. The absolute `targetDir` is exposed
+ * as a field rather than embedded in the message so that bubbling the error
+ * up through generic logging does not leak filesystem layout.
  */
 export class TargetDirectoryExistsError extends Error {
   override readonly name = 'TargetDirectoryExistsError';
   readonly code = 'TARGET_EXISTS' as const;
   constructor(readonly targetDir: string) {
-    super(`Target directory already exists: ${targetDir}`);
+    super('Target directory already exists.');
   }
 }
 

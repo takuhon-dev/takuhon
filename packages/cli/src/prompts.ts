@@ -1,11 +1,11 @@
 /**
  * Interactive prompt flow for `create-takuhon`, built on `@clack/prompts`.
  *
- * The flow follows planning doc license.md §2.3: a single-choice picker over
- * the four canonical options, with `Custom` opening a free-form SPDX text
- * input. Cancellation (Ctrl+C or pressing Esc on a clack prompt) returns a
- * sentinel result instead of throwing so the caller can exit cleanly with a
- * specific status code.
+ * A single-choice picker offers the curated `LICENSE_OPTIONS` plus a
+ * `Custom` row that opens a free-form SPDX text input. Cancellation
+ * (Ctrl+C or pressing Esc on a clack prompt) returns a sentinel result
+ * instead of throwing so the caller can exit cleanly with a specific status
+ * code.
  */
 
 import { cancel, isCancel, select, text } from '@clack/prompts';

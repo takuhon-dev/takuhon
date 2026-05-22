@@ -8,7 +8,7 @@
  *
  * The positional target directory is required; it must not already exist (we
  * refuse to overwrite). `--license` skips the interactive picker for CI /
- * automation, per planning doc license.md §2.3.
+ * automation use.
  */
 
 import { basename, resolve } from 'node:path';
@@ -23,6 +23,7 @@ import { isValidWorkerName } from './scaffold/wrangler-toml.js';
 
 interface CliArgs {
   readonly targetArg: string | undefined;
+  readonly extraPositionals: readonly string[];
   readonly license: string | undefined;
   readonly help: boolean;
 }
@@ -39,6 +40,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
   });
   return {
     targetArg: positionals[0],
+    extraPositionals: positionals.slice(1),
     license: values.license,
     help: values.help === true,
   };
@@ -79,13 +81,21 @@ async function main(argv: readonly string[]): Promise<number> {
     return 2;
   }
 
+  if (parsed.extraPositionals.length > 0) {
+    process.stderr.write(
+      `Error: unexpected extra arguments: ${parsed.extraPositionals.join(' ')}\n\n`,
+    );
+    printHelp();
+    return 2;
+  }
+
   const targetDir = resolve(process.cwd(), parsed.targetArg);
   const projectName = basename(targetDir);
 
   if (!isValidWorkerName(projectName)) {
     process.stderr.write(
       `Error: target directory basename "${projectName}" is not a valid Cloudflare Worker name.\n` +
-        `Names must be lowercase, start with a letter or digit, and contain only ` +
+        `Names must be lowercase, start and end with a letter or digit, and contain only ` +
         `letters, digits, and hyphens (max 63 chars).\n`,
     );
     return 2;
@@ -115,7 +125,7 @@ async function main(argv: readonly string[]): Promise<number> {
     await writeProject({ targetDir, projectName, license });
   } catch (err) {
     if (err instanceof TargetDirectoryExistsError) {
-      cancel(`Target directory already exists: ${err.targetDir}`);
+      cancel(`Target directory already exists: ${parsed.targetArg}`);
       return 1;
     }
     throw err;
@@ -141,6 +151,9 @@ void main(process.argv.slice(2))
     process.exit(code);
   })
   .catch((err: unknown) => {
-    process.stderr.write(`${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`);
+    // Render only the message — full stack traces can leak absolute paths
+    // (`/Users/...`, monorepo-internal layout) into a published binary's
+    // stderr output.
+    process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
     process.exit(1);
   });
