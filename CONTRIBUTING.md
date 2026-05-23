@@ -78,8 +78,26 @@ Coding conventions are defined in `eslint.config.js`, `.prettierrc`, and `tsconf
 - TypeScript strict mode + `noUncheckedIndexedAccess`
 - ESM only (no CommonJS in source)
 - Named exports (no `export default` except for framework-required files)
-- Comments may be Japanese; JSDoc for `src/index.ts` public APIs should be English
+- All comments and JSDoc must be in English
 - Avoid hard-coded absolute paths and AI-assistant / internal tool names in committed sources
+
+## Language
+
+All contributions to this repository must be in English. This applies to:
+
+- Source code identifiers, comments, and JSDoc
+- Commit messages (subject and body)
+- Pull request titles and descriptions
+- GitHub Issues, Discussions, and Release notes
+- Repository documentation under `docs/` and root markdown files
+
+Intentional exceptions:
+
+- **Brand etymology**: `Takuhon (拓本)` may appear in this repository's own `README.md` and `docs/` as part of the brand narrative.
+- **Multilingual test data and examples**: Files under `examples/` and `**/*.test.{ts,tsx}` may contain Japanese (and other non-English) strings to demonstrate Takuhon's multi-locale support. Public examples must always include English values alongside any non-English values.
+- **Bot-generated upstream quotes**: Automated PRs (e.g. Dependabot) that quote upstream changelogs may contain non-English text from those upstream sources.
+
+If you have internal notes you'd like to keep in another language, please keep them outside this repository.
 
 ## License of contributions
 
