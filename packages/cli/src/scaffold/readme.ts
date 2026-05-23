@@ -48,7 +48,7 @@ A [Takuhon](https://github.com/takuhon-dev/takuhon) profile deployment, running 
 
 ## What is Takuhon?
 
-Takuhon (拓本) lets you own your profile as a portable JSON document and publish it as a mobile-first profile page plus a public API (JSON-LD for AI agents and search engines included).
+Takuhon lets you own your profile as a portable JSON document and publish it as a mobile-first profile page plus a public API (JSON-LD for AI agents and search engines included).
 
 ## Setup
 
