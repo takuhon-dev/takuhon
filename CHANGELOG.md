@@ -12,7 +12,7 @@ This is a monorepo. All four publishable scoped npm packages and the bare-name `
 
 ## [0.1.0] - 2026-05-24
 
-First public release on the npm registry. Five packages published in lockstep: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, and the bare-name `takuhon` redirect.
+First public release on the npm registry. Six packages published on the same day: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, the bare-name `takuhon` redirect, and the Cloudflare Workers adapter `@takuhon/cloudflare`. The Cloudflare adapter was promoted from a workspace-private package to a published one mid-day so that projects scaffolded by `create-takuhon` can resolve all of their declared dependencies from the registry.
 
 ### Added — `@takuhon/core`
 
@@ -48,10 +48,12 @@ First public release on the npm registry. Five packages published in lockstep: `
 
 - Thin redirect package that runs `@takuhon/cli`. Allows `npm i -g takuhon` and `npx takuhon`.
 
-### Added — `@takuhon/cloudflare` _(workspace-private; not published in this release)_
+### Added — `@takuhon/cloudflare`
 
 - Workers KV adapter exposing `createTakuhonWorker({ fallback })` factory.
 - Console audit logger and Cloudflare cache purger DI implementations.
+- Bundled `personal-profile` fixture inlined into the published artifact so the default export works without the repository's `examples/` directory at install time.
+- `dist/index.d.ts` ships with a `/// <reference types="@cloudflare/workers-types" />` directive (via a `tsup.config.ts` `dts.banner`), so TypeScript consumers that import the exported `Env` interface resolve the `KVNamespace` ambient type without extra setup.
 
 ### Added — `@takuhon/static` _(workspace-private; not published in this release)_
 
