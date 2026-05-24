@@ -3,12 +3,48 @@
   "version": "0.1.0",
   "description": "Cloudflare Workers adapter for takuhon — public API, Workers Assets, KV, R2 integrations",
   "license": "Apache-2.0",
-  "private": true,
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/adapters/cloudflare#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "adapters/cloudflare"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "profile",
+    "cloudflare-workers",
+    "workers",
+    "adapter",
+    "hono"
+  ],
   "type": "module",
-  "main": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit",
+    "typecheck": "tsc",
+    "build": "tsup",
     "test": "vitest run",
     "dev": "wrangler dev"
   },

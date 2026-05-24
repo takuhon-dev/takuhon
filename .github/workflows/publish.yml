@@ -75,7 +75,7 @@ jobs:
           set -euo pipefail
           extract_root="$(mktemp -d)"
           trap 'rm -rf "$extract_root"' EXIT
-          for pkg in packages/core packages/api packages/ui packages/cli; do
+          for pkg in packages/core packages/api packages/ui packages/cli adapters/cloudflare; do
             echo "=== inspecting $pkg ==="
             extract_dir="$extract_root/${pkg##*/}"
             mkdir -p "$extract_dir"
