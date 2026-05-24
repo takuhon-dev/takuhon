@@ -2,6 +2,11 @@
 
 **Takuhon: your identity, made portable.**
 
+[![npm: takuhon](https://img.shields.io/npm/v/takuhon.svg?label=npm%3A%20takuhon&color=cb3837)](https://www.npmjs.com/package/takuhon)
+[![npm: @takuhon/cli](https://img.shields.io/npm/v/@takuhon/cli.svg?label=npm%3A%20%40takuhon%2Fcli&color=cb3837)](https://www.npmjs.com/package/@takuhon/cli)
+[![PyPI: takuhon](https://img.shields.io/pypi/v/takuhon.svg?label=pypi%3A%20takuhon&color=3776ab)](https://pypi.org/project/takuhon/)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 Open-source portable profile API server with a mobile-first profile page.
 
 > **Status**: Phase 1 (Core MVP) — under active development. APIs and data shapes may change.
