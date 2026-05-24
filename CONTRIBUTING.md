@@ -83,7 +83,15 @@ Coding conventions are defined in `eslint.config.js`, `.prettierrc`, and `tsconf
 
 ## Language
 
-All contributions to this repository must be in English. This applies to:
+To keep Takuhon accessible to a global open-source community, all
+contributions to this repository must be in English. English is used
+here as the shared lingua franca for international collaboration; this
+is not an exclusion of any particular language. The same convention
+exists in major OSS projects (Linux kernel, Node.js, React, etc.) for
+the same reason: a single shared language lowers the barrier to review,
+audit, and contribution across time zones and cultures.
+
+This applies to:
 
 - Source code identifiers, comments, and JSDoc
 - Commit messages (subject and body)
