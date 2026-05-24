@@ -1,0 +1,10 @@
+# Python build artifacts (not committed; produced by `python -m build`)
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

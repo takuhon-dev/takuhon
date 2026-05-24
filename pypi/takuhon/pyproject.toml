@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "takuhon"
+version = "0.0.1"
+description = "Reserved namespace for the future Takuhon Python SDK. Takuhon is an open-source portable profile server (see https://takuhon.org)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+    { name = "Takashi Matsuyama", email = "hello@takuhon.org" },
+]
+maintainers = [
+    { name = "Takashi Matsuyama", email = "hello@takuhon.org" },
+]
+keywords = ["takuhon", "profile", "json-ld", "portable", "schema-org"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://takuhon.org"
+Repository = "https://github.com/takuhon-dev/takuhon"
+Issues = "https://github.com/takuhon-dev/takuhon/issues"
+Documentation = "https://takuhon.org"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/takuhon"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/takuhon",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "pyproject.toml",
+]
