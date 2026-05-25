@@ -2,6 +2,7 @@ import { normalize, validate, type Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
+import { parseAcceptLanguage } from '../locale-resolution.js';
 import { createPublicApp } from '../public-app.js';
 import { FakeStorage } from '../test-utils/fake-storage.js';
 
@@ -44,7 +45,7 @@ describe('createPublicApp', () => {
     expect(body.meta.locale).toBe('en');
     expect(body.meta.schemaVersion).toBe('0.1.0');
     expect(res.headers.get('etag')).toBe('"v1"');
-    expect(res.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
+    expect(res.headers.get('cache-control')).toBe('private, max-age=300');
   });
 
   it('GET /api/profile?lang=ja resolves Japanese content', async () => {
@@ -75,7 +76,7 @@ describe('createPublicApp', () => {
     const res = await fetchPath(app, '/api/jsonld');
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/application\/ld\+json/);
-    expect(res.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
+    expect(res.headers.get('cache-control')).toBe('private, max-age=300');
     const body: any = await res.json();
     expect(Array.isArray(body)).toBe(true);
     expect(body[0]['@type']).toBe('ProfilePage');
@@ -137,5 +138,164 @@ describe('createPublicApp', () => {
     expect(res.headers.get('permissions-policy')).toContain('camera=()');
     expect(res.headers.get('content-security-policy')).toMatch(/default-src 'self'/);
     expect(res.headers.get('content-security-policy')).toMatch(/frame-ancestors 'none'/);
+  });
+});
+
+describe('locale resolution priority', () => {
+  // Fixture availableLocales: ["en", "ja"], defaultLocale: "en".
+  // Assertions exercise the request-side priority chain: query (?lang=),
+  // cookie (takuhon_locale), and Accept-Language with q-value ordering.
+  // URL-path-based candidates are intentionally out of scope here.
+
+  async function profile(headers: Record<string, string>, path = '/api/profile') {
+    const { app } = makeApp();
+    const res = await fetchPath(app, path, { headers });
+    return (await res.json()) as { meta: { locale: string }; data: { profile: { displayName: string } } };
+  }
+
+  it('honors takuhon_locale cookie alone', async () => {
+    const body = await profile({ cookie: 'takuhon_locale=ja' });
+    expect(body.meta.locale).toBe('ja');
+    expect(body.data.profile.displayName).toBe('パット・リベラ');
+  });
+
+  it('honors Accept-Language alone', async () => {
+    const body = await profile({ 'accept-language': 'ja,en;q=0.5' });
+    expect(body.meta.locale).toBe('ja');
+    expect(body.data.profile.displayName).toBe('パット・リベラ');
+  });
+
+  it('orders Accept-Language entries by q-value descending', async () => {
+    const body = await profile({ 'accept-language': 'en;q=0.3, ja;q=0.9' });
+    expect(body.meta.locale).toBe('ja');
+  });
+
+  it('?lang= beats cookie', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/profile?lang=en', {
+      headers: { cookie: 'takuhon_locale=ja' },
+    });
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('cookie beats Accept-Language', async () => {
+    const body = await profile({
+      cookie: 'takuhon_locale=en',
+      'accept-language': 'ja',
+    });
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('falls through invalid ?lang= to cookie', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/profile?lang=zz_invalid', {
+      headers: { cookie: 'takuhon_locale=ja' },
+    });
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('ja');
+  });
+
+  it('falls back to defaultLocale when Accept-Language tags are unavailable', async () => {
+    const body = await profile({ 'accept-language': 'fr,de;q=0.5' });
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('matches en-US in Accept-Language against available en via primary-subtag fallback', async () => {
+    const body = await profile({ 'accept-language': 'en-US' });
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('ignores the Accept-Language wildcard without crashing', async () => {
+    const body = await profile({ 'accept-language': '*' });
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('sets Vary: Accept-Language, Cookie on /api/profile and /api/jsonld', async () => {
+    const { app } = makeApp();
+    const profileRes = await fetchPath(app, '/api/profile');
+    const profileVary = profileRes.headers.get('vary') ?? '';
+    expect(profileVary).toMatch(/Accept-Language/i);
+    expect(profileVary).toMatch(/Cookie/i);
+
+    const jsonldRes = await fetchPath(app, '/api/jsonld');
+    const jsonldVary = jsonldRes.headers.get('vary') ?? '';
+    expect(jsonldVary).toMatch(/Accept-Language/i);
+    expect(jsonldVary).toMatch(/Cookie/i);
+  });
+
+  it('omits Vary on locale-agnostic routes', async () => {
+    const { app } = makeApp();
+    const schemaRes = await fetchPath(app, '/api/schema');
+    expect(schemaRes.headers.get('vary')).toBeNull();
+
+    const rawRes = await fetchPath(app, '/takuhon.json');
+    expect(rawRes.headers.get('vary')).toBeNull();
+  });
+
+  it('GET /api/jsonld honors Accept-Language (inLanguage matches q-ordered top)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/jsonld', {
+      headers: { 'accept-language': 'ja,en;q=0.5' },
+    });
+    const body: any = await res.json();
+    expect(body[0].inLanguage).toBe('ja');
+  });
+
+  it('substitutes the matched available locale on primary-subtag match (en → en-US)', async () => {
+    // Build a profile whose availableLocales are region-tagged. A request
+    // saying `Accept-Language: en` must resolve to en-US content, not the
+    // settings-tier default. Without the substitution, the bare `en`
+    // token would be forwarded to core, miss the en-US-keyed profile,
+    // and fall through to defaultLocale.
+    const base = makeSample();
+    const regional: Takuhon = {
+      ...base,
+      settings: { ...base.settings, availableLocales: ['en-US', 'ja'], defaultLocale: 'ja' },
+      profile: {
+        ...base.profile,
+        displayName: { 'en-US': 'Pat Rivera', ja: 'パット・リベラ' },
+      },
+    };
+    const storage = new FakeStorage();
+    await storage.saveProfile(regional);
+    const app = createPublicApp({ storage, fallback: () => regional });
+    const res = await fetchPath(app, '/api/profile', {
+      headers: { 'accept-language': 'en' },
+    });
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('en-US');
+    expect(body.data.profile.displayName).toBe('Pat Rivera');
+  });
+});
+
+describe('parseAcceptLanguage (unit)', () => {
+  it('truncates input over 2048 bytes before parsing', () => {
+    const padding = 'a'.repeat(3000);
+    const header = `ja, ${padding}`;
+    const tags = parseAcceptLanguage(header);
+    // The truncated header still leaves `ja` parseable at the front.
+    // The pathological padding is sliced off mid-token and discarded by
+    // the BCP-47 validity check, so total candidate count stays small.
+    expect(tags).toContain('ja');
+    expect(tags.length).toBeLessThanOrEqual(16);
+  });
+
+  it('caps comma-separated entries at 16', () => {
+    const tags = Array.from({ length: 25 }, (_, i) => `xx;q=0.${i % 10}`).join(',');
+    // Each generated tag (`xx`) is a valid BCP-47 primary subtag; the
+    // cap ensures we never look past entry 16.
+    const parsed = parseAcceptLanguage(`${tags},ja`);
+    expect(parsed.length).toBeLessThanOrEqual(16);
+    // `ja` sits past the cap and must not appear in the output.
+    expect(parsed).not.toContain('ja');
+  });
+
+  it('preserves caller-supplied casing on returned tags', () => {
+    // BCP-47 comparison is case-insensitive but display casing matters
+    // for downstream regional expansion. The parser must not lowercase.
+    const tags = parseAcceptLanguage('EN-us, ZH-Hant-TW;q=0.8');
+    expect(tags[0]).toBe('EN-us');
+    expect(tags[1]).toBe('ZH-Hant-TW');
   });
 });

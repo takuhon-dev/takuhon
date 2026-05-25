@@ -11,6 +11,7 @@ import {
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
+import { resolveRequestLocales } from './locale-resolution.js';
 
 export interface PublicAppDeps {
   storage: TakuhonStorage;
@@ -84,9 +85,9 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
   app.get('/', (c) => c.text('takuhon — visit /api/profile or /api/schema\n'));
 
   app.get('/api/profile', async (c) => {
-    const lang = c.req.query('lang');
     const { data, version } = await loadProfile(deps);
-    const localized = resolveLocale(normalize(data), lang);
+    const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
+    const localized = resolveLocale(normalize(data), locale, fallbackLocale);
     const body = {
       data: localized,
       meta: {
@@ -96,19 +97,21 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       },
     };
     c.header('etag', `"${version}"`);
-    c.header('cache-control', 'public, max-age=300, s-maxage=300');
+    c.header('cache-control', 'private, max-age=300');
+    c.header('vary', 'Accept-Language, Cookie');
     return c.json(body);
   });
 
   app.get('/api/schema', (c) => c.json(schema));
 
   app.get('/api/jsonld', async (c) => {
-    const lang = c.req.query('lang');
     const { data, version } = await loadProfile(deps);
-    const localized = resolveLocale(normalize(data), lang);
+    const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
+    const localized = resolveLocale(normalize(data), locale, fallbackLocale);
     const ld = generateJsonLd(localized);
     c.header('etag', `"${version}"`);
-    c.header('cache-control', 'public, max-age=300, s-maxage=300');
+    c.header('cache-control', 'private, max-age=300');
+    c.header('vary', 'Accept-Language, Cookie');
     c.header('content-type', 'application/ld+json; charset=utf-8');
     return c.body(JSON.stringify(ld));
   });

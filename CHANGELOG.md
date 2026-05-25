@@ -2,13 +2,35 @@
 
 All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redirect package, and the PyPI `takuhon` placeholder published from this repository are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This is a monorepo. All four publishable scoped npm packages and the bare-name `takuhon` redirect are released in lockstep at the same version. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
+This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`) and the bare-name `takuhon` redirect are released in lockstep at the same version. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
 ## [Unreleased]
 
 ### Added
 
 - _(future entries land here under one of the standard Keep-a-Changelog sections — Added / Changed / Deprecated / Removed / Fixed / Security)_
+
+## [0.1.1] - 2026-05-25
+
+Patch release. `@takuhon/api` and `@takuhon/cloudflare` ship a correctness fix for HTTP-layer locale resolution; the other four packages bump in lockstep with no functional changes.
+
+### Fixed — `@takuhon/api`
+
+- `/api/profile` and `/api/jsonld` now honor the `takuhon_locale` cookie and the `Accept-Language` header (with q-value ordering) in addition to the existing `?lang=` query — the documented query > cookie > Accept-Language priority chain. Previously only the query parameter was read, so a browser sending `Accept-Language: ja` to a Worker with `defaultLocale: en` still received English content.
+- Candidate validation: tags must be syntactically valid BCP-47, are filtered against the document's `availableLocales` (case-insensitive on the full tag or its primary subtag, so `en-US` matches an `en`-only document and `en` matches an `en-US`-only document), and bounded against pathological client input (`Accept-Language` ≤ 2048 bytes / ≤ 16 entries, cookie value ≤ 64 chars). When a candidate matches an available locale only via its primary subtag, the matched available token is substituted before forwarding so primary-subtag matches resolve to the correct stored content.
+
+### Changed — `@takuhon/api`
+
+- `/api/profile` and `/api/jsonld` cache directives change from `Cache-Control: public, max-age=300, s-maxage=300` to `Cache-Control: private, max-age=300`. The endpoints now vary by request locale, and shared caches (including the Cloudflare edge cache) do not key on `Accept-Language` or `Cookie` by default; `private` keeps responses correct per-user while still allowing browser-level caching. Deployments that want shared-cache reuse can opt in by configuring a Cache Key Rule on `Accept-Language` and `takuhon_locale` and switching the directive back to `public` at the platform layer.
+- `/api/profile` and `/api/jsonld` now emit `Vary: Accept-Language, Cookie` to keep any HTTP-compliant intermediate cache correct.
+
+### Known limitations
+
+- URL-path-based locale selection (e.g. `/ja/api/profile`) and Accept-Language candidates beyond the top two q-ranked entries are not honored in this release. Both are tracked for a future minor release that revisits routing and the `@takuhon/core` `resolveLocale` signature.
+
+### Lockstep version bump (no functional changes)
+
+- `@takuhon/core`, `@takuhon/ui`, `@takuhon/cli`, and the bare-name `takuhon` redirect are bumped to `0.1.1` to keep the lockstep release policy consistent.
 
 ## [0.1.0] - 2026-05-24
 
@@ -85,5 +107,6 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/takuhon-dev/takuhon/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/takuhon-dev/takuhon/releases/tag/v0.1.0
