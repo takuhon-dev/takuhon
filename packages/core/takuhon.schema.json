@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.1.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/0.2.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -42,6 +42,51 @@
       "type": "array",
       "maxItems": 200,
       "items": { "$ref": "#/$defs/Skill" }
+    },
+    "certifications": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Certification" }
+    },
+    "memberships": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Membership" }
+    },
+    "volunteering": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Volunteering" }
+    },
+    "honors": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Honor" }
+    },
+    "education": {
+      "type": "array",
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/Education" }
+    },
+    "publications": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/Publication" }
+    },
+    "languages": {
+      "type": "array",
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/Language" }
+    },
+    "courses": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/Course" }
+    },
+    "patents": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Patent" }
     },
     "contact": { "$ref": "#/$defs/Contact" },
     "settings": { "$ref": "#/$defs/Settings" },
@@ -320,7 +365,8 @@
           "maxLength": 100,
           "description": "Tool that produced this document (e.g. 'Takuhon', 'create-takuhon@0.1.0')."
         },
-        "contentLicense": { "$ref": "#/$defs/ContentLicense" }
+        "contentLicense": { "$ref": "#/$defs/ContentLicense" },
+        "privacy": { "$ref": "#/$defs/MetaPrivacy" }
       }
     },
     "ContentLicense": {
@@ -349,6 +395,214 @@
           "maxLength": 1000,
           "description": "Free-form rights statement (used when spdxId='Proprietary' or for additional notices)."
         }
+      }
+    },
+    "MetaPrivacy": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Opt-out flags that strip personally identifying fields from public API output (GET /api/profile, /api/jsonld, /takuhon.json). Admin endpoints (PUT /api/admin/*, GET /api/export) ignore these flags. Privacy-by-default: omitting the object or individual flags is equivalent to true.",
+      "properties": {
+        "hideCredentialIds": {
+          "type": "boolean",
+          "default": true,
+          "description": "When true (default), strip certifications[*].credentialId from public responses."
+        },
+        "hideEducationGrades": {
+          "type": "boolean",
+          "default": true,
+          "description": "When true (default), strip education[*].grade from public responses."
+        }
+      }
+    },
+    "Certification": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "issuingOrganization", "issueDate"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "title": { "$ref": "#/$defs/LocalizedTitle" },
+        "issuingOrganization": { "$ref": "#/$defs/LocalizedTitle" },
+        "issueDate": { "$ref": "#/$defs/YearMonth" },
+        "expirationDate": {
+          "anyOf": [{ "$ref": "#/$defs/YearMonth" }, { "type": "null" }],
+          "description": "null = explicitly 'no expiration'. Omit if unknown/unstated."
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "License or certificate number. Public exposure controlled by meta.privacy.hideCredentialIds."
+        },
+        "url": { "$ref": "#/$defs/Url" },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Membership": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "organization", "startDate"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "organization": { "$ref": "#/$defs/LocalizedTitle" },
+        "role": { "$ref": "#/$defs/LocalizedTitle" },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "startDate": { "$ref": "#/$defs/YearMonth" },
+        "endDate": {
+          "anyOf": [{ "$ref": "#/$defs/YearMonth" }, { "type": "null" }],
+          "description": "null = ongoing. Omit if unknown."
+        },
+        "isCurrent": { "type": "boolean" },
+        "url": { "$ref": "#/$defs/Url" },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Volunteering": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "organization", "role", "startDate"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "organization": { "$ref": "#/$defs/LocalizedTitle" },
+        "role": { "$ref": "#/$defs/LocalizedTitle" },
+        "cause": { "$ref": "#/$defs/LocalizedTitle" },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "startDate": { "$ref": "#/$defs/YearMonth" },
+        "endDate": {
+          "anyOf": [{ "$ref": "#/$defs/YearMonth" }, { "type": "null" }]
+        },
+        "isCurrent": { "type": "boolean" },
+        "url": { "$ref": "#/$defs/Url" },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Honor": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "issuer", "date"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "title": { "$ref": "#/$defs/LocalizedTitle" },
+        "issuer": { "$ref": "#/$defs/LocalizedTitle" },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "date": { "$ref": "#/$defs/YearMonth" },
+        "url": { "$ref": "#/$defs/Url" },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Education": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "institution", "startDate"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "institution": { "$ref": "#/$defs/LocalizedTitle" },
+        "degree": { "$ref": "#/$defs/LocalizedTitle" },
+        "fieldOfStudy": { "$ref": "#/$defs/LocalizedTitle" },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "grade": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Free-form grade / class / GPA. Public exposure controlled by meta.privacy.hideEducationGrades."
+        },
+        "startDate": { "$ref": "#/$defs/YearMonth" },
+        "endDate": {
+          "anyOf": [{ "$ref": "#/$defs/YearMonth" }, { "type": "null" }],
+          "description": "null = currently enrolled."
+        },
+        "isCurrent": { "type": "boolean" },
+        "url": { "$ref": "#/$defs/Url" },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Publication": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "date"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "title": { "$ref": "#/$defs/LocalizedTitle" },
+        "publisher": { "$ref": "#/$defs/LocalizedTitle" },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "date": { "$ref": "#/$defs/YearMonth" },
+        "url": { "$ref": "#/$defs/Url" },
+        "doi": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "DOI identifier (e.g. '10.1145/3548643.3548644'). The full URL goes in 'url'."
+        },
+        "coAuthors": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "description": "Co-author names in original script. Excludes the profile owner."
+        },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Language": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "language", "proficiency"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "language": { "$ref": "#/$defs/LocaleTag" },
+        "displayName": { "$ref": "#/$defs/LocalizedTitle" },
+        "proficiency": {
+          "type": "string",
+          "enum": ["native", "fluent", "professional", "intermediate", "basic"],
+          "description": "LinkedIn-compatible 5-level proficiency."
+        },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Course": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "title": { "$ref": "#/$defs/LocalizedTitle" },
+        "provider": { "$ref": "#/$defs/LocalizedTitle" },
+        "courseNumber": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "completionDate": { "$ref": "#/$defs/YearMonth" },
+        "certificateUrl": { "$ref": "#/$defs/Url" },
+        "relatedEducationId": {
+          "$ref": "#/$defs/Slug",
+          "description": "Optional reference to an education[].id (e.g. for university coursework)."
+        },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Patent": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "patentNumber", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "title": { "$ref": "#/$defs/LocalizedTitle" },
+        "patentNumber": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "office": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Patent office name (e.g. 'USPTO', 'JPO', 'EPO')."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "issued", "expired", "abandoned"]
+        },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "filingDate": { "$ref": "#/$defs/YearMonth" },
+        "grantDate": { "$ref": "#/$defs/YearMonth" },
+        "url": { "$ref": "#/$defs/Url" },
+        "coInventors": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "type": "string", "minLength": 1, "maxLength": 100 }
+        },
+        "order": { "type": "integer", "minimum": 0 }
       }
     }
   }

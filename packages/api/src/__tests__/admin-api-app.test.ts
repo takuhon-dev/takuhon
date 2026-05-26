@@ -62,7 +62,7 @@ describe('createAdminApiApp PUT /profile', () => {
     const body: any = await res.json();
     expect(body.data.profile.displayName.en).toBe('Pat Rivera');
     expect(body.meta.version).toBe('v1');
-    expect(body.meta.schemaVersion).toBe('0.1.0');
+    expect(body.meta.schemaVersion).toBe('0.2.0');
     expect(typeof body.meta.updatedAt).toBe('string');
     expect(res.headers.get('cache-control')).toBe('private, no-store');
   });

@@ -12,6 +12,7 @@ import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
 import { resolveRequestLocales } from './locale-resolution.js';
+import { applyPublicPrivacyFilter } from './privacy-filter.js';
 
 export interface PublicAppDeps {
   storage: TakuhonStorage;
@@ -87,7 +88,9 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
   app.get('/api/profile', async (c) => {
     const { data, version } = await loadProfile(deps);
     const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
-    const localized = resolveLocale(normalize(data), locale, fallbackLocale);
+    const localized = applyPublicPrivacyFilter(
+      resolveLocale(normalize(data), locale, fallbackLocale),
+    );
     const body = {
       data: localized,
       meta: {
@@ -107,7 +110,9 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
   app.get('/api/jsonld', async (c) => {
     const { data, version } = await loadProfile(deps);
     const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
-    const localized = resolveLocale(normalize(data), locale, fallbackLocale);
+    const localized = applyPublicPrivacyFilter(
+      resolveLocale(normalize(data), locale, fallbackLocale),
+    );
     const ld = generateJsonLd(localized);
     c.header('etag', `"${version}"`);
     c.header('cache-control', 'private, max-age=300');
@@ -118,9 +123,10 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
 
   app.get('/takuhon.json', async (c) => {
     const { data, version } = await loadProfile(deps);
+    const filtered = applyPublicPrivacyFilter(data);
     c.header('etag', `"${version}"`);
     c.header('cache-control', 'public, max-age=300');
-    return c.json(data);
+    return c.json(filtered);
   });
 
   app.get('/.well-known/takuhon.json', (c) => {

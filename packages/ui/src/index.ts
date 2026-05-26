@@ -11,6 +11,13 @@ export { TakuhonProfile, type TakuhonProfileProps } from './components/TakuhonPr
 export { ProfileHeader, type ProfileHeaderProps } from './components/ProfileHeader.js';
 export { LinksList, type LinksListProps } from './components/LinksList.js';
 export { CareerTimeline, type CareerTimelineProps } from './components/CareerTimeline.js';
+export {
+  EducationTimeline,
+  type EducationTimelineProps,
+} from './components/EducationTimeline.js';
+export { Certifications, type CertificationsProps } from './components/Certifications.js';
+export { HonorsList, type HonorsListProps } from './components/HonorsList.js';
+export { Languages, type LanguagesProps } from './components/Languages.js';
 export { ProjectsList, type ProjectsListProps } from './components/ProjectsList.js';
 export { SkillsList, type SkillsListProps } from './components/SkillsList.js';
 export { ContactInfo, type ContactInfoProps } from './components/ContactInfo.js';

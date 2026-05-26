@@ -165,6 +165,138 @@ export interface Skill {
   order?: number;
 }
 
+export interface Certification {
+  id: Slug;
+  title: LocalizedTitle;
+  issuingOrganization: LocalizedTitle;
+  issueDate: YearMonth;
+  /** `null` denotes an explicit "no expiration" (permanent credential). Omit when unknown. */
+  expirationDate?: YearMonth | null;
+  /**
+   * License or certificate number. Public exposure is controlled by
+   * {@link MetaPrivacy.hideCredentialIds} (default true).
+   */
+  credentialId?: string;
+  url?: string;
+  order?: number;
+}
+
+export interface Membership {
+  id: Slug;
+  organization: LocalizedTitle;
+  role?: LocalizedTitle;
+  description?: LocalizedBody;
+  startDate: YearMonth;
+  /** `null` denotes ongoing membership; omit when unknown. */
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  order?: number;
+}
+
+export interface Volunteering {
+  id: Slug;
+  organization: LocalizedTitle;
+  role: LocalizedTitle;
+  cause?: LocalizedTitle;
+  description?: LocalizedBody;
+  startDate: YearMonth;
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  order?: number;
+}
+
+export interface Honor {
+  id: Slug;
+  title: LocalizedTitle;
+  issuer: LocalizedTitle;
+  description?: LocalizedBody;
+  date: YearMonth;
+  url?: string;
+  order?: number;
+}
+
+export interface Education {
+  id: Slug;
+  institution: LocalizedTitle;
+  degree?: LocalizedTitle;
+  fieldOfStudy?: LocalizedTitle;
+  description?: LocalizedBody;
+  /**
+   * Free-form grade / class / GPA. Public exposure is controlled by
+   * {@link MetaPrivacy.hideEducationGrades} (default true).
+   */
+  grade?: string;
+  startDate: YearMonth;
+  /** `null` denotes currently enrolled; omit when unknown. */
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  order?: number;
+}
+
+export interface Publication {
+  id: Slug;
+  title: LocalizedTitle;
+  publisher?: LocalizedTitle;
+  description?: LocalizedBody;
+  date: YearMonth;
+  url?: string;
+  /** DOI identifier portion (e.g. '10.1145/...'); full URL goes in `url`. */
+  doi?: string;
+  /** Co-author names in original script. Excludes the profile owner. */
+  coAuthors?: string[];
+  order?: number;
+}
+
+export type LanguageProficiency =
+  | 'native'
+  | 'fluent'
+  | 'professional'
+  | 'intermediate'
+  | 'basic';
+
+export interface Language {
+  id: Slug;
+  /** BCP-47 tag (e.g. 'ja', 'en', 'fr-CA'). */
+  language: LocaleTag;
+  /** Human-readable label per locale (e.g. `{ en: 'Japanese', fr: 'japonais' }`). */
+  displayName?: LocalizedTitle;
+  proficiency: LanguageProficiency;
+  order?: number;
+}
+
+export interface Course {
+  id: Slug;
+  title: LocalizedTitle;
+  provider?: LocalizedTitle;
+  courseNumber?: string;
+  description?: LocalizedBody;
+  completionDate?: YearMonth;
+  certificateUrl?: string;
+  /** Optional reference to an `education[].id` for university coursework. */
+  relatedEducationId?: Slug;
+  order?: number;
+}
+
+export type PatentStatus = 'pending' | 'issued' | 'expired' | 'abandoned';
+
+export interface Patent {
+  id: Slug;
+  title: LocalizedTitle;
+  patentNumber: string;
+  /** Patent office name (e.g. 'USPTO', 'JPO', 'EPO'). */
+  office?: string;
+  status: PatentStatus;
+  description?: LocalizedBody;
+  filingDate?: YearMonth;
+  grantDate?: YearMonth;
+  url?: string;
+  coInventors?: string[];
+  order?: number;
+}
+
 export interface Contact {
   email?: string;
   showEmail?: boolean;
@@ -200,15 +332,37 @@ export interface ContentLicense {
   rights?: string;
 }
 
+/**
+ * Privacy opt-out flags that strip personally identifying fields from public
+ * API output (`GET /api/profile`, `/api/jsonld`, `/takuhon.json`). Admin
+ * endpoints (`PUT /api/admin/*`, `GET /api/export`) ignore these flags.
+ * Privacy-by-default: omitting the object or individual flags is equivalent
+ * to `true`.
+ */
+export interface MetaPrivacy {
+  /** When true (default), strip `certifications[*].credentialId` from public responses. */
+  hideCredentialIds?: boolean;
+  /** When true (default), strip `education[*].grade` from public responses. */
+  hideEducationGrades?: boolean;
+}
+
 export interface Meta {
   createdAt?: IsoDateTime;
   updatedAt?: IsoDateTime;
   /** Tool that produced this document (e.g. `'Takuhon'`, `'create-takuhon@0.1.0'`). */
   generator?: string;
   contentLicense: ContentLicense;
+  privacy?: MetaPrivacy;
 }
 
-/** A complete takuhon profile document. */
+/**
+ * A complete takuhon profile document.
+ *
+ * Schema-level, the nine new arrays from 0.2.0 (`certifications` through
+ * `patents`) are optional for 0.1.x back-compat. At the TypeScript layer they
+ * are typed as required because `validate()` and `normalize()` defensively
+ * coerce missing arrays to `[]` so downstream consumers never see `undefined`.
+ */
 export interface Takuhon {
   schemaVersion: string;
   profile: Profile;
@@ -216,6 +370,15 @@ export interface Takuhon {
   careers: Career[];
   projects: Project[];
   skills: Skill[];
+  certifications: Certification[];
+  memberships: Membership[];
+  volunteering: Volunteering[];
+  honors: Honor[];
+  education: Education[];
+  publications: Publication[];
+  languages: Language[];
+  courses: Course[];
+  patents: Patent[];
   contact: Contact;
   settings: Settings;
   meta: Meta;
@@ -307,6 +470,121 @@ export interface LocalizedProject {
   order?: number;
 }
 
+/** Certification with localized fields collapsed to single strings. */
+export interface LocalizedCertification {
+  id: Slug;
+  title: string;
+  issuingOrganization: string;
+  issueDate: YearMonth;
+  expirationDate?: YearMonth | null;
+  credentialId?: string;
+  url?: string;
+  order?: number;
+}
+
+/** Membership with localized fields collapsed to single strings. */
+export interface LocalizedMembership {
+  id: Slug;
+  organization: string;
+  role?: string;
+  description?: string;
+  startDate: YearMonth;
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  order?: number;
+}
+
+/** Volunteering with localized fields collapsed to single strings. */
+export interface LocalizedVolunteering {
+  id: Slug;
+  organization: string;
+  role: string;
+  cause?: string;
+  description?: string;
+  startDate: YearMonth;
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  order?: number;
+}
+
+/** Honor with localized fields collapsed to single strings. */
+export interface LocalizedHonor {
+  id: Slug;
+  title: string;
+  issuer: string;
+  description?: string;
+  date: YearMonth;
+  url?: string;
+  order?: number;
+}
+
+/** Education with localized fields collapsed to single strings. */
+export interface LocalizedEducation {
+  id: Slug;
+  institution: string;
+  degree?: string;
+  fieldOfStudy?: string;
+  description?: string;
+  grade?: string;
+  startDate: YearMonth;
+  endDate?: YearMonth | null;
+  isCurrent?: boolean;
+  url?: string;
+  order?: number;
+}
+
+/** Publication with localized fields collapsed to single strings. */
+export interface LocalizedPublication {
+  id: Slug;
+  title: string;
+  publisher?: string;
+  description?: string;
+  date: YearMonth;
+  url?: string;
+  doi?: string;
+  coAuthors?: string[];
+  order?: number;
+}
+
+/** Language entry with `displayName` collapsed to a single string. */
+export interface LocalizedLanguage {
+  id: Slug;
+  language: LocaleTag;
+  displayName?: string;
+  proficiency: LanguageProficiency;
+  order?: number;
+}
+
+/** Course with localized fields collapsed to single strings. */
+export interface LocalizedCourse {
+  id: Slug;
+  title: string;
+  provider?: string;
+  courseNumber?: string;
+  description?: string;
+  completionDate?: YearMonth;
+  certificateUrl?: string;
+  relatedEducationId?: Slug;
+  order?: number;
+}
+
+/** Patent with localized fields collapsed to single strings. */
+export interface LocalizedPatent {
+  id: Slug;
+  title: string;
+  patentNumber: string;
+  office?: string;
+  status: PatentStatus;
+  description?: string;
+  filingDate?: YearMonth;
+  grantDate?: YearMonth;
+  url?: string;
+  coInventors?: string[];
+  order?: number;
+}
+
 /**
  * A takuhon document with every localized map flattened to a single string,
  * plus a `resolvedLocale` field recording which tag was actually used as the
@@ -322,6 +600,15 @@ export interface LocalizedTakuhon {
   careers: LocalizedCareer[];
   projects: LocalizedProject[];
   skills: Skill[];
+  certifications: LocalizedCertification[];
+  memberships: LocalizedMembership[];
+  volunteering: LocalizedVolunteering[];
+  honors: LocalizedHonor[];
+  education: LocalizedEducation[];
+  publications: LocalizedPublication[];
+  languages: LocalizedLanguage[];
+  courses: LocalizedCourse[];
+  patents: LocalizedPatent[];
   contact: Contact;
   settings: Settings;
   meta: Meta;

@@ -10,6 +10,50 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 - _(future entries land here under one of the standard Keep-a-Changelog sections — Added / Changed / Deprecated / Removed / Fixed / Security)_
 
+## [0.2.0] - 2026-05-26
+
+Minor release. The takuhon schema gains nine LinkedIn-aligned top-level array fields and a privacy-by-default opt-out block. All additions are backward-compatible: an unmodified 0.1.x profile validates against the 0.2.0 schema, and the bundled `v0.1.0-to-v0.2.0` migration leaves every pre-existing field untouched.
+
+### Added — `@takuhon/core`
+
+- Nine new top-level array fields on `Takuhon`: `certifications` / `memberships` / `volunteering` / `honors` / `education` / `publications` / `languages` / `courses` / `patents`. Each is optional in the JSON Schema for back-compat and is initialized to `[]` by `validate()` and by `normalize()` so the TypeScript types can keep them as required without lying about runtime shape.
+- New `meta.privacy` opt-out block with `hideCredentialIds` and `hideEducationGrades` boolean flags. Both default to `true` (privacy-by-default); operators must explicitly set them to `false` to expose `certifications[*].credentialId` and `education[*].grade` on public API responses. `patents[*].patentNumber` is treated as a public record (typical patent office publication) and is not gated.
+- New TypeScript exports: `Certification` / `Membership` / `Volunteering` / `Honor` / `Education` / `Publication` / `Language` / `LanguageProficiency` / `Course` / `Patent` / `PatentStatus` / `MetaPrivacy` plus matching `Localized*` variants for every entity that has localized fields.
+- New migration entry `v0.1.0-to-v0.2.0` in the migrations registry. The migrate function uses conditional spread (`partial.certifications ?? []`) so a pre-existing value at any of the nine new keys passes through losslessly even though the 0.1.x root schema closes additional properties.
+- Schema.org JSON-LD output for every new field: `hasCredential` (`EducationalOccupationalCredential`), `memberOf` (Role wrapper around `Organization`), `subjectOf` `Role` for volunteering, `award` string list for honors, `alumniOf` (Role wrapper around `EducationalOrganization`), `subjectOf` `ScholarlyArticle` for publications, `knowsLanguage` BCP-47 string list, `subjectOf` `Course` + `CourseInstance` for courses (Schema.org `Course` has no direct date property), and `subjectOf` `CreativeWork` with `additionalType` pointing at the pending Schema.org `Patent` URL.
+- Post-Ajv uniqueness check on `languages[].language` — duplicate BCP-47 tags (case-insensitive) are reported as a `uniqueItems` validation error rather than a runtime warning (Spec §6.16).
+
+### Added — `@takuhon/api`
+
+- New `applyPublicPrivacyFilter` helper in `privacy-filter.ts`. Public read endpoints (`/api/profile`, `/api/jsonld`, `/takuhon.json`) route their responses through the filter; admin endpoints (`/api/admin/*`) bypass it and continue to serve the full document to authenticated callers.
+
+### Added — `@takuhon/ui`
+
+- Four new mobile-first section components: `EducationTimeline`, `Certifications`, `HonorsList`, `Languages`. Each accepts a single locale-resolved array prop and renders nothing when empty so consumers can drop them into a profile layout unconditionally. `TakuhonProfile` composes them into the canonical render order: ProfileHeader → LinksList → Education → Career → Certifications → Projects → Honors → Skills → Languages → Contact → Footer. The remaining five 0.2.0 fields (`memberships` / `volunteering` / `publications` / `courses` / `patents`) ship with schema and JSON-LD support but no default UI in this release — `@takuhon/core`'s `LocalizedTakuhon` exposes them so consumers who need them can render custom sections.
+
+### Fixed — `@takuhon/api`
+
+- Public read endpoints (`/api/profile`, `/api/jsonld`, `/takuhon.json`) now strip `contact.email` from responses unless `contact.showEmail === true`. Spec §6.10 has required this since 0.1.x but the 0.1.x runtime never applied the filter; the 0.2.0 privacy helper closes the drift while adding the new credentialId / grade strip paths.
+
+### Changed — `@takuhon/cli`
+
+- `create-takuhon` scaffolding now emits a 0.2.0-shaped `takuhon.json` with the nine new arrays initialized to `[]`. `meta.privacy` is omitted from the scaffold — default-true semantics apply automatically, and operators who want disclosure add the flag explicitly.
+
+### Migrated
+
+- The three richer bundled fixtures under `examples/` (`personal-profile`, `creator-profile`, `freelancer-profile`) have their `schemaVersion` bumped to `0.2.0` and now declare the nine new arrays as empty literals. `personal-profile` additionally adds `meta.privacy` to demonstrate the new opt-out block.
+- `examples/minimal-profile/takuhon.json` has only its `schemaVersion` bumped; it deliberately omits the nine new arrays (and `meta.privacy`) to preserve the fixture's role as the smallest schema-valid 0.2.0 profile. `validate()` and `normalize()` coerce the missing keys to `[]` so this minimal shape works end-to-end on the same code paths as the richer fixtures.
+
+### Lockstep version bump (no functional changes beyond the above)
+
+- All six publishable artifacts bump from `0.1.1` to `0.2.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect.
+
+### Known limitations carried forward
+
+- `@takuhon/ui` Tier 2 components (`memberships`, `volunteering`, `publications`, `courses`, `patents`) are intentionally deferred to a later release.
+- Schema.org `Patent` type is still pending in the vocabulary; `patents[*]` ships with a best-effort `CreativeWork` + `additionalType` mapping that will be revisited when Schema.org stabilizes the type.
+- URL-path-based locale selection (e.g. `/ja/api/profile`) remains unimplemented (carried over from 0.1.1).
+
 ## [0.1.1] - 2026-05-25
 
 Patch release. `@takuhon/api` and `@takuhon/cloudflare` ship a correctness fix for HTTP-layer locale resolution; the other four packages bump in lockstep with no functional changes.
@@ -107,6 +151,7 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/takuhon-dev/takuhon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/takuhon-dev/takuhon/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/takuhon-dev/takuhon/releases/tag/v0.1.0

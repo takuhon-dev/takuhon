@@ -1,13 +1,13 @@
 /**
  * Generator for the scaffolded project's `package.json`.
  *
- * Pinned dependency versions are caret ranges matched to the `0.1.x` line of
- * the published `@takuhon/*` packages (this is a Phase 3.5 MVP — once those
- * are on the registry, the user can run `pnpm install` and get a working
- * Cloudflare worker setup). `hono` is declared as a direct dependency because
- * the future scaffolded `src/index.ts` (added in a follow-up phase) imports
- * from it directly; `wrangler` is a devDependency since it's the deploy /
- * dev-server tool.
+ * Pinned dependency versions are caret ranges matched to the current
+ * minor of the published `@takuhon/*` packages. Under 0.x semver, a caret
+ * does not span minor versions, so the range must move forward with each
+ * `@takuhon/core` minor release to keep scaffolded projects on the
+ * matching schema generation. `hono` is declared as a direct dependency
+ * because the scaffolded `src/index.ts` imports from it; `wrangler` is a
+ * devDependency since it's the deploy / dev-server tool.
  */
 
 export interface PackageJsonOptions {
@@ -27,9 +27,9 @@ export function buildPackageJson(opts: PackageJsonOptions): Record<string, unkno
       deploy: 'wrangler deploy',
     },
     dependencies: {
-      '@takuhon/api': '^0.1.0',
-      '@takuhon/cloudflare': '^0.1.0',
-      '@takuhon/core': '^0.1.0',
+      '@takuhon/api': '^0.2.0',
+      '@takuhon/cloudflare': '^0.2.0',
+      '@takuhon/core': '^0.2.0',
       hono: '^4.0.0',
     },
     devDependencies: {

@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.1.0');
+      expect(result.data.schemaVersion).toBe('0.2.0');
     }
   });
 
@@ -280,5 +280,70 @@ describe('validate() error envelope details', () => {
     );
     expect(slashErr, `expected escaped pointer /foo~1bar`).toBeDefined();
     expect(tildeErr, `expected escaped pointer /tilde~0name`).toBeDefined();
+  });
+});
+
+describe('validate() 0.2.0 additions', () => {
+  it('coerces missing 0.2.0 arrays to [] on a validated document (Takuhon TS contract)', () => {
+    // The 0.2.0 schema marks the nine new arrays as optional for 0.1.x
+    // back-compat. The TypeScript `Takuhon` shape, in contrast, requires
+    // them. validate() bridges the gap by coercing missing keys to [].
+    const minimal = {
+      schemaVersion: '0.2.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(minimal);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.certifications).toEqual([]);
+    expect(result.data.memberships).toEqual([]);
+    expect(result.data.volunteering).toEqual([]);
+    expect(result.data.honors).toEqual([]);
+    expect(result.data.education).toEqual([]);
+    expect(result.data.publications).toEqual([]);
+    expect(result.data.languages).toEqual([]);
+    expect(result.data.courses).toEqual([]);
+    expect(result.data.patents).toEqual([]);
+  });
+
+  it('rejects duplicate languages[].language values (Spec §6.16 uniqueness)', () => {
+    const broken = cloneExample();
+    (broken as unknown as { languages: unknown[] }).languages = [
+      { id: 'ja-1', language: 'ja', proficiency: 'native' },
+      { id: 'ja-2', language: 'ja', proficiency: 'fluent' },
+    ];
+    const result = validate(broken);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const dup = result.errors.find((e) => e.keyword === 'uniqueItems');
+    expect(dup).toBeDefined();
+    expect(dup?.pointer).toBe('/languages/1/language');
+  });
+
+  it('treats Accept-Language case as equivalent when checking uniqueness', () => {
+    const broken = cloneExample();
+    (broken as unknown as { languages: unknown[] }).languages = [
+      { id: 'ja-1', language: 'ja', proficiency: 'native' },
+      { id: 'ja-2', language: 'JA', proficiency: 'fluent' },
+    ];
+    const result = validate(broken);
+    expect(result.ok).toBe(false);
+  });
+
+  it('accepts the meta.privacy block with explicit booleans', () => {
+    const profile = cloneExample();
+    (profile.meta as unknown as { privacy: unknown }).privacy = {
+      hideCredentialIds: false,
+      hideEducationGrades: true,
+    };
+    const result = validate(profile);
+    expect(result.ok).toBe(true);
   });
 });

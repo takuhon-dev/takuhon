@@ -16,7 +16,7 @@ describe('examples/personal-profile/takuhon.json', () => {
     expect(example.schemaVersion).toBe(SCHEMA_VERSION);
   });
 
-  it('contains every required top-level field', () => {
+  it('contains every required top-level field plus the nine 0.2.0 arrays', () => {
     const keys = Object.keys(example).sort();
     expect(keys).toEqual(
       [
@@ -26,6 +26,15 @@ describe('examples/personal-profile/takuhon.json', () => {
         'careers',
         'projects',
         'skills',
+        'certifications',
+        'memberships',
+        'volunteering',
+        'honors',
+        'education',
+        'publications',
+        'languages',
+        'courses',
+        'patents',
         'contact',
         'settings',
         'meta',

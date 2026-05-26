@@ -99,6 +99,49 @@ describe('normalize() ordering', () => {
     expectAscendingOrder(normalized.projects);
     expectAscendingOrder(normalized.skills);
   });
+
+  it('coerces missing 0.2.0 arrays to [] (defensive against pre-coercion input)', () => {
+    // Simulates a stored 0.1.x profile being read after a worker upgrade —
+    // the data arrives typed as Takuhon but lacks the nine new arrays.
+    const draft = cloneExample();
+    const bag = draft as unknown as Record<string, unknown>;
+    delete bag.certifications;
+    delete bag.memberships;
+    delete bag.volunteering;
+    delete bag.honors;
+    delete bag.education;
+    delete bag.publications;
+    delete bag.languages;
+    delete bag.courses;
+    delete bag.patents;
+
+    const normalized = normalize(draft);
+
+    expect(normalized.certifications).toEqual([]);
+    expect(normalized.memberships).toEqual([]);
+    expect(normalized.volunteering).toEqual([]);
+    expect(normalized.honors).toEqual([]);
+    expect(normalized.education).toEqual([]);
+    expect(normalized.publications).toEqual([]);
+    expect(normalized.languages).toEqual([]);
+    expect(normalized.courses).toEqual([]);
+    expect(normalized.patents).toEqual([]);
+  });
+
+  it('sorts the new 0.2.0 arrays by ascending order alongside existing ones', () => {
+    const draft = cloneExample();
+    draft.certifications = [
+      { id: 'b', title: { en: 'B' }, issuingOrganization: { en: 'X' }, issueDate: '2024-01', order: 2 },
+      { id: 'a', title: { en: 'A' }, issuingOrganization: { en: 'X' }, issueDate: '2024-01', order: 1 },
+    ];
+    draft.honors = [
+      { id: 'b', title: { en: 'B' }, issuer: { en: 'X' }, date: '2024-01', order: 2 },
+      { id: 'a', title: { en: 'A' }, issuer: { en: 'X' }, date: '2024-01', order: 1 },
+    ];
+    const normalized = normalize(draft);
+    expect(normalized.certifications.map((c) => c.id)).toEqual(['a', 'b']);
+    expect(normalized.honors.map((h) => h.id)).toEqual(['a', 'b']);
+  });
 });
 
 function expectAscendingOrder(items: { order?: number }[]): void {

@@ -132,3 +132,85 @@ describe('resolveLocale() does not mutate input', () => {
     expect(JSON.stringify(data)).toBe(snapshot);
   });
 });
+
+describe('resolveLocale() 0.2.0 entity helpers', () => {
+  it('resolves Localized fields on certifications and preserves scalar fields', () => {
+    const data = cloneExample();
+    data.certifications = [
+      {
+        id: 'aws',
+        title: { en: 'AWS SAA', ja: 'AWS 認定' },
+        issuingOrganization: { en: 'Amazon', ja: 'アマゾン' },
+        issueDate: '2024-06',
+        expirationDate: '2027-06',
+        credentialId: 'X-1',
+        url: 'https://aws.example/x',
+      },
+    ];
+    const resolved = resolveLocale(data, 'ja');
+    expect(resolved.certifications[0]?.title).toBe('AWS 認定');
+    expect(resolved.certifications[0]?.issuingOrganization).toBe('アマゾン');
+    expect(resolved.certifications[0]?.issueDate).toBe('2024-06');
+    expect(resolved.certifications[0]?.credentialId).toBe('X-1');
+    expect(resolved.certifications[0]?.expirationDate).toBe('2027-06');
+  });
+
+  it('resolves Localized fields on education with isCurrent passthrough', () => {
+    const data = cloneExample();
+    data.education = [
+      {
+        id: 'todai',
+        institution: { en: 'UTokyo', ja: '東京大学' },
+        degree: { en: 'BEng', ja: '学士' },
+        startDate: '2014-04',
+        endDate: null,
+        isCurrent: true,
+      },
+    ];
+    const resolved = resolveLocale(data, 'ja');
+    expect(resolved.education[0]?.institution).toBe('東京大学');
+    expect(resolved.education[0]?.degree).toBe('学士');
+    expect(resolved.education[0]?.isCurrent).toBe(true);
+    expect(resolved.education[0]?.endDate).toBeNull();
+  });
+
+  it('resolves displayName on languages while keeping language tag as-is', () => {
+    const data = cloneExample();
+    data.languages = [
+      {
+        id: 'fr',
+        language: 'fr',
+        displayName: { en: 'French', ja: 'フランス語' },
+        proficiency: 'professional',
+      },
+    ];
+    const resolved = resolveLocale(data, 'ja');
+    expect(resolved.languages[0]?.language).toBe('fr');
+    expect(resolved.languages[0]?.displayName).toBe('フランス語');
+    expect(resolved.languages[0]?.proficiency).toBe('professional');
+  });
+
+  it('preserves coAuthors / coInventors arrays verbatim (not localized)', () => {
+    const data = cloneExample();
+    data.publications = [
+      {
+        id: 'p',
+        title: { en: 'Paper' },
+        date: '2023-08',
+        coAuthors: ['Jane Smith', '山田 太郎'],
+      },
+    ];
+    data.patents = [
+      {
+        id: 'pat',
+        title: { en: 'Patent X' },
+        patentNumber: 'US-1',
+        status: 'issued',
+        coInventors: ['Carlos Ruiz'],
+      },
+    ];
+    const resolved = resolveLocale(data, 'en');
+    expect(resolved.publications[0]?.coAuthors).toEqual(['Jane Smith', '山田 太郎']);
+    expect(resolved.patents[0]?.coInventors).toEqual(['Carlos Ruiz']);
+  });
+});

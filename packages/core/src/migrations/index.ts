@@ -21,6 +21,8 @@
 
 import type { Takuhon } from '../types.js';
 
+import { v0_1_0_to_v0_2_0 } from './v0.1.0-to-v0.2.0.js';
+
 /**
  * A forward migration entry. `from` and `to` are semver strings matching
  * the `schemaVersion` field of the input and output documents. `migrate`
@@ -33,7 +35,10 @@ export interface Migration<From, To> {
 }
 
 /**
- * Forward migrations bundled with this build of `@takuhon/core`. Empty in
- * Phase 1; the first entry will land alongside the v0.2.0 schema bump.
+ * Forward migrations bundled with this build of `@takuhon/core`.
+ *
+ * Entries are listed in the order they would chain for forward migration
+ * (`0.1.0 → 0.2.0 → 0.3.0 → ...`). {@link migrateTakuhon} consults this
+ * array to build the chain between a source `schemaVersion` and a target.
  */
-export const migrations: readonly Migration<Takuhon, Takuhon>[] = [];
+export const migrations: readonly Migration<Takuhon, Takuhon>[] = [v0_1_0_to_v0_2_0];

@@ -32,9 +32,18 @@ import type {
   LocalizedAddress,
   LocalizedAvatar,
   LocalizedCareer,
+  LocalizedCertification,
+  LocalizedCourse,
+  LocalizedEducation,
+  LocalizedHonor,
+  LocalizedLanguage,
   LocalizedLink,
-  LocalizedTakuhon,
+  LocalizedMembership,
+  LocalizedPatent,
   LocalizedProject,
+  LocalizedPublication,
+  LocalizedTakuhon,
+  LocalizedVolunteering,
   Skill,
 } from './types.js';
 
@@ -111,7 +120,23 @@ function deriveCanonicalUrl(data: LocalizedTakuhon): string | undefined {
 }
 
 function buildPerson(data: LocalizedTakuhon, canonicalUrl: string | undefined): object {
-  const { profile, careers, projects, links, skills, contact } = data;
+  const {
+    profile,
+    careers,
+    projects,
+    links,
+    skills,
+    contact,
+    certifications,
+    memberships,
+    volunteering,
+    honors,
+    education,
+    publications,
+    languages,
+    courses,
+    patents,
+  } = data;
 
   const out: Record<string, unknown> = {};
   out['@type'] = 'Person';
@@ -138,10 +163,32 @@ function buildPerson(data: LocalizedTakuhon, canonicalUrl: string | undefined): 
   const knowsAbout = buildKnowsAbout(skills);
   if (knowsAbout !== undefined) out.knowsAbout = knowsAbout;
 
+  const knowsLanguage = buildKnowsLanguage(languages);
+  if (knowsLanguage !== undefined) out.knowsLanguage = knowsLanguage;
+
+  const hasCredential = buildCredentials(certifications);
+  if (hasCredential !== undefined) out.hasCredential = hasCredential;
+
+  const memberOf = buildMemberOf(memberships);
+  if (memberOf !== undefined) out.memberOf = memberOf;
+
+  const alumniOf = buildAlumniOf(education);
+  if (alumniOf !== undefined) out.alumniOf = alumniOf;
+
+  const award = buildAwards(honors);
+  if (award !== undefined) out.award = award;
+
   const sameAs = buildSameAs(links);
   if (sameAs !== undefined) out.sameAs = sameAs;
 
-  const subjectOf = [...buildPastRoles(past), ...buildProjects(projects)];
+  const subjectOf = [
+    ...buildPastRoles(past),
+    ...buildProjects(projects),
+    ...buildVolunteeringRoles(volunteering),
+    ...buildPublications(publications),
+    ...buildCourses(courses),
+    ...buildPatentWorks(patents),
+  ];
   if (subjectOf.length > 0) out.subjectOf = subjectOf;
 
   return out;
@@ -246,4 +293,194 @@ function buildEmail(contact: Contact): string | undefined {
   if (contact.showEmail !== true) return undefined;
   if (typeof contact.email !== 'string' || contact.email.length === 0) return undefined;
   return contact.email;
+}
+
+function buildKnowsLanguage(languages: LocalizedLanguage[]): string[] | undefined {
+  if (languages.length === 0) return undefined;
+  return languages.map((l) => l.language);
+}
+
+function buildCredentials(certifications: LocalizedCertification[]): object[] | undefined {
+  if (certifications.length === 0) return undefined;
+  return certifications.map((c) => {
+    const out: Record<string, unknown> = {};
+    out['@type'] = 'EducationalOccupationalCredential';
+    if (c.title !== '') out.name = c.title;
+    out.credentialCategory = 'certification';
+    if (c.issuingOrganization !== '') {
+      out.recognizedBy = {
+        '@type': 'Organization',
+        name: c.issuingOrganization,
+      };
+    }
+    out.dateCreated = c.issueDate;
+    if (c.expirationDate !== undefined && c.expirationDate !== null) {
+      out.expires = c.expirationDate;
+    }
+    if (c.credentialId !== undefined) out.identifier = c.credentialId;
+    if (c.url !== undefined) out.url = c.url;
+    return out;
+  });
+}
+
+function buildMemberOf(memberships: LocalizedMembership[]): object[] | undefined {
+  if (memberships.length === 0) return undefined;
+  // Schema.org Role wrapper pattern: the outer OrganizationRole
+  // carries the role/date metadata; the inner `memberOf` Organization names the
+  // body itself.
+  return memberships.map((m) => {
+    const out: Record<string, unknown> = {};
+    out['@type'] = 'OrganizationRole';
+    if (m.role !== undefined) out.roleName = m.role;
+    out.startDate = m.startDate;
+    if (m.endDate !== undefined && m.endDate !== null) out.endDate = m.endDate;
+    if (m.description !== undefined) out.description = m.description;
+    const org: Record<string, unknown> = { '@type': 'Organization', name: m.organization };
+    if (m.url !== undefined) org.url = m.url;
+    out.memberOf = org;
+    return out;
+  });
+}
+
+function buildAlumniOf(education: LocalizedEducation[]): object[] | undefined {
+  if (education.length === 0) return undefined;
+  // Schema.org Role wrapper pattern: outer OrganizationRole carries date +
+  // concatenated degree/fieldOfStudy as roleName; inner `alumniOf` names
+  // the EducationalOrganization.
+  return education.map((e) => {
+    const out: Record<string, unknown> = {};
+    out['@type'] = 'OrganizationRole';
+    const roleName = composeRoleName(e.degree, e.fieldOfStudy);
+    if (roleName !== undefined) out.roleName = roleName;
+    out.startDate = e.startDate;
+    if (e.endDate !== undefined && e.endDate !== null) out.endDate = e.endDate;
+    const description = composeEducationDescription(e.description, e.grade);
+    if (description !== undefined) out.description = description;
+    const org: Record<string, unknown> = {
+      '@type': 'EducationalOrganization',
+      name: e.institution,
+    };
+    if (e.url !== undefined) org.url = e.url;
+    out.alumniOf = org;
+    return out;
+  });
+}
+
+function composeRoleName(degree: string | undefined, fieldOfStudy: string | undefined): string | undefined {
+  if (degree === undefined && fieldOfStudy === undefined) return undefined;
+  if (degree !== undefined && fieldOfStudy !== undefined) return `${degree} (${fieldOfStudy})`;
+  return degree ?? fieldOfStudy;
+}
+
+function composeEducationDescription(
+  description: string | undefined,
+  grade: string | undefined,
+): string | undefined {
+  // `grade` may have already been stripped by the API privacy filter; if it
+  // reaches us, prepend a labelled line to the description.
+  if (grade !== undefined && description !== undefined) return `Grade: ${grade}. ${description}`;
+  if (grade !== undefined) return `Grade: ${grade}`;
+  return description;
+}
+
+function buildAwards(honors: LocalizedHonor[]): string[] | undefined {
+  if (honors.length === 0) return undefined;
+  return honors.map((h) => `${h.title} (${h.issuer}, ${h.date})`);
+}
+
+function buildVolunteeringRoles(volunteering: LocalizedVolunteering[]): object[] {
+  return volunteering.map((v) => {
+    const out: Record<string, unknown> = {};
+    // Schema.org `VolunteerRole` is a pending property; we use the stable
+    // `Role` type with `roleName` so indexers without VolunteerRole support
+    // still read meaningful data.
+    out['@type'] = 'Role';
+    out.roleName = v.role;
+    out.startDate = v.startDate;
+    if (v.endDate !== undefined && v.endDate !== null) out.endDate = v.endDate;
+    const description = composeVolunteeringDescription(v.cause, v.description);
+    if (description !== undefined) out.description = description;
+    const org: Record<string, unknown> = { '@type': 'Organization', name: v.organization };
+    if (v.url !== undefined) org.url = v.url;
+    out.memberOf = org;
+    return out;
+  });
+}
+
+function composeVolunteeringDescription(
+  cause: string | undefined,
+  description: string | undefined,
+): string | undefined {
+  if (cause !== undefined && description !== undefined) return `Cause: ${cause}. ${description}`;
+  if (cause !== undefined) return `Cause: ${cause}`;
+  return description;
+}
+
+function buildPublications(publications: LocalizedPublication[]): object[] {
+  return publications.map((p) => {
+    const out: Record<string, unknown> = {};
+    out['@type'] = 'ScholarlyArticle';
+    out.name = p.title;
+    if (p.publisher !== undefined) {
+      out.publisher = { '@type': 'Organization', name: p.publisher };
+    }
+    out.datePublished = p.date;
+    if (p.url !== undefined) out.url = p.url;
+    if (p.doi !== undefined) {
+      out.identifier = { '@type': 'PropertyValue', propertyID: 'DOI', value: p.doi };
+    }
+    if (p.coAuthors !== undefined && p.coAuthors.length > 0) {
+      out.author = p.coAuthors.map((name) => ({ '@type': 'Person', name }));
+    }
+    return out;
+  });
+}
+
+function buildCourses(courses: LocalizedCourse[]): object[] {
+  return courses.map((c) => {
+    const out: Record<string, unknown> = {};
+    out['@type'] = 'Course';
+    out.name = c.title;
+    if (c.provider !== undefined) {
+      out.provider = { '@type': 'Organization', name: c.provider };
+    }
+    if (c.courseNumber !== undefined) out.courseCode = c.courseNumber;
+    if (c.certificateUrl !== undefined) out.url = c.certificateUrl;
+    if (c.completionDate !== undefined) {
+      // Schema.org Course has no direct date property; dates live on
+      // CourseInstance via hasCourseInstance.
+      out.hasCourseInstance = {
+        '@type': 'CourseInstance',
+        endDate: c.completionDate,
+      };
+    }
+    return out;
+  });
+}
+
+function buildPatentWorks(patents: LocalizedPatent[]): object[] {
+  return patents.map((p) => {
+    const out: Record<string, unknown> = {};
+    // Schema.org Patent is not in the released vocabulary; emit CreativeWork
+    // with additionalType pointing at the pending Patent URL so consumers
+    // that recognize it can specialize, while others fall back gracefully.
+    out['@type'] = 'CreativeWork';
+    out.additionalType = 'https://schema.org/Patent';
+    out.name = p.title;
+    out.identifier = p.patentNumber;
+    if (p.office !== undefined) {
+      out.publisher = { '@type': 'Organization', name: p.office };
+    }
+    out.creativeWorkStatus = p.status;
+    if (p.grantDate !== undefined) {
+      out.datePublished = p.grantDate;
+    } else if (p.filingDate !== undefined) {
+      out.dateCreated = p.filingDate;
+    }
+    if (p.url !== undefined) out.url = p.url;
+    if (p.coInventors !== undefined && p.coInventors.length > 0) {
+      out.author = p.coInventors.map((name) => ({ '@type': 'Person', name }));
+    }
+    return out;
+  });
 }

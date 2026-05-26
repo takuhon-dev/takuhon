@@ -509,3 +509,166 @@ describe('empty-fields omission policy', () => {
     expect(person.subjectOf).toBeUndefined();
   });
 });
+
+describe('generatePersonJsonLd() — 0.2.0 builders', () => {
+  function prepareWithFields(overrides: Partial<Takuhon>): LocalizedTakuhon {
+    const base = cloneExample();
+    return resolveLocale(normalize({ ...base, ...overrides }), 'en');
+  }
+
+  it('emits hasCredential as EducationalOccupationalCredential for certifications', () => {
+    const person = getPerson(
+      prepareWithFields({
+        certifications: [
+          {
+            id: 'aws',
+            title: { en: 'AWS SAA' },
+            issuingOrganization: { en: 'Amazon Web Services' },
+            issueDate: '2024-06',
+            expirationDate: '2027-06',
+            url: 'https://aws.amazon.com/x',
+          },
+        ],
+      }),
+    );
+    const credentials = person.hasCredential as Record<string, unknown>[];
+    expect(credentials).toHaveLength(1);
+    expect(credentials[0]?.['@type']).toBe('EducationalOccupationalCredential');
+    expect(credentials[0]?.name).toBe('AWS SAA');
+    expect(credentials[0]?.credentialCategory).toBe('certification');
+    expect(credentials[0]?.expires).toBe('2027-06');
+    const recognizedBy = credentials[0]?.recognizedBy as Record<string, unknown>;
+    expect(recognizedBy['@type']).toBe('Organization');
+    expect(recognizedBy.name).toBe('Amazon Web Services');
+  });
+
+  it('emits memberOf with Role wrapper (OrganizationRole → Organization) for memberships', () => {
+    const person = getPerson(
+      prepareWithFields({
+        memberships: [
+          {
+            id: 'ieee',
+            organization: { en: 'IEEE' },
+            role: { en: 'Senior Member' },
+            startDate: '2020-04',
+            url: 'https://www.ieee.org',
+          },
+        ],
+      }),
+    );
+    const members = person.memberOf as Record<string, unknown>[];
+    expect(members).toHaveLength(1);
+    expect(members[0]?.['@type']).toBe('OrganizationRole');
+    expect(members[0]?.roleName).toBe('Senior Member');
+    expect(members[0]?.startDate).toBe('2020-04');
+    const inner = members[0]?.memberOf as Record<string, unknown>;
+    expect(inner['@type']).toBe('Organization');
+    expect(inner.name).toBe('IEEE');
+    expect(inner.url).toBe('https://www.ieee.org');
+  });
+
+  it('emits alumniOf with Role wrapper (OrganizationRole → EducationalOrganization) for education', () => {
+    const person = getPerson(
+      prepareWithFields({
+        education: [
+          {
+            id: 'mit',
+            institution: { en: 'MIT' },
+            degree: { en: 'BSc' },
+            fieldOfStudy: { en: 'CS' },
+            startDate: '2014-09',
+            endDate: '2018-06',
+          },
+        ],
+      }),
+    );
+    const alumni = person.alumniOf as Record<string, unknown>[];
+    expect(alumni).toHaveLength(1);
+    expect(alumni[0]?.['@type']).toBe('OrganizationRole');
+    expect(alumni[0]?.roleName).toBe('BSc (CS)');
+    expect(alumni[0]?.startDate).toBe('2014-09');
+    expect(alumni[0]?.endDate).toBe('2018-06');
+    const inner = alumni[0]?.alumniOf as Record<string, unknown>;
+    expect(inner['@type']).toBe('EducationalOrganization');
+    expect(inner.name).toBe('MIT');
+  });
+
+  it('emits award as a concatenated string list for honors', () => {
+    const person = getPerson(
+      prepareWithFields({
+        honors: [
+          {
+            id: 'best-paper',
+            title: { en: 'Best Paper Award' },
+            issuer: { en: 'ACM SIGCHI' },
+            date: '2023-04',
+          },
+        ],
+      }),
+    );
+    expect(person.award).toEqual(['Best Paper Award (ACM SIGCHI, 2023-04)']);
+  });
+
+  it('emits knowsLanguage as a BCP-47 string list for languages', () => {
+    const person = getPerson(
+      prepareWithFields({
+        languages: [
+          { id: 'ja', language: 'ja', proficiency: 'native' },
+          { id: 'en', language: 'en', proficiency: 'fluent' },
+        ],
+      }),
+    );
+    expect(person.knowsLanguage).toEqual(['ja', 'en']);
+  });
+
+  it('emits Course with hasCourseInstance for courses (no direct date on Course)', () => {
+    const person = getPerson(
+      prepareWithFields({
+        courses: [
+          {
+            id: 'ml',
+            title: { en: 'Machine Learning' },
+            provider: { en: 'Stanford' },
+            courseNumber: 'CS229',
+            completionDate: '2022-09',
+            certificateUrl: 'https://coursera.org/verify/x',
+          },
+        ],
+      }),
+    );
+    const subjects = person.subjectOf as Record<string, unknown>[];
+    const course = subjects.find((s) => s['@type'] === 'Course');
+    expect(course).toBeDefined();
+    expect(course?.name).toBe('Machine Learning');
+    expect(course?.courseCode).toBe('CS229');
+    expect(course?.url).toBe('https://coursera.org/verify/x');
+    const instance = course?.hasCourseInstance as Record<string, unknown>;
+    expect(instance['@type']).toBe('CourseInstance');
+    expect(instance.endDate).toBe('2022-09');
+  });
+
+  it('emits CreativeWork with additionalType for patents (Schema.org Patent is pending)', () => {
+    const person = getPerson(
+      prepareWithFields({
+        patents: [
+          {
+            id: 'us-1',
+            title: { en: 'Method for X' },
+            patentNumber: 'US 11,111,111',
+            office: 'USPTO',
+            status: 'issued',
+            grantDate: '2024-03',
+          },
+        ],
+      }),
+    );
+    const subjects = person.subjectOf as Record<string, unknown>[];
+    const patent = subjects.find((s) => s.additionalType === 'https://schema.org/Patent');
+    expect(patent).toBeDefined();
+    expect(patent?.['@type']).toBe('CreativeWork');
+    expect(patent?.name).toBe('Method for X');
+    expect(patent?.identifier).toBe('US 11,111,111');
+    expect(patent?.creativeWorkStatus).toBe('issued');
+    expect(patent?.datePublished).toBe('2024-03');
+  });
+});

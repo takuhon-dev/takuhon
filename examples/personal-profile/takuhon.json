@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "profile": {
     "displayName": {
       "en": "Pat Rivera",
@@ -170,6 +170,15 @@
     { "id": "design-tokens", "label": "Design tokens", "category": "design", "order": 6 },
     { "id": "portuguese", "label": "Portuguese (B2)", "category": "language", "order": 7 }
   ],
+  "certifications": [],
+  "memberships": [],
+  "volunteering": [],
+  "honors": [],
+  "education": [],
+  "publications": [],
+  "languages": [],
+  "courses": [],
+  "patents": [],
   "contact": {
     "email": "pat@example.com",
     "showEmail": false,
@@ -196,6 +205,10 @@
         "name": "Pat Rivera",
         "url": "https://example.com/pat"
       }
+    },
+    "privacy": {
+      "hideCredentialIds": true,
+      "hideEducationGrades": true
     }
   }
 }

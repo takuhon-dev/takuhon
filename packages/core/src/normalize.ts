@@ -48,6 +48,19 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   // `lib.es2022.d.ts` and `lib.dom.d.ts` across TypeScript major releases).
   const out = JSON.parse(JSON.stringify(data)) as Takuhon;
 
+  // Defensive: the 0.2.0 schema marks the nine new top-level arrays as
+  // optional for back-compat, so a stored 0.1.x profile read from KV after
+  // an upgrade may arrive here without them. The TypeScript `Takuhon` shape
+  // requires them; coerce missing values to `[]` so downstream iteration
+  // never trips on `undefined`. Idempotent: arrays already present are left
+  // untouched.
+  const bag = out as unknown as Record<string, unknown>;
+  for (const key of NORMALIZED_ARRAYS) {
+    if (!Array.isArray(bag[key])) {
+      bag[key] = [];
+    }
+  }
+
   normalizeProfile(out.profile);
 
   for (const link of out.links) {
@@ -69,6 +82,67 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   out.projects = stableSortByOrder(out.projects);
 
   out.skills = stableSortByOrder(out.skills);
+
+  for (const cert of out.certifications) {
+    cleanRequiredLocalized(cert.title);
+    cleanRequiredLocalized(cert.issuingOrganization);
+  }
+  out.certifications = stableSortByOrder(out.certifications);
+
+  for (const m of out.memberships) {
+    cleanRequiredLocalized(m.organization);
+    cleanOptionalLocalized(m, 'role');
+    cleanOptionalLocalized(m, 'description');
+  }
+  out.memberships = stableSortByOrder(out.memberships);
+
+  for (const v of out.volunteering) {
+    cleanRequiredLocalized(v.organization);
+    cleanRequiredLocalized(v.role);
+    cleanOptionalLocalized(v, 'cause');
+    cleanOptionalLocalized(v, 'description');
+  }
+  out.volunteering = stableSortByOrder(out.volunteering);
+
+  for (const h of out.honors) {
+    cleanRequiredLocalized(h.title);
+    cleanRequiredLocalized(h.issuer);
+    cleanOptionalLocalized(h, 'description');
+  }
+  out.honors = stableSortByOrder(out.honors);
+
+  for (const e of out.education) {
+    cleanRequiredLocalized(e.institution);
+    cleanOptionalLocalized(e, 'degree');
+    cleanOptionalLocalized(e, 'fieldOfStudy');
+    cleanOptionalLocalized(e, 'description');
+  }
+  out.education = stableSortByOrder(out.education);
+
+  for (const p of out.publications) {
+    cleanRequiredLocalized(p.title);
+    cleanOptionalLocalized(p, 'publisher');
+    cleanOptionalLocalized(p, 'description');
+  }
+  out.publications = stableSortByOrder(out.publications);
+
+  for (const l of out.languages) {
+    cleanOptionalLocalized(l, 'displayName');
+  }
+  out.languages = stableSortByOrder(out.languages);
+
+  for (const c of out.courses) {
+    cleanRequiredLocalized(c.title);
+    cleanOptionalLocalized(c, 'provider');
+    cleanOptionalLocalized(c, 'description');
+  }
+  out.courses = stableSortByOrder(out.courses);
+
+  for (const p of out.patents) {
+    cleanRequiredLocalized(p.title);
+    cleanOptionalLocalized(p, 'description');
+  }
+  out.patents = stableSortByOrder(out.patents);
 
   return out;
 }
@@ -127,3 +201,15 @@ function stableSortByOrder<T extends { order?: number }>(items: T[]): T[] {
     return ao - bo;
   });
 }
+
+const NORMALIZED_ARRAYS = [
+  'certifications',
+  'memberships',
+  'volunteering',
+  'honors',
+  'education',
+  'publications',
+  'languages',
+  'courses',
+  'patents',
+] as const;

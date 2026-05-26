@@ -34,7 +34,7 @@ import type { Takuhon } from './types.js';
  * versions whose JSON Schema this package literally bundles, not the full
  * support window seen by end users.
  */
-export const SUPPORTED_SCHEMA_VERSIONS = ['0.1.0'] as const;
+export const SUPPORTED_SCHEMA_VERSIONS = ['0.1.0', '0.2.0'] as const;
 
 /**
  * A single validation failure.
@@ -121,13 +121,77 @@ export function validate(data: unknown): ValidationResult {
   }
 
   if (compiled(data)) {
-    return { ok: true, data };
+    // The 0.2.0 schema marks the nine new top-level arrays as optional for
+    // back-compat. The TypeScript `Takuhon` shape requires them so
+    // downstream code never has to check for `undefined`. We clone the
+    // caller's input before coercing so a successful validate() never
+    // mutates the original — callers can keep referencing the value they
+    // passed in. JS preserves insertion order, so new keys land at the end
+    // of the cloned object; `normalize()` is responsible for canonical
+    // field order.
+    const cloned = JSON.parse(JSON.stringify(data)) as Takuhon;
+    coerceMissingArrays(cloned);
+
+    // Post-Ajv check: `languages[].language` uniqueness. JSON Schema
+    // `uniqueItems` only catches whole-object duplicates and cannot enforce
+    // by-key uniqueness, so we walk the array here and reject duplicates as
+    // a synthetic ValidationError.
+    const duplicate = findDuplicateLanguage(cloned.languages);
+    if (duplicate !== undefined) {
+      return {
+        ok: false,
+        errors: [
+          {
+            pointer: `/languages/${duplicate.index}/language`,
+            message: `Duplicate languages[].language value "${duplicate.tag}" — each entry must declare a unique BCP-47 tag.`,
+            keyword: 'uniqueItems',
+          },
+        ],
+      };
+    }
+
+    return { ok: true, data: cloned };
   }
 
   return {
     ok: false,
     errors: (compiled.errors ?? []).map(toValidationError),
   };
+}
+
+const COERCED_ARRAY_KEYS = [
+  'certifications',
+  'memberships',
+  'volunteering',
+  'honors',
+  'education',
+  'publications',
+  'languages',
+  'courses',
+  'patents',
+] as const;
+
+function coerceMissingArrays(data: Takuhon): void {
+  const bag = data as unknown as Record<string, unknown>;
+  for (const key of COERCED_ARRAY_KEYS) {
+    if (!Array.isArray(bag[key])) {
+      bag[key] = [];
+    }
+  }
+}
+
+function findDuplicateLanguage(
+  languages: Takuhon['languages'],
+): { index: number; tag: string } | undefined {
+  const seen = new Map<string, number>();
+  for (let i = 0; i < languages.length; i++) {
+    const entry = languages[i];
+    if (entry === undefined) continue;
+    const key = entry.language.toLowerCase();
+    if (seen.has(key)) return { index: i, tag: entry.language };
+    seen.set(key, i);
+  }
+  return undefined;
 }
 
 function isSupportedVersion(value: string): boolean {

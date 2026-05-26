@@ -35,20 +35,38 @@ import type {
   Address,
   Avatar,
   Career,
+  Certification,
+  Course,
+  Education,
+  Honor,
+  Language,
   Link,
   LocaleTag,
   LocalizedAddress,
   LocalizedAvatar,
   LocalizedBody,
   LocalizedCareer,
+  LocalizedCertification,
+  LocalizedCourse,
+  LocalizedEducation,
+  LocalizedHonor,
+  LocalizedLanguage,
   LocalizedLink,
-  LocalizedTakuhon,
+  LocalizedMembership,
+  LocalizedPatent,
   LocalizedProfile,
   LocalizedProject,
+  LocalizedPublication,
+  LocalizedTakuhon,
   LocalizedTitle,
-  Takuhon,
+  LocalizedVolunteering,
+  Membership,
+  Patent,
   Profile,
   Project,
+  Publication,
+  Takuhon,
+  Volunteering,
 } from './types.js';
 
 /**
@@ -75,6 +93,15 @@ export function resolveLocale(
     careers: data.careers.map((c) => resolveCareer(c, candidates)),
     projects: data.projects.map((p) => resolveProject(p, candidates)),
     skills: data.skills,
+    certifications: data.certifications.map((c) => resolveCertification(c, candidates)),
+    memberships: data.memberships.map((m) => resolveMembership(m, candidates)),
+    volunteering: data.volunteering.map((v) => resolveVolunteering(v, candidates)),
+    honors: data.honors.map((h) => resolveHonor(h, candidates)),
+    education: data.education.map((e) => resolveEducation(e, candidates)),
+    publications: data.publications.map((p) => resolvePublication(p, candidates)),
+    languages: data.languages.map((l) => resolveLanguage(l, candidates)),
+    courses: data.courses.map((c) => resolveCourse(c, candidates)),
+    patents: data.patents.map((p) => resolvePatent(p, candidates)),
     contact: data.contact,
     settings: data.settings,
     meta: data.meta,
@@ -228,5 +255,161 @@ function resolveProject(project: Project, candidates: LocaleTag[]): LocalizedPro
   if (project.endDate !== undefined) out.endDate = project.endDate;
   if (project.highlighted !== undefined) out.highlighted = project.highlighted;
   if (project.order !== undefined) out.order = project.order;
+  return out;
+}
+
+function resolveCertification(
+  cert: Certification,
+  candidates: LocaleTag[],
+): LocalizedCertification {
+  const out: LocalizedCertification = {
+    id: cert.id,
+    title: pickLocalized(cert.title, candidates) ?? '',
+    issuingOrganization: pickLocalized(cert.issuingOrganization, candidates) ?? '',
+    issueDate: cert.issueDate,
+  };
+  if (cert.expirationDate !== undefined) out.expirationDate = cert.expirationDate;
+  if (cert.credentialId !== undefined) out.credentialId = cert.credentialId;
+  if (cert.url !== undefined) out.url = cert.url;
+  if (cert.order !== undefined) out.order = cert.order;
+  return out;
+}
+
+function resolveMembership(membership: Membership, candidates: LocaleTag[]): LocalizedMembership {
+  const out: LocalizedMembership = {
+    id: membership.id,
+    organization: pickLocalized(membership.organization, candidates) ?? '',
+    startDate: membership.startDate,
+  };
+  const role = pickLocalized(membership.role, candidates);
+  if (role !== undefined) out.role = role;
+  const description = pickLocalized(membership.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (membership.endDate !== undefined) out.endDate = membership.endDate;
+  if (membership.isCurrent !== undefined) out.isCurrent = membership.isCurrent;
+  if (membership.url !== undefined) out.url = membership.url;
+  if (membership.order !== undefined) out.order = membership.order;
+  return out;
+}
+
+function resolveVolunteering(
+  v: Volunteering,
+  candidates: LocaleTag[],
+): LocalizedVolunteering {
+  const out: LocalizedVolunteering = {
+    id: v.id,
+    organization: pickLocalized(v.organization, candidates) ?? '',
+    role: pickLocalized(v.role, candidates) ?? '',
+    startDate: v.startDate,
+  };
+  const cause = pickLocalized(v.cause, candidates);
+  if (cause !== undefined) out.cause = cause;
+  const description = pickLocalized(v.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (v.endDate !== undefined) out.endDate = v.endDate;
+  if (v.isCurrent !== undefined) out.isCurrent = v.isCurrent;
+  if (v.url !== undefined) out.url = v.url;
+  if (v.order !== undefined) out.order = v.order;
+  return out;
+}
+
+function resolveHonor(honor: Honor, candidates: LocaleTag[]): LocalizedHonor {
+  const out: LocalizedHonor = {
+    id: honor.id,
+    title: pickLocalized(honor.title, candidates) ?? '',
+    issuer: pickLocalized(honor.issuer, candidates) ?? '',
+    date: honor.date,
+  };
+  const description = pickLocalized(honor.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (honor.url !== undefined) out.url = honor.url;
+  if (honor.order !== undefined) out.order = honor.order;
+  return out;
+}
+
+function resolveEducation(edu: Education, candidates: LocaleTag[]): LocalizedEducation {
+  const out: LocalizedEducation = {
+    id: edu.id,
+    institution: pickLocalized(edu.institution, candidates) ?? '',
+    startDate: edu.startDate,
+  };
+  const degree = pickLocalized(edu.degree, candidates);
+  if (degree !== undefined) out.degree = degree;
+  const fieldOfStudy = pickLocalized(edu.fieldOfStudy, candidates);
+  if (fieldOfStudy !== undefined) out.fieldOfStudy = fieldOfStudy;
+  const description = pickLocalized(edu.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (edu.grade !== undefined) out.grade = edu.grade;
+  if (edu.endDate !== undefined) out.endDate = edu.endDate;
+  if (edu.isCurrent !== undefined) out.isCurrent = edu.isCurrent;
+  if (edu.url !== undefined) out.url = edu.url;
+  if (edu.order !== undefined) out.order = edu.order;
+  return out;
+}
+
+function resolvePublication(
+  pub: Publication,
+  candidates: LocaleTag[],
+): LocalizedPublication {
+  const out: LocalizedPublication = {
+    id: pub.id,
+    title: pickLocalized(pub.title, candidates) ?? '',
+    date: pub.date,
+  };
+  const publisher = pickLocalized(pub.publisher, candidates);
+  if (publisher !== undefined) out.publisher = publisher;
+  const description = pickLocalized(pub.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (pub.url !== undefined) out.url = pub.url;
+  if (pub.doi !== undefined) out.doi = pub.doi;
+  if (pub.coAuthors !== undefined) out.coAuthors = pub.coAuthors;
+  if (pub.order !== undefined) out.order = pub.order;
+  return out;
+}
+
+function resolveLanguage(lang: Language, candidates: LocaleTag[]): LocalizedLanguage {
+  const out: LocalizedLanguage = {
+    id: lang.id,
+    language: lang.language,
+    proficiency: lang.proficiency,
+  };
+  const displayName = pickLocalized(lang.displayName, candidates);
+  if (displayName !== undefined) out.displayName = displayName;
+  if (lang.order !== undefined) out.order = lang.order;
+  return out;
+}
+
+function resolveCourse(course: Course, candidates: LocaleTag[]): LocalizedCourse {
+  const out: LocalizedCourse = {
+    id: course.id,
+    title: pickLocalized(course.title, candidates) ?? '',
+  };
+  const provider = pickLocalized(course.provider, candidates);
+  if (provider !== undefined) out.provider = provider;
+  if (course.courseNumber !== undefined) out.courseNumber = course.courseNumber;
+  const description = pickLocalized(course.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (course.completionDate !== undefined) out.completionDate = course.completionDate;
+  if (course.certificateUrl !== undefined) out.certificateUrl = course.certificateUrl;
+  if (course.relatedEducationId !== undefined) out.relatedEducationId = course.relatedEducationId;
+  if (course.order !== undefined) out.order = course.order;
+  return out;
+}
+
+function resolvePatent(patent: Patent, candidates: LocaleTag[]): LocalizedPatent {
+  const out: LocalizedPatent = {
+    id: patent.id,
+    title: pickLocalized(patent.title, candidates) ?? '',
+    patentNumber: patent.patentNumber,
+    status: patent.status,
+  };
+  if (patent.office !== undefined) out.office = patent.office;
+  const description = pickLocalized(patent.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (patent.filingDate !== undefined) out.filingDate = patent.filingDate;
+  if (patent.grantDate !== undefined) out.grantDate = patent.grantDate;
+  if (patent.url !== undefined) out.url = patent.url;
+  if (patent.coInventors !== undefined) out.coInventors = patent.coInventors;
+  if (patent.order !== undefined) out.order = patent.order;
   return out;
 }

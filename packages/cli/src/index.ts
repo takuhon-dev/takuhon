@@ -3,7 +3,7 @@
 /**
  * `@takuhon/cli` entry point — the `takuhon` command.
  *
- * For v0.1.0 this exposes only `--version` / `--help` plus a pointer to
+ * At present this exposes only `--version` / `--help` plus a pointer to
  * `create-takuhon` for scaffolding. The dev / validate / sync / export /
  * migrate / restore subcommands land in subsequent releases. The bare-name
  * `takuhon` npm package (`packages/takuhon/`) redirects here via a 4-line
@@ -11,7 +11,7 @@
  * && takuhon --help` give the same output.
  */
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 const HELP = `takuhon ${VERSION}
 

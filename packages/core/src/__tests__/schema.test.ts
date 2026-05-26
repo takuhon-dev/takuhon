@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { schema, SCHEMA_VERSION } from '../index.js';
 
-const expectedTopLevelKeys = [
+// Root `required` list — unchanged from 0.1.x for back-compat. The nine new
+// 0.2.0 arrays are added as optional properties so existing 0.1.x documents
+// continue to validate against the 0.2.0 schema (Spec §24-15).
+const expectedRequiredKeys = [
   'schemaVersion',
   'profile',
   'links',
@@ -14,27 +17,50 @@ const expectedTopLevelKeys = [
   'meta',
 ] as const;
 
+const expectedPropertyKeys = [
+  ...expectedRequiredKeys,
+  'certifications',
+  'memberships',
+  'volunteering',
+  'honors',
+  'education',
+  'publications',
+  'languages',
+  'courses',
+  'patents',
+] as const;
+
 const expectedDefs = [
   'Address',
   'Avatar',
   'Career',
+  'Certification',
   'Contact',
   'ContentLicense',
+  'Course',
+  'Education',
   'Email',
+  'Honor',
   'Iso3166Alpha2',
   'IsoDateTime',
+  'Language',
   'Link',
   'LinkType',
   'LocaleTag',
   'LocalizedBody',
   'LocalizedTitle',
+  'Membership',
   'Meta',
+  'MetaPrivacy',
+  'Patent',
   'Profile',
   'Project',
+  'Publication',
   'Settings',
   'Skill',
   'Slug',
   'Url',
+  'Volunteering',
   'YearMonth',
 ] as const;
 
@@ -47,12 +73,12 @@ describe('takuhon.schema.json structural shape', () => {
     expect(schema.$id).toContain(`/schemas/${SCHEMA_VERSION}/`);
   });
 
-  it('requires every top-level field', () => {
-    expect(schema.required).toEqual([...expectedTopLevelKeys]);
+  it('requires the original nine top-level fields (0.2.0 additions are optional)', () => {
+    expect(schema.required).toEqual([...expectedRequiredKeys]);
   });
 
-  it('declares all expected top-level properties', () => {
-    expect(Object.keys(schema.properties).sort()).toEqual([...expectedTopLevelKeys].sort());
+  it('declares all expected top-level properties (original nine + nine 0.2.0 arrays)', () => {
+    expect(Object.keys(schema.properties).sort()).toEqual([...expectedPropertyKeys].sort());
   });
 
   it('locks down the root object (additionalProperties: false)', () => {
@@ -64,11 +90,20 @@ describe('takuhon.schema.json structural shape', () => {
     expect(defs).toEqual(expect.arrayContaining([...expectedDefs]));
   });
 
-  it('enforces Spec §6.13 array size limits', () => {
+  it('enforces Spec §6.22 array size limits', () => {
     expect(schema.properties.links.maxItems).toBe(100);
     expect(schema.properties.careers.maxItems).toBe(50);
     expect(schema.properties.projects.maxItems).toBe(100);
     expect(schema.properties.skills.maxItems).toBe(200);
+    expect(schema.properties.certifications.maxItems).toBe(50);
+    expect(schema.properties.memberships.maxItems).toBe(50);
+    expect(schema.properties.volunteering.maxItems).toBe(50);
+    expect(schema.properties.honors.maxItems).toBe(50);
+    expect(schema.properties.education.maxItems).toBe(30);
+    expect(schema.properties.publications.maxItems).toBe(100);
+    expect(schema.properties.languages.maxItems).toBe(30);
+    expect(schema.properties.courses.maxItems).toBe(100);
+    expect(schema.properties.patents.maxItems).toBe(50);
   });
 
   it('enumerates every known link type', () => {

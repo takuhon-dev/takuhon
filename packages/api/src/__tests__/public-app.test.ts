@@ -43,7 +43,7 @@ describe('createPublicApp', () => {
     const body: any = await res.json();
     expect(body.data.profile.displayName).toBe('Pat Rivera');
     expect(body.meta.locale).toBe('en');
-    expect(body.meta.schemaVersion).toBe('0.1.0');
+    expect(body.meta.schemaVersion).toBe('0.2.0');
     expect(res.headers.get('etag')).toBe('"v1"');
     expect(res.headers.get('cache-control')).toBe('private, max-age=300');
   });
@@ -105,7 +105,7 @@ describe('createPublicApp', () => {
     const res = await fetchPath(app, '/.well-known/takuhon.json');
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
     const body: any = await res.json();
-    expect(body.schemaVersion).toBe('0.1.0');
+    expect(body.schemaVersion).toBe('0.2.0');
     expect(body.canonical).toBe('/takuhon.json');
   });
 
@@ -297,5 +297,113 @@ describe('parseAcceptLanguage (unit)', () => {
     const tags = parseAcceptLanguage('EN-us, ZH-Hant-TW;q=0.8');
     expect(tags[0]).toBe('EN-us');
     expect(tags[1]).toBe('ZH-Hant-TW');
+  });
+});
+
+describe('public privacy filter', () => {
+  // Build a profile that carries every privacy-sensitive field so we can
+  // observe stripping behavior end-to-end through the HTTP layer.
+  function makeSensitiveProfile(opts: {
+    hideCredentialIds?: boolean | undefined;
+    hideEducationGrades?: boolean | undefined;
+    showEmail?: boolean;
+  }): Takuhon {
+    const base = makeSample();
+    const out: Takuhon = {
+      ...base,
+      certifications: [
+        {
+          id: 'cert-1',
+          title: { en: 'Cert' },
+          issuingOrganization: { en: 'Issuer' },
+          issueDate: '2024-01',
+          credentialId: 'SECRET-123',
+        },
+      ],
+      education: [
+        {
+          id: 'edu-1',
+          institution: { en: 'University' },
+          startDate: '2014-04',
+          grade: 'GPA 3.9',
+        },
+      ],
+      contact: {
+        ...base.contact,
+        email: 'pat@example.com',
+        showEmail: opts.showEmail ?? false,
+      },
+      meta: {
+        ...base.meta,
+        privacy: {
+          ...(opts.hideCredentialIds !== undefined
+            ? { hideCredentialIds: opts.hideCredentialIds }
+            : {}),
+          ...(opts.hideEducationGrades !== undefined
+            ? { hideEducationGrades: opts.hideEducationGrades }
+            : {}),
+        },
+      },
+    };
+    return out;
+  }
+
+  function makeAppWith(profile: Takuhon): { app: ReturnType<typeof createPublicApp>; storage: FakeStorage } {
+    const storage = new FakeStorage();
+    const app = createPublicApp({ storage, fallback: () => profile });
+    return { app, storage };
+  }
+
+  it('strips certifications[*].credentialId on /api/profile by default (privacy-by-default)', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({}));
+    const res = await fetchPath(app, '/api/profile');
+    const body: any = await res.json();
+    expect(body.data.certifications[0]?.id).toBe('cert-1');
+    expect(body.data.certifications[0]?.credentialId).toBeUndefined();
+  });
+
+  it('preserves credentialId when hideCredentialIds is explicitly false', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({ hideCredentialIds: false }));
+    const res = await fetchPath(app, '/api/profile');
+    const body: any = await res.json();
+    expect(body.data.certifications[0]?.credentialId).toBe('SECRET-123');
+  });
+
+  it('strips education[*].grade on /api/profile by default', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({}));
+    const res = await fetchPath(app, '/api/profile');
+    const body: any = await res.json();
+    expect(body.data.education[0]?.id).toBe('edu-1');
+    expect(body.data.education[0]?.grade).toBeUndefined();
+  });
+
+  it('preserves grade when hideEducationGrades is explicitly false', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({ hideEducationGrades: false }));
+    const res = await fetchPath(app, '/api/profile');
+    const body: any = await res.json();
+    expect(body.data.education[0]?.grade).toBe('GPA 3.9');
+  });
+
+  it('strips contact.email when showEmail !== true (drive-by fix of Spec §6.10)', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({ showEmail: false }));
+    const res = await fetchPath(app, '/api/profile');
+    const body: any = await res.json();
+    expect(body.data.contact.email).toBeUndefined();
+  });
+
+  it('preserves contact.email when showEmail is explicitly true', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({ showEmail: true }));
+    const res = await fetchPath(app, '/api/profile');
+    const body: any = await res.json();
+    expect(body.data.contact.email).toBe('pat@example.com');
+  });
+
+  it('also applies to /takuhon.json (raw shape)', async () => {
+    const { app } = makeAppWith(makeSensitiveProfile({}));
+    const res = await fetchPath(app, '/takuhon.json');
+    const body: any = await res.json();
+    expect(body.certifications[0]?.credentialId).toBeUndefined();
+    expect(body.education[0]?.grade).toBeUndefined();
+    expect(body.contact.email).toBeUndefined();
   });
 });

@@ -30,7 +30,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     const body: any = await res.json();
     expect(body.data.profile.displayName).toBeTruthy();
     expect(body.meta.locale).toBe('en');
-    expect(body.meta.schemaVersion).toBe('0.1.0');
+    expect(body.meta.schemaVersion).toBe('0.2.0');
     expect(typeof body.meta.updatedAt).toBe('string');
   });
 
@@ -44,7 +44,7 @@ describe('cloudflare worker — Phase 3.2', () => {
   it('GET /api/profile carries ETag and Cache-Control headers', async () => {
     const res = await call('https://worker.example/api/profile', makeEnv().env);
     expect(res.headers.get('etag')).toMatch(/^".+"$/);
-    expect(res.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
+    expect(res.headers.get('cache-control')).toBe('private, max-age=300');
   });
 
   it('GET /api/profile reads from KV when TAKUHON_DATA is populated', async () => {
@@ -94,7 +94,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     const res = await call('https://worker.example/.well-known/takuhon.json', makeEnv().env);
     expect(res.status).toBe(200);
     const body: any = await res.json();
-    expect(body.schemaVersion).toBe('0.1.0');
+    expect(body.schemaVersion).toBe('0.2.0');
     expect(body.schemaUrl).toBe('/api/schema');
     expect(body.profile).toBe('/api/profile');
     expect(body.jsonld).toBe('/api/jsonld');
