@@ -1,6 +1,6 @@
 # Publishing to npm
 
-The `@takuhon/*` packages, the bare-name `takuhon` redirect, and the bundled GitHub Release are produced by `.github/workflows/publish.yml` on a `vX.Y.Z` tag push. Publishing uses npm **OIDC trusted publishing** (no long-lived `NPM_TOKEN` secret), emits **SLSA provenance v1 attestation** for every package, and attaches **cosign sign-blob bundles** to the GitHub Release for downstream verification.
+The `@takuhon/*` packages, the bare-name `takuhon` redirect, and the bundled GitHub Release are produced by `.github/workflows/release.yml` on a `vX.Y.Z` tag push. Publishing uses npm **OIDC trusted publishing** (no long-lived `NPM_TOKEN` secret), emits **SLSA provenance v1 attestation** for every package, and attaches **cosign sign-blob bundles** to the GitHub Release for downstream verification.
 
 ## One-time setup (org owner)
 
@@ -21,7 +21,7 @@ This is a per-package step on npmjs.com. Run it once per package, before the fir
    | Publisher                 | `GitHub Actions`                                     |
    | Organization or user      | `takuhon-dev` (case-sensitive)                       |
    | Repository                | `takuhon` (repository name only, not `<org>/<repo>`) |
-   | Workflow filename         | `publish.yml` (extension included, no path prefix)   |
+   | Workflow filename         | `release.yml` (extension included, no path prefix)   |
    | Environment name          | _(leave blank)_                                      |
    | Allow `npm publish`       | ✅ (required)                                        |
    | Allow `npm stage publish` | ☐ (leave unchecked)                                  |
@@ -63,7 +63,7 @@ For each release:
    git push origin v<new-version>
    ```
 
-4. The `Publish to npm` workflow runs automatically on the tag push and proceeds in four jobs:
+4. The `Release` workflow runs automatically on the tag push and proceeds in four jobs:
    - **`verify`** — re-runs `pnpm typecheck / lint / format:check / test / build` on the tagged tree. Catches a tag pushed at a commit that turned out broken since the last CI run.
    - **`publish-scoped`** (matrix) — publishes `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, and `@takuhon/cloudflare` to npm via OIDC trusted publishing with provenance attestation. `fail-fast: true` so a dep-graph mismatch never leaks a partial release set.
    - **`publish-bare`** — publishes the bare-name `takuhon` redirect package after the scoped packages, so consumers running `npm i -g takuhon` always find `@takuhon/cli@<same-version>` already on the registry.
