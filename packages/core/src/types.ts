@@ -250,12 +250,7 @@ export interface Publication {
   order?: number;
 }
 
-export type LanguageProficiency =
-  | 'native'
-  | 'fluent'
-  | 'professional'
-  | 'intermediate'
-  | 'basic';
+export type LanguageProficiency = 'native' | 'fluent' | 'professional' | 'intermediate' | 'basic';
 
 export interface Language {
   id: Slug;

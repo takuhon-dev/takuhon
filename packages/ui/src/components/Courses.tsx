@@ -50,9 +50,7 @@ export function Courses({ courses }: CoursesProps): React.JSX.Element | null {
                 <time dateTime={entry.completionDate}>{entry.completionDate}</time>
               </p>
             ) : null}
-            {entry.description ? (
-              <p className={styles.description}>{entry.description}</p>
-            ) : null}
+            {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
           </li>
         ))}
       </ul>

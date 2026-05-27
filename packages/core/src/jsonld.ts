@@ -366,7 +366,10 @@ function buildAlumniOf(education: LocalizedEducation[]): object[] | undefined {
   });
 }
 
-function composeRoleName(degree: string | undefined, fieldOfStudy: string | undefined): string | undefined {
+function composeRoleName(
+  degree: string | undefined,
+  fieldOfStudy: string | undefined,
+): string | undefined {
   if (degree === undefined && fieldOfStudy === undefined) return undefined;
   if (degree !== undefined && fieldOfStudy !== undefined) return `${degree} (${fieldOfStudy})`;
   return degree ?? fieldOfStudy;

@@ -55,26 +55,24 @@ export function Publications({ publications }: PublicationsProps): React.JSX.Ele
             {entry.coAuthors && entry.coAuthors.length > 0 ? (
               <p className={styles.coAuthors}>{`with ${entry.coAuthors.join(', ')}`}</p>
             ) : null}
-            {entry.doi ? (
-              (() => {
-                const bare = normalizeDoi(entry.doi);
-                return (
-                  <p className={styles.doi}>
-                    <a
-                      className={styles.link}
-                      href={`https://doi.org/${bare}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {`doi:${bare}`}
-                    </a>
-                  </p>
-                );
-              })()
-            ) : null}
-            {entry.description ? (
-              <p className={styles.description}>{entry.description}</p>
-            ) : null}
+            {entry.doi
+              ? (() => {
+                  const bare = normalizeDoi(entry.doi);
+                  return (
+                    <p className={styles.doi}>
+                      <a
+                        className={styles.link}
+                        href={`https://doi.org/${bare}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {`doi:${bare}`}
+                      </a>
+                    </p>
+                  );
+                })()
+              : null}
+            {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
           </li>
         ))}
       </ul>

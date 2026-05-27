@@ -131,8 +131,20 @@ describe('normalize() ordering', () => {
   it('sorts the new 0.2.0 arrays by ascending order alongside existing ones', () => {
     const draft = cloneExample();
     draft.certifications = [
-      { id: 'b', title: { en: 'B' }, issuingOrganization: { en: 'X' }, issueDate: '2024-01', order: 2 },
-      { id: 'a', title: { en: 'A' }, issuingOrganization: { en: 'X' }, issueDate: '2024-01', order: 1 },
+      {
+        id: 'b',
+        title: { en: 'B' },
+        issuingOrganization: { en: 'X' },
+        issueDate: '2024-01',
+        order: 2,
+      },
+      {
+        id: 'a',
+        title: { en: 'A' },
+        issuingOrganization: { en: 'X' },
+        issueDate: '2024-01',
+        order: 1,
+      },
     ];
     draft.honors = [
       { id: 'b', title: { en: 'B' }, issuer: { en: 'X' }, date: '2024-01', order: 2 },
