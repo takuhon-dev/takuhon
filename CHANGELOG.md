@@ -33,6 +33,31 @@ Minor release. `@takuhon/ui` gains five new section components that complete the
 - `examples/personal-profile/takuhon.json` populates the five Tier 2 arrays with persona-consistent fictional entries — one Membership (IAAP Senior Member), one Volunteering role (Code.org volunteer instructor), one Publication (ACM SIGACCESS paper with `doi` and two `coAuthors`), one Course (Coursera with `certificateUrl`), and two Patents (one `issued`, one `pending`) so consumers can see every new component render against the canonical fixture. The same fixture drives the workspace a11y audit; the new sections are now covered automatically.
 - Pat Rivera's GitHub link target, IAAP organization URL, Code.org volunteer URL, and the two patent identifiers are normalized to `example.com` / `example.org` / fictional USPTO numbers respectively, so the public example never collides with a real account, real organization URL, or real patent record. The bio displayName, persona description, Mastodon link, and the structured Tier 1 fixture content are unchanged.
 
+### Release engineering
+
+This release migrates the publish pipeline from classic `NPM_TOKEN` authentication to **npm OIDC trusted publishing**, emits **SLSA provenance v1 attestation** for every package, and adds a **GitHub Release auto-create** step with **cosign sign-blob bundles** attached.
+
+- `publishConfig.provenance: true` is now set on all six publishable packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, bare-name `takuhon`).
+- `.github/workflows/publish.yml` is rewritten into four jobs:
+  - `verify` re-runs the full CI suite (`typecheck` / `lint` / `format:check` / `test` / `build`) on the tagged tree.
+  - `publish-scoped` (matrix of the five `@takuhon/*` scoped packages) publishes each via OIDC trusted publishing with provenance attestation. `fail-fast: true` so the workspace dep graph (core ← api ← cloudflare, core ← ui, core ← cli ← bare-name) cannot produce a partial release with dangling cross-package deps.
+  - `publish-bare` publishes the bare-name `takuhon` redirect, gated by `needs: publish-scoped` so consumers running `npm i -g takuhon` always find `@takuhon/cli@<same-version>` already on the registry.
+  - `github-release` creates the corresponding GitHub Release with six tarballs, six cosign sign-blob bundles (Sigstore keyless via Fulcio + Rekor), and auto-generated release notes.
+- Real-publish is double-gated on `event_name == push` AND `inputs.dry_run != 'true'`. `workflow_dispatch` always takes the dry-run path; only an actual `vX.Y.Z` tag push produces a real publish.
+- New SHA-pinned third-party actions added in this release: `sigstore/cosign-installer@v3` (`f713795c...`) and `softprops/action-gh-release@v2` (`3bb12739...`).
+- `docs/publishing.md` is fully rewritten for the new flow with a self-contained troubleshooting table.
+- A small amount of prettier formatting drift that accumulated since 0.2.0 (the 0.2.0 verification sequence omitted `pnpm format:check`) is cleaned up.
+- The classic `NPM_TOKEN` GitHub Actions secret is no longer referenced by the workflow and is scheduled for removal once the first end-to-end OIDC publish succeeds.
+
+### Repository / project hardening (Phase E)
+
+The `takuhon-dev/takuhon` repository is made **public** in time for this release (npm provenance attestation requires a public source repository). Additional public-OSS hygiene applied at the same time:
+
+- GitHub **Private Vulnerability Reporting (PVR)** is enabled. `SECURITY.md` already pointed at this channel via `hello@takuhon.org` plus the GitHub Security Advisory URL.
+- GitHub **secret scanning**, **secret scanning push protection**, and **Dependabot security updates** are enabled.
+- Repository topics are cleaned of the pre-rebrand `ownport` keyword; `takuhon` is added.
+- Stale `ownport-dev/ownport`-era Dependabot PRs (#18, #19) are closed so Dependabot can regenerate them with the correct repository context on the next cycle.
+
 ### Known limitations carried forward
 
 - Phase 2 i18n is unresolved: `Patents` status labels, the `with` author/inventor prefix in `Publications` and `Patents`, the `Present` ongoing-date label across `Memberships` / `Volunteering` / `Education`, and the `Filed` / `Granted` patent-date labels are hard-coded English (matching the established `PROFICIENCY_LABEL` pattern in `Languages`). When Phase 2 i18n lands these will be extracted in one pass.
