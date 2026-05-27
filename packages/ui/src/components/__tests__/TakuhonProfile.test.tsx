@@ -29,6 +29,15 @@ describe('TakuhonProfile', () => {
     expect(screen.getByRole('region', { name: /skills/i })).toBeInTheDocument();
   });
 
+  it('renders Tier 2 sections (Memberships, Volunteering, Publications, Courses, Patents) as labelled regions when the fixture populates them', () => {
+    render(<TakuhonProfile data={example} />);
+    expect(screen.getByRole('region', { name: /memberships/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /volunteering/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /publications/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /courses/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /patents/i })).toBeInTheDocument();
+  });
+
   it('omits the Footer when settings.showPoweredBy is false', () => {
     render(
       <TakuhonProfile

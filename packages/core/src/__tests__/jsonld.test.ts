@@ -313,6 +313,10 @@ describe('generatePersonJsonLd() — projects mapping', () => {
     const data = prepare('en');
     data.careers = data.careers.filter((c) => c.isCurrent === true);
     data.projects = [];
+    data.volunteering = [];
+    data.publications = [];
+    data.courses = [];
+    data.patents = [];
     const person = getPerson(data);
     expect(person.subjectOf).toBeUndefined();
   });
@@ -322,7 +326,7 @@ describe('generatePersonJsonLd() — sameAs filter', () => {
   it('includes identity-bearing link types and excludes custom / email / rss', () => {
     const person = getPerson(prepare('en'));
     const sameAs = person.sameAs as string[];
-    expect(sameAs).toContain('https://github.com/example-pat');
+    expect(sameAs).toContain('https://example.com/pat/github');
     expect(sameAs).toContain('https://example.social/@pat');
     expect(sameAs).toContain('https://example.com/pat'); // website
     expect(sameAs).toContain('https://example.com/pat/blog'); // blog
@@ -333,9 +337,9 @@ describe('generatePersonJsonLd() — sameAs filter', () => {
     const person = getPerson(prepare('en'));
     const sameAs = person.sameAs as string[];
     expect(sameAs.indexOf('https://example.com/pat')).toBeLessThan(
-      sameAs.indexOf('https://github.com/example-pat'),
+      sameAs.indexOf('https://example.com/pat/github'),
     );
-    expect(sameAs.indexOf('https://github.com/example-pat')).toBeLessThan(
+    expect(sameAs.indexOf('https://example.com/pat/github')).toBeLessThan(
       sameAs.indexOf('https://example.social/@pat'),
     );
   });
@@ -469,6 +473,7 @@ describe('determinism and invariants', () => {
       'worksFor',
       'address',
       'knowsAbout',
+      'memberOf',
       'sameAs',
       'subjectOf',
     ]);
@@ -483,6 +488,15 @@ describe('empty-fields omission policy', () => {
     minimal.careers = [];
     minimal.projects = [];
     minimal.skills = [];
+    minimal.certifications = [];
+    minimal.memberships = [];
+    minimal.volunteering = [];
+    minimal.honors = [];
+    minimal.education = [];
+    minimal.publications = [];
+    minimal.languages = [];
+    minimal.courses = [];
+    minimal.patents = [];
     minimal.contact = {};
     minimal.meta = { contentLicense: { spdxId: 'CC0-1.0' } };
     const data = resolveLocale(normalize(minimal), 'en');

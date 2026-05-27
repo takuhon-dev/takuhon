@@ -45,7 +45,7 @@
     {
       "id": "github",
       "type": "github",
-      "url": "https://github.com/example-pat",
+      "url": "https://example.com/pat/github",
       "featured": true,
       "order": 1
     },
@@ -171,14 +171,138 @@
     { "id": "portuguese", "label": "Portuguese (B2)", "category": "language", "order": 7 }
   ],
   "certifications": [],
-  "memberships": [],
-  "volunteering": [],
+  "memberships": [
+    {
+      "id": "iaap-senior",
+      "organization": {
+        "en": "International Association of Accessibility Professionals",
+        "ja": "国際アクセシビリティ専門家協会"
+      },
+      "role": {
+        "en": "Senior Member",
+        "ja": "シニアメンバー"
+      },
+      "description": {
+        "en": "Active participant in the Web Accessibility special interest group, contributing to monthly working sessions on WCAG 2.2 interpretation.",
+        "ja": "Web Accessibility 専門部会に参加し、WCAG 2.2 解釈の月例セッションに貢献。"
+      },
+      "startDate": "2022-09",
+      "endDate": null,
+      "isCurrent": true,
+      "url": "https://example.org/iaap",
+      "order": 0
+    }
+  ],
+  "volunteering": [
+    {
+      "id": "code-org-instructor",
+      "organization": {
+        "en": "Code.org",
+        "ja": "Code.org"
+      },
+      "role": {
+        "en": "Volunteer Instructor",
+        "ja": "ボランティア講師"
+      },
+      "cause": {
+        "en": "Education",
+        "ja": "教育"
+      },
+      "description": {
+        "en": "Taught introductory programming concepts to middle-school students in weekend workshops, with a focus on inclusive curriculum design.",
+        "ja": "週末ワークショップで中学生にプログラミング入門を指導。インクルーシブなカリキュラム設計を重視。"
+      },
+      "startDate": "2021-09",
+      "endDate": "2024-06",
+      "isCurrent": false,
+      "url": "https://example.org/code-org",
+      "order": 0
+    }
+  ],
   "honors": [],
   "education": [],
-  "publications": [],
+  "publications": [
+    {
+      "id": "design-tokens-wcag-2024",
+      "title": {
+        "en": "Auditing Design Tokens for WCAG 2.2 Conformance",
+        "ja": "デザイントークンの WCAG 2.2 適合性監査"
+      },
+      "publisher": {
+        "en": "ACM SIGACCESS",
+        "ja": "ACM SIGACCESS"
+      },
+      "description": {
+        "en": "A method for statically analyzing design-token files to surface color-contrast violations before they reach implementation.",
+        "ja": "実装前にデザイントークンファイルを静的解析し、色コントラスト違反を発見する手法を提案。"
+      },
+      "date": "2024-03",
+      "url": "https://example.org/papers/design-tokens-wcag",
+      "doi": "10.1145/3678901.3678910",
+      "coAuthors": ["Jamie Chen", "Sofia Almeida"],
+      "order": 0
+    }
+  ],
   "languages": [],
-  "courses": [],
-  "patents": [],
+  "courses": [
+    {
+      "id": "coursera-advanced-a11y-2023",
+      "title": {
+        "en": "Advanced Web Accessibility Patterns",
+        "ja": "Web アクセシビリティ応用パターン"
+      },
+      "provider": {
+        "en": "Coursera (University of Michigan)",
+        "ja": "Coursera (ミシガン大学)"
+      },
+      "courseNumber": "UMICH-A11Y-301",
+      "description": {
+        "en": "Covered ARIA authoring practices, accessible component patterns, and assistive technology testing workflows.",
+        "ja": "ARIA オーサリングプラクティス、アクセシブルコンポーネントパターン、支援技術テストワークフローを扱う。"
+      },
+      "completionDate": "2023-11",
+      "certificateUrl": "https://example.org/certificates/coursera/UMICH-A11Y-301",
+      "order": 0
+    }
+  ],
+  "patents": [
+    {
+      "id": "us-2024-a11y-test",
+      "title": {
+        "en": "Method and System for Automated Screen-Reader Output Verification",
+        "ja": "スクリーンリーダー出力の自動検証手法およびシステム"
+      },
+      "patentNumber": "US 99,999,999 B2",
+      "office": "USPTO",
+      "status": "issued",
+      "description": {
+        "en": "An automated harness that captures screen-reader output and compares it against an authoring-time accessibility annotation.",
+        "ja": "スクリーンリーダーの出力を自動的にキャプチャし、オーサリング時のアクセシビリティ注釈と照合する自動化ハーネス。"
+      },
+      "filingDate": "2022-04",
+      "grantDate": "2024-03",
+      "url": "https://patents.example.org/us-11987654",
+      "coInventors": ["Jamie Chen"],
+      "order": 0
+    },
+    {
+      "id": "us-pending-focus",
+      "title": {
+        "en": "Predictive Focus Management for Single-Page Applications",
+        "ja": "シングルページアプリケーション向け予測的フォーカス管理"
+      },
+      "patentNumber": "US 99/999,999",
+      "office": "USPTO",
+      "status": "pending",
+      "description": {
+        "en": "An algorithm that predicts the next likely focus target based on user navigation patterns to reduce focus loss in dynamic content.",
+        "ja": "ユーザーのナビゲーションパターンから次のフォーカス候補を予測し、動的コンテンツにおけるフォーカス喪失を低減するアルゴリズム。"
+      },
+      "filingDate": "2024-08",
+      "url": "https://patents.example.org/us-pending-focus",
+      "order": 1
+    }
+  ],
   "contact": {
     "email": "pat@example.com",
     "showEmail": false,

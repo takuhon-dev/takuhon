@@ -16,8 +16,13 @@ export {
   type EducationTimelineProps,
 } from './components/EducationTimeline.js';
 export { Certifications, type CertificationsProps } from './components/Certifications.js';
+export { Memberships, type MembershipsProps } from './components/Memberships.js';
+export { Volunteering, type VolunteeringProps } from './components/Volunteering.js';
 export { HonorsList, type HonorsListProps } from './components/HonorsList.js';
+export { Publications, type PublicationsProps } from './components/Publications.js';
 export { Languages, type LanguagesProps } from './components/Languages.js';
+export { Courses, type CoursesProps } from './components/Courses.js';
+export { Patents, type PatentsProps } from './components/Patents.js';
 export { ProjectsList, type ProjectsListProps } from './components/ProjectsList.js';
 export { SkillsList, type SkillsListProps } from './components/SkillsList.js';
 export { ContactInfo, type ContactInfoProps } from './components/ContactInfo.js';

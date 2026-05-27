@@ -10,6 +10,40 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 - _(future entries land here under one of the standard Keep-a-Changelog sections — Added / Changed / Deprecated / Removed / Fixed / Security)_
 
+## [0.3.0] - 2026-05-27
+
+Minor release. `@takuhon/ui` gains five new section components that complete the Tier 2 set deferred at 0.2.0 — `Memberships`, `Volunteering`, `Publications`, `Courses`, and `Patents` — and the canonical `TakuhonProfile` composition grows from 11 to 16 sections to render them. No schema, JSON-LD, or storage behaviour changes; this is a UI-surface release. All 0.2.0 profiles continue to validate against 0.3.0 unchanged.
+
+### Added — `@takuhon/ui`
+
+- Five new mobile-first section components matching the remaining 0.2.0 schema arrays:
+  - `Memberships` — timeline layout (`<ol>`) with a "Present" label for ongoing affiliations (`isCurrent === true` or `endDate === null`).
+  - `Volunteering` — timeline layout with an inline cause chip when `cause` is set; the chip carries a screen-reader-only `Cause:` prefix so assistive technology announces the relationship.
+  - `Publications` — card layout; renders `coAuthors` as a leading `with …` line, `<time dateTime>` for the publication date, and `doi` as an `https://doi.org/<bare>` link. Defensively strips an accidental `https://doi.org/` or `https://dx.doi.org/` prefix so a URL-shaped input never produces a double-prefixed link.
+  - `Courses` — card layout; the title becomes a `certificateUrl` link when provided, otherwise plain text. `completionDate` is optional and trails undefined-date entries via empty-string fallback sort.
+  - `Patents` — card layout with a status badge (`<span data-status>` with CSS variants for `pending` / `issued` / `expired` / `abandoned`). The badge carries a screen-reader-only `Status:` prefix. Sorts by `grantDate ?? filingDate` DESC so the newest issuance ranks first.
+- All five components accept a single `LocalizedXxx[]` prop, return `null` on empty input, and reuse the established `.section` / `.heading` / `.list` / `.item` CSS-module conventions plus tokens from `tokens.css` — no new design tokens were introduced.
+
+### Changed — `@takuhon/ui`
+
+- `TakuhonProfile` now composes 16 sections in semantic-kinship order: ProfileHeader → LinksList → Education → **Courses** → Career → **Memberships** → Certifications → **Patents** → Projects → **Publications** → Honors → **Volunteering** → Skills → Languages → Contact → Footer. Tier 2 sections sit next to their conceptual neighbour (Courses near Education, Memberships near Career, Patents between credentials and creative output, Publications near Projects, Volunteering near Honors).
+
+### Changed — examples
+
+- `examples/personal-profile/takuhon.json` populates the five Tier 2 arrays with persona-consistent fictional entries — one Membership (IAAP Senior Member), one Volunteering role (Code.org volunteer instructor), one Publication (ACM SIGACCESS paper with `doi` and two `coAuthors`), one Course (Coursera with `certificateUrl`), and two Patents (one `issued`, one `pending`) so consumers can see every new component render against the canonical fixture. The same fixture drives the workspace a11y audit; the new sections are now covered automatically.
+- Pat Rivera's GitHub link target, IAAP organization URL, Code.org volunteer URL, and the two patent identifiers are normalized to `example.com` / `example.org` / fictional USPTO numbers respectively, so the public example never collides with a real account, real organization URL, or real patent record. The bio displayName, persona description, Mastodon link, and the structured Tier 1 fixture content are unchanged.
+
+### Known limitations carried forward
+
+- Phase 2 i18n is unresolved: `Patents` status labels, the `with` author/inventor prefix in `Publications` and `Patents`, the `Present` ongoing-date label across `Memberships` / `Volunteering` / `Education`, and the `Filed` / `Granted` patent-date labels are hard-coded English (matching the established `PROFICIENCY_LABEL` pattern in `Languages`). When Phase 2 i18n lands these will be extracted in one pass.
+- URL-path-based locale selection (e.g. `/ja/api/profile`) remains unimplemented (carried over from 0.1.1 → 0.2.0).
+- Schema.org `Patent` type is still pending; `patents[*]` continues to map to `CreativeWork` + `additionalType="https://schema.org/Patent"` (carried over from 0.2.0).
+- The `jsonld.test.ts` omission tests in `@takuhon/core` remain fixture-coupled — when the canonical example fixture gains entries in future minor releases, the "no past careers and no projects" assertion list needs the matching array reset. A small dedicated minimal fixture for those tests is a candidate refactor for a later patch.
+
+### Lockstep version bump (no functional changes beyond the above)
+
+- All six publishable artifacts bump from `0.2.0` to `0.3.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect. Only `@takuhon/ui` and the bundled example fixture changed functionally; the other five packages bump for lockstep alignment.
+
 ## [0.2.0] - 2026-05-26
 
 Minor release. The takuhon schema gains nine LinkedIn-aligned top-level array fields and a privacy-by-default opt-out block. All additions are backward-compatible: an unmodified 0.1.x profile validates against the 0.2.0 schema, and the bundled `v0.1.0-to-v0.2.0` migration leaves every pre-existing field untouched.

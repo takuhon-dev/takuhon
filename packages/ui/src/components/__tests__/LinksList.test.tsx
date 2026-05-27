@@ -23,7 +23,7 @@ describe('LinksList', () => {
     const hrefs = links.map((el) => el.getAttribute('href'));
     expect(hrefs.slice(0, 2)).toEqual([
       'https://example.com/pat',
-      'https://github.com/example-pat',
+      'https://example.com/pat/github',
     ]);
   });
 

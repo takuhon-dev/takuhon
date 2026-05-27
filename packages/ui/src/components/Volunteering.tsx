@@ -1,0 +1,77 @@
+import type { LocalizedVolunteering } from '@takuhon/core';
+
+import styles from './Volunteering.module.css';
+
+export interface VolunteeringProps {
+  volunteering: LocalizedVolunteering[];
+}
+
+function sortVolunteering(entries: LocalizedVolunteering[]): LocalizedVolunteering[] {
+  return [...entries].sort((a, b) => {
+    const aOrder = a.order ?? Number.POSITIVE_INFINITY;
+    const bOrder = b.order ?? Number.POSITIVE_INFINITY;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return b.startDate.localeCompare(a.startDate);
+  });
+}
+
+function isOngoing(entry: LocalizedVolunteering): boolean {
+  return entry.isCurrent === true || entry.endDate === null || entry.endDate === undefined;
+}
+
+export function Volunteering({ volunteering }: VolunteeringProps): React.JSX.Element | null {
+  if (volunteering.length === 0) return null;
+  const ordered = sortVolunteering(volunteering);
+
+  return (
+    <section className={styles.section} aria-labelledby="takuhon-volunteering-heading">
+      <h2 id="takuhon-volunteering-heading" className={styles.heading}>
+        Volunteering
+      </h2>
+      <ol className={styles.list}>
+        {ordered.map((entry) => (
+          <li key={entry.id} className={styles.item}>
+            <div className={styles.timelineMarker} aria-hidden="true" />
+            <div className={styles.content}>
+              <p className={styles.organization}>
+                {entry.url ? (
+                  <a
+                    className={styles.link}
+                    href={entry.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {entry.organization}
+                  </a>
+                ) : (
+                  entry.organization
+                )}
+              </p>
+              <p className={styles.role}>
+                {entry.role}
+                {entry.cause ? (
+                  <span className={styles.cause}>
+                    <span className={styles.srOnly}>Cause: </span>
+                    {entry.cause}
+                  </span>
+                ) : null}
+              </p>
+              <p className={styles.range}>
+                <time dateTime={entry.startDate}>{entry.startDate}</time>
+                {' – '}
+                {isOngoing(entry) ? (
+                  'Present'
+                ) : (
+                  <time dateTime={entry.endDate!}>{entry.endDate}</time>
+                )}
+              </p>
+              {entry.description ? (
+                <p className={styles.description}>{entry.description}</p>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}

@@ -1,0 +1,80 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-3);
+  margin-top: var(--takuhon-space-5);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--takuhon-font-size-xl);
+  color: var(--takuhon-color-text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-3);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-1);
+  padding: var(--takuhon-space-3);
+  background-color: var(--takuhon-color-surface);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-md);
+}
+
+.title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--takuhon-color-text);
+  font-size: var(--takuhon-font-size-base);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+  color: var(--takuhon-color-primary);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}
+
+.provider {
+  margin: 0;
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+}
+
+.courseNumber {
+  margin: 0;
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.date {
+  margin: 0;
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+}
+
+.description {
+  margin: 0;
+  font-size: var(--takuhon-font-size-base);
+  line-height: var(--takuhon-line-height);
+  color: var(--takuhon-color-text);
+}

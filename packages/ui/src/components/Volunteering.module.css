@@ -1,0 +1,113 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-3);
+  margin-top: var(--takuhon-space-5);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--takuhon-font-size-xl);
+  color: var(--takuhon-color-text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding-inline-start: var(--takuhon-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-4);
+  border-inline-start: 2px solid var(--takuhon-color-border);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--takuhon-space-3);
+  position: relative;
+}
+
+.timelineMarker {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--takuhon-radius-full);
+  background-color: var(--takuhon-color-accent);
+  margin-inline-start: calc(-1 * var(--takuhon-space-4) - 6px);
+  margin-block-start: var(--takuhon-space-2);
+  flex-shrink: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-1);
+}
+
+.organization {
+  margin: 0;
+  font-weight: 600;
+  color: var(--takuhon-color-text);
+  font-size: var(--takuhon-font-size-base);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+  color: var(--takuhon-color-primary);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}
+
+.role {
+  margin: 0;
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--takuhon-space-2);
+}
+
+.cause {
+  display: inline-block;
+  padding: 0 var(--takuhon-space-2);
+  font-size: var(--takuhon-font-size-sm);
+  background-color: var(--takuhon-color-surface);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm);
+  color: var(--takuhon-color-text-muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.range {
+  margin: 0;
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+}
+
+.description {
+  margin: 0;
+  font-size: var(--takuhon-font-size-base);
+  line-height: var(--takuhon-line-height);
+  color: var(--takuhon-color-text);
+}
