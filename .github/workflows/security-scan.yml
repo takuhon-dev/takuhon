@@ -131,7 +131,7 @@ jobs:
           #     actually appear there)
           #   - docs/publishing.md (documents the pre-publish guard itself)
           #   - CHANGELOG.md (documents the pre-publish guard itself)
-          #   - this workflow + publish.yml (define the very patterns we
+          #   - this workflow + release.yml (define the very patterns we
           #     search for, so they would always self-match)
           # NOTE: git pathspec does not perform shell brace expansion, so
           # `:!**/*.test.{ts,tsx}` would only exclude `.ts` files. We
@@ -143,7 +143,7 @@ jobs:
               ':!docs/publishing.md' \
               ':!CHANGELOG.md' \
               ':!.github/workflows/security-scan.yml' \
-              ':!.github/workflows/publish.yml' ; then
+              ':!.github/workflows/release.yml' ; then
             echo "::error::Absolute host path leaked into tracked files. See matches above."
             exit 1
           fi

@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Release
 
 # Triggered by `vX.Y.Z` tag push for a real publish, or by manual
 # workflow_dispatch (always dry-run only) for a packaging smoke test.

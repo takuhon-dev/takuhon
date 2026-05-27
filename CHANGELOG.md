@@ -38,7 +38,7 @@ Minor release. `@takuhon/ui` gains five new section components that complete the
 This release migrates the publish pipeline from classic `NPM_TOKEN` authentication to **npm OIDC trusted publishing**, emits **SLSA provenance v1 attestation** for every package, and adds a **GitHub Release auto-create** step with **cosign sign-blob bundles** attached.
 
 - `publishConfig.provenance: true` is now set on all six publishable packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, bare-name `takuhon`).
-- `.github/workflows/publish.yml` is rewritten into four jobs:
+- `.github/workflows/release.yml` (renamed from `publish.yml` to match the conventional `release.yml` name shared across the project family) is rewritten into four jobs:
   - `verify` re-runs the full CI suite (`typecheck` / `lint` / `format:check` / `test` / `build`) on the tagged tree.
   - `publish-scoped` (matrix of the five `@takuhon/*` scoped packages) publishes each via OIDC trusted publishing with provenance attestation. `fail-fast: true` so the workspace dep graph (core ← api ← cloudflare, core ← ui, core ← cli ← bare-name) cannot produce a partial release with dangling cross-package deps.
   - `publish-bare` publishes the bare-name `takuhon` redirect, gated by `needs: publish-scoped` so consumers running `npm i -g takuhon` always find `@takuhon/cli@<same-version>` already on the registry.
