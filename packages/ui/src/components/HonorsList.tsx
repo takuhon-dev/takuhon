@@ -46,9 +46,7 @@ export function HonorsList({ honors }: HonorsListProps): React.JSX.Element | nul
               {' · '}
               <time dateTime={honor.date}>{honor.date}</time>
             </p>
-            {honor.description ? (
-              <p className={styles.description}>{honor.description}</p>
-            ) : null}
+            {honor.description ? <p className={styles.description}>{honor.description}</p> : null}
           </li>
         ))}
       </ul>

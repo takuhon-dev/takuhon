@@ -69,9 +69,7 @@ describe('Publications', () => {
   });
 
   it('omits coAuthors line when coAuthors is absent or empty', () => {
-    const minimal: LocalizedPublication[] = [
-      { id: 'm', title: 'Minimal', date: '2024-01' },
-    ];
+    const minimal: LocalizedPublication[] = [{ id: 'm', title: 'Minimal', date: '2024-01' }];
     render(<Publications publications={minimal} />);
     expect(screen.queryByText(/^with /)).not.toBeInTheDocument();
   });

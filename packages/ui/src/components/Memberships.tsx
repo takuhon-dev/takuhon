@@ -57,9 +57,7 @@ export function Memberships({ memberships }: MembershipsProps): React.JSX.Elemen
                   <time dateTime={entry.endDate!}>{entry.endDate}</time>
                 )}
               </p>
-              {entry.description ? (
-                <p className={styles.description}>{entry.description}</p>
-              ) : null}
+              {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
             </div>
           </li>
         ))}

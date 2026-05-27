@@ -11,10 +11,7 @@ export { TakuhonProfile, type TakuhonProfileProps } from './components/TakuhonPr
 export { ProfileHeader, type ProfileHeaderProps } from './components/ProfileHeader.js';
 export { LinksList, type LinksListProps } from './components/LinksList.js';
 export { CareerTimeline, type CareerTimelineProps } from './components/CareerTimeline.js';
-export {
-  EducationTimeline,
-  type EducationTimelineProps,
-} from './components/EducationTimeline.js';
+export { EducationTimeline, type EducationTimelineProps } from './components/EducationTimeline.js';
 export { Certifications, type CertificationsProps } from './components/Certifications.js';
 export { Memberships, type MembershipsProps } from './components/Memberships.js';
 export { Volunteering, type VolunteeringProps } from './components/Volunteering.js';

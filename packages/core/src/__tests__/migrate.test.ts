@@ -87,7 +87,12 @@ describe('migrateTakuhon', () => {
       projects: [],
       skills: [],
       certifications: [
-        { id: 'pre-existing', title: { en: 'Pre' }, issuingOrganization: { en: 'Org' }, issueDate: '2024-01' },
+        {
+          id: 'pre-existing',
+          title: { en: 'Pre' },
+          issuingOrganization: { en: 'Org' },
+          issueDate: '2024-01',
+        },
       ],
       contact: {},
       settings: { defaultLocale: 'en', availableLocales: ['en'] },

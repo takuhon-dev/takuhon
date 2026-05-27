@@ -40,7 +40,8 @@
     "NOTICE"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "engines": {
     "node": ">=22.0.0"

@@ -150,7 +150,10 @@ describe('locale resolution priority', () => {
   async function profile(headers: Record<string, string>, path = '/api/profile') {
     const { app } = makeApp();
     const res = await fetchPath(app, path, { headers });
-    return (await res.json()) as { meta: { locale: string }; data: { profile: { displayName: string } } };
+    return (await res.json()) as {
+      meta: { locale: string };
+      data: { profile: { displayName: string } };
+    };
   }
 
   it('honors takuhon_locale cookie alone', async () => {
@@ -348,7 +351,10 @@ describe('public privacy filter', () => {
     return out;
   }
 
-  function makeAppWith(profile: Takuhon): { app: ReturnType<typeof createPublicApp>; storage: FakeStorage } {
+  function makeAppWith(profile: Takuhon): {
+    app: ReturnType<typeof createPublicApp>;
+    storage: FakeStorage;
+  } {
     const storage = new FakeStorage();
     const app = createPublicApp({ storage, fallback: () => profile });
     return { app, storage };

@@ -292,10 +292,7 @@ function resolveMembership(membership: Membership, candidates: LocaleTag[]): Loc
   return out;
 }
 
-function resolveVolunteering(
-  v: Volunteering,
-  candidates: LocaleTag[],
-): LocalizedVolunteering {
+function resolveVolunteering(v: Volunteering, candidates: LocaleTag[]): LocalizedVolunteering {
   const out: LocalizedVolunteering = {
     id: v.id,
     organization: pickLocalized(v.organization, candidates) ?? '',
@@ -347,10 +344,7 @@ function resolveEducation(edu: Education, candidates: LocaleTag[]): LocalizedEdu
   return out;
 }
 
-function resolvePublication(
-  pub: Publication,
-  candidates: LocaleTag[],
-): LocalizedPublication {
+function resolvePublication(pub: Publication, candidates: LocaleTag[]): LocalizedPublication {
   const out: LocalizedPublication = {
     id: pub.id,
     title: pickLocalized(pub.title, candidates) ?? '',

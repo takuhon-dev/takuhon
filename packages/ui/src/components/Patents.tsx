@@ -78,9 +78,7 @@ export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
             {entry.coInventors && entry.coInventors.length > 0 ? (
               <p className={styles.coInventors}>{`with ${entry.coInventors.join(', ')}`}</p>
             ) : null}
-            {entry.description ? (
-              <p className={styles.description}>{entry.description}</p>
-            ) : null}
+            {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
           </li>
         ))}
       </ul>
