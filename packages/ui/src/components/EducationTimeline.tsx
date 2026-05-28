@@ -61,6 +61,7 @@ export function EducationTimeline({ education }: EducationTimelineProps): React.
                   <time dateTime={entry.startDate}>{entry.startDate}</time>
                   {' – '}
                   {isOngoing(entry) ? (
+                    // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
                     'Present'
                   ) : (
                     <time dateTime={entry.endDate!}>{entry.endDate}</time>

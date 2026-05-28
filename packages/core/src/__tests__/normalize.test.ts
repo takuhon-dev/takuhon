@@ -72,8 +72,10 @@ describe('normalize() ordering', () => {
   it('sorts links by ascending order; entries without order go last and remain stable', () => {
     const draft = cloneExample();
     const reversed = [...draft.links].reverse();
-    const withoutOrderA = { ...reversed[0]! };
-    const withoutOrderB = { ...reversed[1]! };
+    const reversedFirst = reversed[0]!;
+    const reversedSecond = reversed[1]!;
+    const withoutOrderA = { ...reversedFirst };
+    const withoutOrderB = { ...reversedSecond };
     delete withoutOrderA.order;
     delete withoutOrderB.order;
     const tail = reversed.slice(2);

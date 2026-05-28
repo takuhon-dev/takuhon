@@ -170,7 +170,40 @@
     { "id": "design-tokens", "label": "Design tokens", "category": "design", "order": 6 },
     { "id": "portuguese", "label": "Portuguese (B2)", "category": "language", "order": 7 }
   ],
-  "certifications": [],
+  "certifications": [
+    {
+      "id": "iaap-cpacc-2022",
+      "title": {
+        "en": "Certified Professional in Accessibility Core Competencies (CPACC)",
+        "ja": "アクセシビリティ専門家認定 (CPACC)"
+      },
+      "issuingOrganization": {
+        "en": "International Association of Accessibility Professionals",
+        "ja": "国際アクセシビリティ専門家協会"
+      },
+      "issueDate": "2022-06",
+      "expirationDate": null,
+      "credentialId": "CPACC-2022-PR-09231",
+      "url": "https://example.org/iaap/credentials/cpacc",
+      "order": 0
+    },
+    {
+      "id": "iaap-was-2023",
+      "title": {
+        "en": "Web Accessibility Specialist (WAS)",
+        "ja": "Web アクセシビリティスペシャリスト (WAS)"
+      },
+      "issuingOrganization": {
+        "en": "International Association of Accessibility Professionals",
+        "ja": "国際アクセシビリティ専門家協会"
+      },
+      "issueDate": "2023-03",
+      "expirationDate": "2026-03",
+      "credentialId": "WAS-2023-PR-04522",
+      "url": "https://example.org/iaap/credentials/was",
+      "order": 1
+    }
+  ],
   "memberships": [
     {
       "id": "iaap-senior",
@@ -219,8 +252,53 @@
       "order": 0
     }
   ],
-  "honors": [],
-  "education": [],
+  "honors": [
+    {
+      "id": "wai-recognized-contributor-2024",
+      "title": {
+        "en": "Recognized Contributor, Web Accessibility Initiative",
+        "ja": "Web Accessibility Initiative 貢献者表彰"
+      },
+      "issuer": {
+        "en": "W3C Web Accessibility Initiative",
+        "ja": "W3C Web Accessibility Initiative"
+      },
+      "description": {
+        "en": "Recognized for sustained reviews of the WCAG 2.2 Authoring Practices documentation and for contributions to non-visual focus management patterns.",
+        "ja": "WCAG 2.2 Authoring Practices ドキュメントの継続レビュー、および非視覚的フォーカス管理パターンへの貢献を評価。"
+      },
+      "date": "2024-04",
+      "url": "https://example.org/wai/recognitions/2024",
+      "order": 0
+    }
+  ],
+  "education": [
+    {
+      "id": "westbrook-bsc-2018",
+      "institution": {
+        "en": "Westbrook University",
+        "ja": "ウェストブルック大学"
+      },
+      "degree": {
+        "en": "BSc in Cognitive Science",
+        "ja": "認知科学学士"
+      },
+      "fieldOfStudy": {
+        "en": "Human-Computer Interaction",
+        "ja": "ヒューマン・コンピュータ・インタラクション"
+      },
+      "description": {
+        "en": "Senior thesis on screen-reader interaction patterns for non-visual users navigating dynamic web interfaces.",
+        "ja": "卒業研究は動的 Web インターフェースを操作する非視覚ユーザー向けスクリーンリーダー対話パターンの分析。"
+      },
+      "grade": "magna cum laude",
+      "startDate": "2014-09",
+      "endDate": "2018-06",
+      "isCurrent": false,
+      "url": "https://example.org/westbrook",
+      "order": 0
+    }
+  ],
   "publications": [
     {
       "id": "design-tokens-wcag-2024",
@@ -243,7 +321,28 @@
       "order": 0
     }
   ],
-  "languages": [],
+  "languages": [
+    {
+      "id": "lang-en",
+      "language": "en",
+      "displayName": {
+        "en": "English",
+        "ja": "英語"
+      },
+      "proficiency": "native",
+      "order": 0
+    },
+    {
+      "id": "lang-pt",
+      "language": "pt",
+      "displayName": {
+        "en": "Portuguese",
+        "ja": "ポルトガル語"
+      },
+      "proficiency": "intermediate",
+      "order": 1
+    }
+  ],
   "courses": [
     {
       "id": "coursera-advanced-a11y-2023",

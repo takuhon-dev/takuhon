@@ -60,6 +60,7 @@ export function Volunteering({ volunteering }: VolunteeringProps): React.JSX.Ele
                 <time dateTime={entry.startDate}>{entry.startDate}</time>
                 {' – '}
                 {isOngoing(entry) ? (
+                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
                   'Present'
                 ) : (
                   <time dateTime={entry.endDate!}>{entry.endDate}</time>

@@ -1,3 +1,4 @@
+import { applyPublicPrivacyFilter } from '@takuhon/api';
 import { resolveLocale, validate, type LocaleTag, type Takuhon } from '@takuhon/core';
 import { LocaleSwitcher, TakuhonHead, TakuhonProfile } from '@takuhon/ui';
 import { StrictMode, useEffect, useMemo, useState } from 'react';
@@ -82,11 +83,16 @@ if (!result.ok) {
   );
 }
 
+// The playground stands in for the public surface (`/`, `/api/profile`,
+// `/api/jsonld`), so strip privacy-marked fields before render to match
+// what real public readers would see. Admin paths would skip this filter.
+const publicTakuhon = applyPublicPrivacyFilter(result.data);
+
 const container = document.getElementById('root');
 if (!container) throw new Error('Root container not found');
 
 createRoot(container).render(
   <StrictMode>
-    <App takuhon={result.data} />
+    <App takuhon={publicTakuhon} />
   </StrictMode>,
 );
