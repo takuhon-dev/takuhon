@@ -18,6 +18,7 @@ export {
   type ProblemResponseInput,
 } from './error-envelope.js';
 export { createPublicApp, type PublicAppDeps } from './public-app.js';
+export { applyPublicPrivacyFilter } from './privacy-filter.js';
 
 export { createAdminApiApp, type AdminApiAppDeps } from './admin/admin-api-app.js';
 export { createAdminUiApp } from './admin/admin-ui-app.js';

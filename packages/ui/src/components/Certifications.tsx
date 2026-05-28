@@ -45,6 +45,7 @@ export function Certifications({ certifications }: CertificationsProps): React.J
             <p className={styles.range}>
               <time dateTime={cert.issueDate}>{cert.issueDate}</time>
               {cert.expirationDate === null ? (
+                // TODO(i18n-phase-2): Localize the 'No expiration' label via the locale resolver.
                 <span className={styles.tag}> · No expiration</span>
               ) : cert.expirationDate !== undefined ? (
                 <>

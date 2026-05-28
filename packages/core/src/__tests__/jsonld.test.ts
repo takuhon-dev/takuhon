@@ -18,6 +18,41 @@ function prepare(locale?: string): LocalizedTakuhon {
   return resolveLocale(normalize(cloneExample()), locale);
 }
 
+// Shared helper for omission tests: prepare a localized fixture, then apply
+// a caller-supplied mutation. Reduces the repeated `const d = prepare(); delete
+// d.x.y;` boilerplate to a single line, keeping the omission intent inline.
+function prepareWith(mutate: (data: LocalizedTakuhon) => void, locale = 'en'): LocalizedTakuhon {
+  const data = prepare(locale);
+  mutate(data);
+  return data;
+}
+
+// Construct a near-empty Takuhon for the empty-fields omission policy test
+// without inheriting any populated fields from the example fixture. Returns
+// the raw (non-localized) document; callers run normalize + resolveLocale.
+function createMinimalFixture(): Takuhon {
+  return {
+    schemaVersion: '0.2.0',
+    profile: { displayName: { en: 'Minimal' } },
+    links: [],
+    careers: [],
+    projects: [],
+    skills: [],
+    certifications: [],
+    memberships: [],
+    volunteering: [],
+    honors: [],
+    education: [],
+    publications: [],
+    languages: [],
+    courses: [],
+    patents: [],
+    contact: {},
+    settings: { defaultLocale: 'en', availableLocales: ['en'] },
+    meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+  };
+}
+
 function asRecord(value: object): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
@@ -35,13 +70,15 @@ describe('generateJsonLd() — root shape', () => {
     const out = generateJsonLd(prepare('en'));
     expect(Array.isArray(out)).toBe(true);
     expect(out).toHaveLength(1);
-    const profilePage = asRecord(out[0]!);
+    const firstEntry = out[0]!;
+    const profilePage = asRecord(firstEntry);
     expect(profilePage['@type']).toBe('ProfilePage');
   });
 
   it('inlines the Person as ProfilePage.mainEntity', () => {
     const out = generateJsonLd(prepare('en'));
-    const profilePage = asRecord(out[0]!);
+    const firstEntry = out[0]!;
+    const profilePage = asRecord(firstEntry);
     const mainEntity = asRecord(profilePage.mainEntity as object);
     expect(mainEntity['@type']).toBe('Person');
   });
@@ -82,15 +119,17 @@ describe('generateProfilePageJsonLd() — required and optional fields', () => {
   });
 
   it('omits dateCreated when meta.createdAt is absent', () => {
-    const data = prepare('en');
-    delete data.meta.createdAt;
+    const data = prepareWith((d) => {
+      delete d.meta.createdAt;
+    });
     const out = getProfilePage(data);
     expect(out.dateCreated).toBeUndefined();
   });
 
   it('omits dateModified when meta.updatedAt is absent', () => {
-    const data = prepare('en');
-    delete data.meta.updatedAt;
+    const data = prepareWith((d) => {
+      delete d.meta.updatedAt;
+    });
     const out = getProfilePage(data);
     expect(out.dateModified).toBeUndefined();
   });
@@ -104,8 +143,9 @@ describe('generateProfilePageJsonLd() — required and optional fields', () => {
   });
 
   it('omits primaryImageOfPage when profile.avatar is absent', () => {
-    const data = prepare('en');
-    delete data.profile.avatar;
+    const data = prepareWith((d) => {
+      delete d.profile.avatar;
+    });
     const out = getProfilePage(data);
     expect(out.primaryImageOfPage).toBeUndefined();
   });
@@ -473,7 +513,11 @@ describe('determinism and invariants', () => {
       'worksFor',
       'address',
       'knowsAbout',
+      'knowsLanguage',
+      'hasCredential',
       'memberOf',
+      'alumniOf',
+      'award',
       'sameAs',
       'subjectOf',
     ]);
@@ -482,24 +526,7 @@ describe('determinism and invariants', () => {
 
 describe('empty-fields omission policy', () => {
   it('produces a minimal but well-formed ProfilePage from a near-empty document', () => {
-    const minimal = cloneExample();
-    minimal.profile = { displayName: { en: 'Minimal' } };
-    minimal.links = [];
-    minimal.careers = [];
-    minimal.projects = [];
-    minimal.skills = [];
-    minimal.certifications = [];
-    minimal.memberships = [];
-    minimal.volunteering = [];
-    minimal.honors = [];
-    minimal.education = [];
-    minimal.publications = [];
-    minimal.languages = [];
-    minimal.courses = [];
-    minimal.patents = [];
-    minimal.contact = {};
-    minimal.meta = { contentLicense: { spdxId: 'CC0-1.0' } };
-    const data = resolveLocale(normalize(minimal), 'en');
+    const data = resolveLocale(normalize(createMinimalFixture()), 'en');
     const out = getProfilePage(data);
     expect(out['@context']).toBe('https://schema.org');
     expect(out['@type']).toBe('ProfilePage');

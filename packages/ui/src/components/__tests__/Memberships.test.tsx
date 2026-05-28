@@ -22,6 +22,9 @@ const sample: LocalizedMembership[] = [
   },
 ];
 
+const currentMembership = sample[0]!;
+const pastMembership = sample[1]!;
+
 describe('Memberships', () => {
   it('renders a labelled Memberships section with one entry per membership', () => {
     render(<Memberships memberships={sample} />);
@@ -30,12 +33,12 @@ describe('Memberships', () => {
   });
 
   it('renders "Present" when isCurrent is true', () => {
-    render(<Memberships memberships={[sample[0]!]} />);
+    render(<Memberships memberships={[currentMembership]} />);
     expect(screen.getByText(/Present/)).toBeInTheDocument();
   });
 
   it('renders both start and end as <time dateTime> for closed memberships', () => {
-    const { container } = render(<Memberships memberships={[sample[1]!]} />);
+    const { container } = render(<Memberships memberships={[pastMembership]} />);
     const times = container.querySelectorAll('time');
     expect(times).toHaveLength(2);
     expect(times[0]?.getAttribute('datetime')).toBe('2018-04');

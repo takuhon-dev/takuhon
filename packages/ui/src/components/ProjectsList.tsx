@@ -54,6 +54,7 @@ export function ProjectsList({ projects }: ProjectsListProps): React.JSX.Element
                 {project.endDate ? (
                   <time dateTime={project.endDate}>{project.endDate}</time>
                 ) : (
+                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
                   'Present'
                 )}
               </p>

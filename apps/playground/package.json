@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@takuhon/api": "workspace:*",
     "@takuhon/core": "workspace:*",
     "@takuhon/ui": "workspace:*",
     "react": "^19.2.6",

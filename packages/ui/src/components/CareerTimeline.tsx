@@ -53,6 +53,7 @@ export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Elem
                 <time dateTime={career.startDate}>{career.startDate}</time>
                 {' – '}
                 {isOngoing(career) ? (
+                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
                   'Present'
                 ) : (
                   <time dateTime={career.endDate!}>{career.endDate}</time>

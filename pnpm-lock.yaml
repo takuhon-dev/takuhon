@@ -90,6 +90,9 @@ importers:
 
   apps/playground:
     dependencies:
+      '@takuhon/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@takuhon/core':
         specifier: workspace:*
         version: link:../../packages/core

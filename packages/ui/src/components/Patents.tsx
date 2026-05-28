@@ -62,6 +62,7 @@ export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
               <p className={styles.dates}>
                 {entry.filingDate ? (
                   <>
+                    {/* TODO(i18n-phase-2): Localize the 'Filed' label via the locale resolver. */}
                     {'Filed '}
                     <time dateTime={entry.filingDate}>{entry.filingDate}</time>
                   </>
@@ -69,6 +70,7 @@ export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
                 {entry.filingDate && entry.grantDate ? ' · ' : null}
                 {entry.grantDate ? (
                   <>
+                    {/* TODO(i18n-phase-2): Localize the 'Granted' label via the locale resolver. */}
                     {'Granted '}
                     <time dateTime={entry.grantDate}>{entry.grantDate}</time>
                   </>
@@ -76,7 +78,10 @@ export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
               </p>
             ) : null}
             {entry.coInventors && entry.coInventors.length > 0 ? (
-              <p className={styles.coInventors}>{`with ${entry.coInventors.join(', ')}`}</p>
+              <>
+                {/* TODO(i18n-phase-2): Localize the 'with' prefix via the locale resolver. */}
+                <p className={styles.coInventors}>{`with ${entry.coInventors.join(', ')}`}</p>
+              </>
             ) : null}
             {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
           </li>
