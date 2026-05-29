@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/cli",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "create-takuhon scaffolding plus dev/validate/sync/export/migrate/restore commands",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",

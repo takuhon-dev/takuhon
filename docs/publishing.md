@@ -74,7 +74,7 @@ For each release:
 ## Verification after publish
 
 ```bash
-VER=0.3.0
+VER=0.4.0
 
 # 1. Confirm version + provenance attestation for every package
 for PKG in @takuhon/core @takuhon/api @takuhon/ui @takuhon/cli @takuhon/cloudflare takuhon; do
