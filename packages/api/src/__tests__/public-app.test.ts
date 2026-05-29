@@ -1,4 +1,4 @@
-import { normalize, validate, type Takuhon } from '@takuhon/core';
+import { SCHEMA_VERSION, normalize, validate, type Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
@@ -33,6 +33,28 @@ describe('createPublicApp', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/text\/plain/);
     expect(await res.text()).toContain('takuhon');
+  });
+
+  it('GET /health returns a storage-independent liveness payload', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/health');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.status).toBe('ok');
+    expect(body.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('GET /health succeeds even when storage throws (liveness, not readiness)', async () => {
+    const storage = new FakeStorage();
+    storage.getProfile = (): never => {
+      throw new Error('storage is down');
+    };
+    const app = createPublicApp({ storage });
+    const res = await fetchPath(app, '/health');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.status).toBe('ok');
   });
 
   it('GET /api/profile uses storage data when present', async () => {
