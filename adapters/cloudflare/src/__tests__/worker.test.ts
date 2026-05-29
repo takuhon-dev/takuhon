@@ -147,3 +147,57 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(res.headers.get('content-security-policy')).toMatch(/frame-ancestors 'none'/);
   });
 });
+
+describe('cloudflare worker — URL path locale prefix', () => {
+  // These tests are the production-critical proof that the locale getPath
+  // composes through the adapter's top-level router. Hono's route()
+  // flattens each mounted sub-app's routes into this router and dispatches
+  // with the top-level getPath only, so a getPath set on createPublicApp
+  // alone would pass the api package's direct-fetch tests yet 404 here.
+
+  it('GET /ja/api/profile resolves Japanese content through the worker', async () => {
+    const res = await call('https://worker.example/ja/api/profile', makeEnv().env);
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('ja');
+    expect(body.data.profile.displayName).toBe('パット・リベラ');
+  });
+
+  it('GET /ja/api/jsonld localizes inLanguage through the worker', async () => {
+    const res = await call('https://worker.example/ja/api/jsonld', makeEnv().env);
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body[0].inLanguage).toBe('ja');
+  });
+
+  it('keeps admin paths locale-agnostic: PUT /ja/api/admin/profile never reaches admin', async () => {
+    // The remainder `/api/admin/profile` is not locale-aware, so the prefix
+    // is NOT stripped and the request stays `/ja/api/admin/profile`. It does
+    // not match the admin mount, falls through to the public app, and hits
+    // its non-GET catch-all → 405 with the method-not-allowed problem type.
+    // Crucially this is NOT the admin handler (which would answer 401 for a
+    // missing token), proving admin stays isolated from the locale prefix.
+    const res = await call('https://worker.example/ja/api/admin/profile', makeEnv().env, {
+      method: 'PUT',
+    });
+    expect(res.status).toBe(405);
+    const body: any = await res.json();
+    expect(body.type).toBe('https://takuhon.org/errors/method-not-allowed');
+  });
+
+  it('keeps /ja/admin out of the admin UI surface (404)', async () => {
+    const res = await call('https://worker.example/ja/admin', makeEnv().env);
+    expect(res.status).toBe(404);
+  });
+
+  it('leaves the real admin route reachable at its literal prefix', async () => {
+    // No token configured → admin API rejects, but it must be the admin
+    // handler responding (401/403), not a 404 from misrouting.
+    const res = await call('https://worker.example/api/admin/profile', makeEnv().env, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    expect(res.status).not.toBe(404);
+  });
+});
