@@ -53,7 +53,10 @@ export function Publications({ publications }: PublicationsProps): React.JSX.Ele
               <time dateTime={entry.date}>{entry.date}</time>
             </p>
             {entry.coAuthors && entry.coAuthors.length > 0 ? (
-              <p className={styles.coAuthors}>{`with ${entry.coAuthors.join(', ')}`}</p>
+              <>
+                {/* TODO(i18n-phase-2): Localize the 'with' prefix via the locale resolver. */}
+                <p className={styles.coAuthors}>{`with ${entry.coAuthors.join(', ')}`}</p>
+              </>
             ) : null}
             {entry.doi
               ? (() => {

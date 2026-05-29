@@ -10,6 +10,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 - `release.yml` bumps `softprops/action-gh-release` from v2.6.2 (Node 20) to v3.0.0 (Node 24). The action's `v2` line never moved off the Node 20 runtime, and per GitHub's Node 20 deprecation notice the runners begin defaulting to Node 24 on 2026-06-16, with Node 20 removed later in fall 2026. v3.0.0 is a runtime-only major — no input or behavior change — so the `github-release` job's `tag_name` / `name` / `generate_release_notes` / `fail_on_unmatched_files` / `files` inputs are unchanged. `sigstore/cosign-installer@v3` is a composite action and is unaffected by the Node 20 deprecation. CI tooling only; no published package contents change.
 
+### Internal
+
+- Added the missing `TODO(i18n-phase-2)` marker to the `with` co-author prefix in `Publications`. The 0.4.0 i18n-marker pass flagged the analogous `with` prefix in `Patents` but skipped this one; both hard-coded `with` strings are now marked consistently for the Phase 2 i18n extraction. No render change.
+
 ## [0.4.0] - 2026-05-29
 
 Minor release. The headline is **URL path locale resolution**: a leading `/{locale}` path segment (e.g. `/ja/api/profile`, `/ja/`) now resolves the locale server-side at priority #2 (between the `?lang=` query and the `takuhon_locale` cookie), and `@takuhon/ui` advertises that path form as the canonical locale URL in `hreflang` / `canonical` / `og:url`. This release also adds the `GET /health` liveness endpoint, a privacy-filter fixture-leak regression test, and clears the 0.3.0 deferred-findings backlog (i18n markers, test-readability refactors, Tier 1 example fixtures). No schema, JSON-LD, or storage change — `schemaVersion` stays `0.2.0` and every 0.3.0 profile validates against 0.4.0 unchanged. Per the lockstep release policy all six publishable artifacts bump to 0.4.0.
