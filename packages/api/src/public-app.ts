@@ -11,6 +11,7 @@ import {
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
+import { localePrefixGetPath, pathLocaleFromUrl } from './locale-prefix.js';
 import { resolveRequestLocales } from './locale-resolution.js';
 import { applyPublicPrivacyFilter } from './privacy-filter.js';
 
@@ -52,7 +53,15 @@ async function loadProfile(deps: PublicAppDeps): Promise<{ data: Takuhon; versio
 }
 
 export function createPublicApp(deps: PublicAppDeps): Hono {
-  const app = new Hono();
+  // `getPath` strips a leading `/{locale}` prefix (e.g. `/ja/api/profile`
+  // → `/api/profile`) so the flat routes below match locale-prefixed
+  // URLs. The same function is applied on the adapter's top-level router,
+  // because Hono's `route()` flattens this app's routes into the parent
+  // and dispatches with the parent's `getPath` only — setting it here
+  // alone would be honored for direct `app.fetch()` (tests) but not in
+  // production. Handlers recover the locale token from the original URL
+  // (`c.req.url`), which `getPath` does not mutate.
+  const app = new Hono({ getPath: localePrefixGetPath });
 
   app.use('*', async (c, next) => {
     await next();
@@ -96,7 +105,11 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
 
   app.get('/api/profile', async (c) => {
     const { data, version } = await loadProfile(deps);
-    const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
+    const { locale, fallbackLocale } = resolveRequestLocales(
+      c,
+      data.settings.availableLocales,
+      pathLocaleFromUrl(c.req.url),
+    );
     const localized = applyPublicPrivacyFilter(
       resolveLocale(normalize(data), locale, fallbackLocale),
     );
@@ -118,7 +131,11 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
 
   app.get('/api/jsonld', async (c) => {
     const { data, version } = await loadProfile(deps);
-    const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
+    const { locale, fallbackLocale } = resolveRequestLocales(
+      c,
+      data.settings.availableLocales,
+      pathLocaleFromUrl(c.req.url),
+    );
     const localized = applyPublicPrivacyFilter(
       resolveLocale(normalize(data), locale, fallbackLocale),
     );

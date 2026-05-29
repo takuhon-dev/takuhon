@@ -4,15 +4,17 @@
  * Reads request-side locale candidates in this priority order:
  *
  *   1. `?lang=` query parameter
- *   2. `takuhon_locale` cookie
- *   3. `Accept-Language` request header (q-value ordered)
+ *   2. URL path prefix (e.g. `/ja/`), passed in as `pathLocale`
+ *   3. `takuhon_locale` cookie
+ *   4. `Accept-Language` request header (q-value ordered)
  *
- * URL-path-based candidates (e.g. `/ja/`) are not yet honored — that
- * would require route restructuring and is tracked for a future
- * release. Settings-tier fallbacks (`settings.defaultLocale`,
- * `settings.fallbackLocale`, `settings.availableLocales[0]`) are
- * resolved inside `@takuhon/core`'s `resolveLocale` and do not appear
- * here.
+ * The URL-path candidate is extracted structurally by
+ * `locale-prefix.ts` (`stripLocalePrefix` / `pathLocaleFromUrl`) and
+ * handed to {@link resolveRequestLocales} as `pathLocale`; this module
+ * does not parse the path itself. Settings-tier fallbacks
+ * (`settings.defaultLocale`, `settings.fallbackLocale`,
+ * `settings.availableLocales[0]`) are resolved inside `@takuhon/core`'s
+ * `resolveLocale` and do not appear here.
  *
  * `resolveLocale` only exposes two caller slots (`locale`,
  * `fallbackLocale`). To avoid wasting them on tags the document can't
@@ -36,7 +38,7 @@ const ACCEPT_LANG_MAX = 2048;
 const ACCEPT_LANG_MAX_ENTRIES = 16;
 const COOKIE_VALUE_MAX = 64;
 
-function isValidBcp47(tag: string): boolean {
+export function isValidBcp47(tag: string): boolean {
   return BCP47.test(tag);
 }
 
@@ -115,21 +117,31 @@ function matchAvailable(tag: string, available: readonly string[]): string | und
 }
 
 /**
- * Resolve HTTP-layer locale candidates from the request — query,
- * cookie, and `Accept-Language` in that priority order. Returns the
- * top two candidates that survive validation and the
+ * Resolve HTTP-layer locale candidates from the request — query, URL
+ * path prefix, cookie, and `Accept-Language` in that priority order.
+ * Returns the top two candidates that survive validation and the
  * `availableLocales` filter, after substituting the matched available
  * token so primary-subtag matches resolve correctly downstream.
+ *
+ * @param pathLocale The locale token extracted from a `/{locale}` path
+ *   prefix by `pathLocaleFromUrl`, or `undefined` when the request has
+ *   no path prefix. Inserted at priority #2 (after query, before
+ *   cookie).
  */
 export function resolveRequestLocales(
   c: Context,
   available: readonly string[],
+  pathLocale?: string,
 ): { locale?: string; fallbackLocale?: string } {
   const raw: string[] = [];
 
   const query = c.req.query('lang');
   if (query !== undefined && isValidBcp47(query)) {
     raw.push(query);
+  }
+
+  if (pathLocale !== undefined && isValidBcp47(pathLocale)) {
+    raw.push(pathLocale);
   }
 
   const cookie = getCookie(c, 'takuhon_locale');

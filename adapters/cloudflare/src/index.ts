@@ -3,6 +3,7 @@ import {
   createAdminApiApp,
   createAdminUiApp,
   createPublicApp,
+  localePrefixGetPath,
   problemResponse,
   type AuditLogger,
   type CachePurger,
@@ -76,7 +77,14 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
       });
       const auditLogger: AuditLogger = consoleAuditLogger;
 
-      const router = new Hono();
+      // `getPath` strips a leading `/{locale}` prefix before route
+      // matching. This is the production-critical placement: Hono's
+      // `route()` flattens each mounted sub-app's routes into this router
+      // and dispatches with this router's `getPath` only, so a `getPath`
+      // set on the public sub-app alone would not run here. The shared
+      // function's allowlist guard never strips admin remainders, so
+      // `/api/admin/*` and `/admin/*` mounts stay locale-agnostic.
+      const router = new Hono({ getPath: localePrefixGetPath });
       router.notFound((c) =>
         problemResponse(c, {
           slug: ERROR_SLUGS.notFound,

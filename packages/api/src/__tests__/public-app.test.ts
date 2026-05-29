@@ -166,8 +166,9 @@ describe('createPublicApp', () => {
 describe('locale resolution priority', () => {
   // Fixture availableLocales: ["en", "ja"], defaultLocale: "en".
   // Assertions exercise the request-side priority chain: query (?lang=),
-  // cookie (takuhon_locale), and Accept-Language with q-value ordering.
-  // URL-path-based candidates are intentionally out of scope here.
+  // URL path prefix (/ja/), cookie (takuhon_locale), and Accept-Language
+  // with q-value ordering. The URL-path tier is covered in the dedicated
+  // 'URL path locale prefix' block below.
 
   async function profile(headers: Record<string, string>, path = '/api/profile') {
     const { app } = makeApp();
@@ -291,6 +292,144 @@ describe('locale resolution priority', () => {
     const body: any = await res.json();
     expect(body.meta.locale).toBe('en-US');
     expect(body.data.profile.displayName).toBe('Pat Rivera');
+  });
+});
+
+describe('URL path locale prefix', () => {
+  // Fixture availableLocales: ["en", "ja"], defaultLocale: "en".
+  // The public app's getPath strips a leading /{locale} so flat routes
+  // match, and handlers feed the token in at priority #2 (after ?lang=,
+  // before cookie).
+
+  it('GET /ja/api/profile resolves Japanese content', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/api/profile');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('ja');
+    expect(body.data.profile.displayName).toBe('パット・リベラ');
+  });
+
+  it('GET /en/api/profile resolves English content', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/en/api/profile');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('GET /ja/api/jsonld localizes inLanguage to ja', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/api/jsonld');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body[0].inLanguage).toBe('ja');
+  });
+
+  it('GET /ja/ serves the landing page (prefix maps to /)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toMatch(/text\/plain/);
+    expect(await res.text()).toContain('takuhon');
+  });
+
+  it('?lang= beats the path prefix (query is priority #1)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/api/profile?lang=en');
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('path prefix beats cookie (priority #2 over #3)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/api/profile', {
+      headers: { cookie: 'takuhon_locale=en' },
+    });
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('ja');
+  });
+
+  it('path prefix beats Accept-Language', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/api/profile', {
+      headers: { 'accept-language': 'en' },
+    });
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('ja');
+  });
+
+  it('falls through an unknown-but-shaped prefix to the default locale (200, not 404)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/fr/api/profile');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('en');
+  });
+
+  it('keeps Vary unchanged on a path-prefixed route', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/api/profile');
+    const vary = res.headers.get('vary') ?? '';
+    expect(vary).toMatch(/Accept-Language/i);
+    expect(vary).toMatch(/Cookie/i);
+  });
+
+  it('resolves a region-tagged path prefix via primary-subtag match', async () => {
+    const base = makeSample();
+    const regional: Takuhon = {
+      ...base,
+      settings: { ...base.settings, availableLocales: ['en-US', 'ja'], defaultLocale: 'ja' },
+      profile: {
+        ...base.profile,
+        displayName: { 'en-US': 'Pat Rivera', ja: 'パット・リベラ' },
+      },
+    };
+    const storage = new FakeStorage();
+    await storage.saveProfile(regional);
+    const app = createPublicApp({ storage, fallback: () => regional });
+    const res = await fetchPath(app, '/en-US/api/profile');
+    const body: any = await res.json();
+    expect(body.meta.locale).toBe('en-US');
+    expect(body.data.profile.displayName).toBe('Pat Rivera');
+  });
+
+  // Locale-agnostic guard: a /{locale} prefix must never be honored ahead
+  // of a non-locale-aware remainder, and bare agnostic paths are untouched.
+  it('does not treat /api/schema as locale "api" + /schema', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/schema');
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.$schema).toBeTruthy();
+  });
+
+  it('leaves /health, /takuhon.json, and /.well-known/takuhon.json unchanged', async () => {
+    const { app } = makeApp();
+    const health = await fetchPath(app, '/health');
+    expect(health.status).toBe(200);
+    const healthBody: any = await health.json();
+    expect(healthBody.status).toBe('ok');
+
+    const raw = await fetchPath(app, '/takuhon.json');
+    expect(raw.status).toBe(200);
+
+    const wk = await fetchPath(app, '/.well-known/takuhon.json');
+    expect(wk.status).toBe(200);
+    const wkBody: any = await wk.json();
+    expect(wkBody.canonical).toBe('/takuhon.json');
+  });
+
+  it('404s a shaped prefix before an agnostic remainder (e.g. /ja/health)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/health');
+    expect(res.status).toBe(404);
+  });
+
+  it('404s the bare /api namespace root (reserved, not a locale)', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api');
+    expect(res.status).toBe(404);
   });
 });
 

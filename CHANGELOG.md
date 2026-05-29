@@ -6,9 +6,15 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
-### Added
+### Added — `@takuhon/api`
 
-- _(future entries land here under one of the standard Keep-a-Changelog sections — Added / Changed / Deprecated / Removed / Fixed / Security)_
+- URL path locale prefix resolution. A leading `/{locale}` segment — e.g. `GET /ja/api/profile`, `/ja/api/jsonld`, `/ja/` — now resolves the locale at priority #2, between the `?lang=` query (#1) and the `takuhon_locale` cookie (#3). Implemented via a shared Hono `getPath` (`localePrefixGetPath`) that strips the prefix before route matching, plus a remainder allowlist (`LOCALE_AWARE_REMAINDERS`) that keeps locale-agnostic paths (`/health`, `/api/schema`, `/.well-known/takuhon.json`, `/takuhon.json`) and admin paths (`/api/admin/*`, `/admin/*`) from being misread as a locale. A BCP-47-shaped but unavailable prefix (e.g. `/fr/` on an en/ja document) falls through to the next tier and serves the default locale with a 200, mirroring `?lang=` semantics. New exports: `stripLocalePrefix`, `localePrefixGetPath`, `pathLocaleFromUrl`, `LOCALE_AWARE_REMAINDERS`.
+
+### Changed — `@takuhon/cloudflare`
+
+- The worker's top-level router now applies `localePrefixGetPath`. This is the production-critical placement: Hono's `route()` flattens each mounted sub-app's routes into the top-level router and dispatches with that router's `getPath` only, so the prefix is stripped consistently for both the public app and direct requests. Admin mounts remain locale-agnostic via the remainder allowlist.
+
+This is the resolution half of the URL-path-locale feature; the SEO/generation half (path-form `hreflang`/canonical in `@takuhon/ui`) follows in a separate change. No schema, storage, or migration change — `schemaVersion` stays `0.2.0` and all 0.3.0 profiles validate unchanged. Per the lockstep release policy this ships as part of the 0.4.0 minor across all packages.
 
 ## [0.3.0] - 2026-05-27
 

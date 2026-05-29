@@ -19,6 +19,12 @@ export {
 } from './error-envelope.js';
 export { createPublicApp, type PublicAppDeps } from './public-app.js';
 export { applyPublicPrivacyFilter } from './privacy-filter.js';
+export {
+  LOCALE_AWARE_REMAINDERS,
+  localePrefixGetPath,
+  pathLocaleFromUrl,
+  stripLocalePrefix,
+} from './locale-prefix.js';
 
 export { createAdminApiApp, type AdminApiAppDeps } from './admin/admin-api-app.js';
 export { createAdminUiApp } from './admin/admin-ui-app.js';
