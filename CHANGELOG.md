@@ -4,11 +4,15 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`) and the bare-name `takuhon` redirect are released in lockstep at the same version. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
-## [Unreleased]
+## [0.4.0] - 2026-05-29
+
+Minor release. The headline is **URL path locale resolution**: a leading `/{locale}` path segment (e.g. `/ja/api/profile`, `/ja/`) now resolves the locale server-side at priority #2 (between the `?lang=` query and the `takuhon_locale` cookie), and `@takuhon/ui` advertises that path form as the canonical locale URL in `hreflang` / `canonical` / `og:url`. This release also adds the `GET /health` liveness endpoint, a privacy-filter fixture-leak regression test, and clears the 0.3.0 deferred-findings backlog (i18n markers, test-readability refactors, Tier 1 example fixtures). No schema, JSON-LD, or storage change — `schemaVersion` stays `0.2.0` and every 0.3.0 profile validates against 0.4.0 unchanged. Per the lockstep release policy all six publishable artifacts bump to 0.4.0.
 
 ### Added — `@takuhon/api`
 
 - URL path locale prefix resolution. A leading `/{locale}` segment — e.g. `GET /ja/api/profile`, `/ja/api/jsonld`, `/ja/` — now resolves the locale at priority #2, between the `?lang=` query (#1) and the `takuhon_locale` cookie (#3). Implemented via a shared Hono `getPath` (`localePrefixGetPath`) that strips the prefix before route matching, plus a remainder allowlist (`LOCALE_AWARE_REMAINDERS`) that keeps locale-agnostic paths (`/health`, `/api/schema`, `/.well-known/takuhon.json`, `/takuhon.json`) and admin paths (`/api/admin/*`, `/admin/*`) from being misread as a locale. A BCP-47-shaped but unavailable prefix (e.g. `/fr/` on an en/ja document) falls through to the next tier and serves the default locale with a 200, mirroring `?lang=` semantics. New exports: `stripLocalePrefix`, `localePrefixGetPath`, `pathLocaleFromUrl`, `LOCALE_AWARE_REMAINDERS`.
+- `GET /health` liveness endpoint. Returns `200 { status: 'ok', schemaVersion }` with `Cache-Control: no-store`. It is a storage-independent _liveness_ probe — it returns 200 even when the profile store is unreachable, so uptime monitors can confirm both that the worker is serving and which schema version is deployed without touching storage. The endpoint was listed in the spec endpoint table (Spec §7.1 / api.md §1) but previously unimplemented, so a bare `GET /health` 404'd on every deployment; this establishes its payload contract. `HEAD /health` is auto-mapped through the GET handler by Hono; other methods fall through to the existing 405 catch-all.
+- `applyPublicPrivacyFilter` is now a public export. The helper has existed internally since 0.2.0 (it powers the public read endpoints); exporting it lets a consumer rendering profile data outside the built-in app apply the same `hideCredentialIds` / `hideEducationGrades` / `showEmail` stripping the server does.
 
 ### Changed — `@takuhon/cloudflare`
 
@@ -23,6 +27,26 @@ Scope note: `TakuhonHead` is deployment-agnostic — it inserts a locale segment
 ### Changed — `@takuhon/playground`
 
 - The demo now syncs locale changes to the path form (`/ja/`) via `history.replaceState` and reads a leading `/{locale}` segment as an initial-locale candidate (priority #2, after `?lang=`), mirroring the server resolution order. Relies on the Vite dev server's SPA fallback to serve `/ja/` from `index.html` on reload.
+- The demo now runs profile data through `applyPublicPrivacyFilter` before rendering, so its JSON-LD and DOM match the public surface (previously it rendered the unfiltered document, exposing the `credentialId` / `grade` / `email` that the real public endpoints strip).
+
+### Changed — examples
+
+- `examples/personal-profile/takuhon.json` gains Tier 1 fixture entries so every populated 0.2.0 schema array renders against the canonical fixture (which also drives the workspace a11y audit): two `certifications` (IAAP CPACC with no expiration, IAAP WAS expiring 2026-03), one `honors` entry (W3C WAI Recognized Contributor), one `education` entry (BSc Cognitive Science, including a `grade` that demonstrates the `hideEducationGrades` privacy default), and two `languages` (English native, Portuguese intermediate, the latter matching the existing Portuguese skill). Certification URLs are generic (`/cpacc`, `/was`) rather than embedding the `credentialId` in the path, so the privacy demo is not undermined.
+
+### Internal
+
+- i18n TODO markers added to nine hard-coded English UI strings across seven components — `Present` (`CareerTimeline` / `EducationTimeline` / `Memberships` / `ProjectsList` / `Volunteering`), `No expiration` (`Certifications`), and `Filed` / `Granted` / `with` (`Patents`) — matching the existing `STATUS_LABEL` pattern so the Phase 2 i18n pass can extract them in one sweep. Accompanied by test-readability refactors: named constants for `array[index]!` access and extracted `prepareWith` / `createMinimalFixture` helpers in the core `jsonld` omission tests.
+- Privacy-filter fixture-leak regression test. The existing privacy tests assert field-level stripping; this guards a separate leak class where a stripped value (a `credentialId`, `grade`, or `email`) re-appears embedded in a sibling field the filter does not touch — most obviously a `credentialId` inside `certifications[*].url`. For each public endpoint (`/api/profile`, `/api/jsonld`, `/takuhon.json`) the serialized response body is asserted to contain none of the current fixture's sensitive substrings. The substring list is intentionally coupled to the current fixture values and must be updated on a fixture refresh (documented inline).
+
+### Known limitations carried forward
+
+- Phase 2 i18n is still unresolved. The hard-coded English UI strings now carry `TODO(i18n-phase-2)` markers (see Internal above) but are not yet extracted; the `Patents` status labels, the `with` author/inventor prefix, the `Present` ongoing-date label, and the `Filed` / `Granted` patent-date labels remain English until the Phase 2 i18n pass lands.
+- Schema.org `Patent` type is still pending in the vocabulary; `patents[*]` continues to map to `CreativeWork` + `additionalType` pointing at the pending `https://schema.org/Patent` URL (carried over from 0.2.0).
+- The `jsonld.test.ts` `subjectOf` omission test still seeds from the canonical example fixture and manually empties each `subjectOf`-contributing array, so a future fixture that gains such an array needs a matching reset line. The `createMinimalFixture()` helper added this release covers the separate empty-document omission test; a fully fixture-independent rewrite of the `subjectOf` test remains a candidate refactor.
+
+### Lockstep version bump (no functional changes beyond the above)
+
+- All six publishable artifacts bump from `0.3.0` to `0.4.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect. The functional changes in this release land in `@takuhon/api` (URL path locale resolution, `GET /health`), `@takuhon/cloudflare` (top-level `getPath` placement), and `@takuhon/ui` (path-form SEO); `@takuhon/core` and `@takuhon/cli` bump for lockstep alignment only.
 
 ## [0.3.0] - 2026-05-27
 
@@ -224,7 +248,9 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/takuhon-dev/takuhon/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/takuhon-dev/takuhon/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/takuhon-dev/takuhon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/takuhon-dev/takuhon/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/takuhon-dev/takuhon/releases/tag/v0.1.0
