@@ -413,3 +413,54 @@ describe('public privacy filter', () => {
     expect(body.contact.email).toBeUndefined();
   });
 });
+
+describe('fixture-leak regression (examples/personal-profile/takuhon.json)', () => {
+  // The personal-profile example deliberately populates privacy-marked fields
+  // (certifications[*].credentialId, education[*].grade, and contact.email
+  // with showEmail !== true) so that privacy-by-default behavior is exercised
+  // in the playground demo. This block guards against fixture edits that
+  // re-introduce these values via paths the field-level filter does not
+  // touch — for example, embedding a credentialId inside certifications[*].url
+  // or copying a grade into a description body.
+  //
+  // The substrings below are intentionally coupled to the current fixture.
+  // If a fixture refresh changes these credential / grade / email values,
+  // update the list rather than weakening the assertion: the contract
+  // is that no privacy-marked substring leaks via any embedded path.
+  const PRIVACY_MARKED_SUBSTRINGS = [
+    // certifications[*].credentialId — stripped by hideCredentialIds (default true)
+    'CPACC-2022-PR-09231',
+    'WAS-2023-PR-04522',
+    // education[*].grade — stripped by hideEducationGrades (default true)
+    'magna cum laude',
+    // contact.email — stripped when showEmail !== true
+    'pat@example.com',
+  ] as const;
+
+  function assertNoLeak(body: string, surface: string): void {
+    for (const pattern of PRIVACY_MARKED_SUBSTRINGS) {
+      expect(body, `"${pattern}" leaked into ${surface}`).not.toContain(pattern);
+    }
+  }
+
+  it('omits privacy-marked substrings from GET /api/profile', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/profile');
+    expect(res.status).toBe(200);
+    assertNoLeak(await res.text(), '/api/profile');
+  });
+
+  it('omits privacy-marked substrings from GET /api/jsonld', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/jsonld');
+    expect(res.status).toBe(200);
+    assertNoLeak(await res.text(), '/api/jsonld');
+  });
+
+  it('omits privacy-marked substrings from GET /takuhon.json', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/takuhon.json');
+    expect(res.status).toBe(200);
+    assertNoLeak(await res.text(), '/takuhon.json');
+  });
+});
