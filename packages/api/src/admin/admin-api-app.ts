@@ -1,5 +1,7 @@
 import {
   ConflictError,
+  NotFoundError,
+  exportTakuhon,
   normalize,
   validate,
   type Takuhon,
@@ -192,6 +194,45 @@ export function createAdminApiApp(deps: AdminApiAppDeps): Hono {
     });
 
     return c.body(null, 204);
+  });
+
+  app.get('/export', async (c) => {
+    let stored: { data: Takuhon; version: string };
+    try {
+      stored = await deps.storage.getProfile();
+    } catch (e) {
+      if (e instanceof NotFoundError) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.notFound,
+          status: 404,
+          title: 'Not Found',
+          detail: 'No profile has been saved yet; there is nothing to export.',
+        });
+      }
+      throw e;
+    }
+
+    // Token holders receive the full document: the public privacy filter is
+    // intentionally bypassed here (Spec §6.21). `exportTakuhon` with
+    // `updateTimestamp: false` returns the stored document verbatim (raw
+    // transport form, no envelope), so the body round-trips with
+    // `importTakuhon` and preserves the real `meta.updatedAt`.
+    const exported = exportTakuhon(stored.data, { updateTimestamp: false });
+
+    const tokenHash = await getActorTokenHash(c);
+    deps.auditLogger({
+      type: 'admin.profile.export',
+      timestamp: new Date().toISOString(),
+      actor: { tokenHash },
+      request: {
+        method: 'GET',
+        path: new URL(c.req.url).pathname,
+        ip: c.req.header('cf-connecting-ip'),
+      },
+      result: { status: 200 },
+    });
+
+    return c.json(exported);
   });
 
   app.on(['POST', 'PATCH'], '/profile', (c) =>

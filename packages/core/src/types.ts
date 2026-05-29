@@ -330,7 +330,7 @@ export interface ContentLicense {
 /**
  * Privacy opt-out flags that strip personally identifying fields from public
  * API output (`GET /api/profile`, `/api/jsonld`, `/takuhon.json`). Admin
- * endpoints (`PUT /api/admin/*`, `GET /api/export`) ignore these flags.
+ * endpoints (`PUT /api/admin/*`, `GET /api/admin/export`) ignore these flags.
  * Privacy-by-default: omitting the object or individual flags is equivalent
  * to `true`.
  */

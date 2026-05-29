@@ -162,7 +162,7 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       schemaUrl: '/api/schema',
       profile: '/api/profile',
       jsonld: '/api/jsonld',
-      export: '/api/export',
+      export: '/api/admin/export',
       canonical: '/takuhon.json',
     });
   });

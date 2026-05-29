@@ -98,7 +98,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body.schemaUrl).toBe('/api/schema');
     expect(body.profile).toBe('/api/profile');
     expect(body.jsonld).toBe('/api/jsonld');
-    expect(body.export).toBe('/api/export');
+    expect(body.export).toBe('/api/admin/export');
     expect(body.canonical).toBe('/takuhon.json');
   });
 
@@ -199,5 +199,24 @@ describe('cloudflare worker — URL path locale prefix', () => {
       body: '{}',
     });
     expect(res.status).not.toBe(404);
+  });
+});
+
+describe('cloudflare worker — GET /api/admin/export (production path)', () => {
+  it('returns the full document for an authorized token, bypassing the privacy filter', async () => {
+    const { env, kv } = makeEnv();
+    const authed: Env = { ...env, TAKUHON_ADMIN_TOKEN: 'secret' };
+    const metadata: KvMetadata = { version: 'v1', updatedAt: '2026-05-15T00:00:00Z' };
+    await kv.put(KV_KEY, JSON.stringify(exampleJson), { metadata });
+
+    const res = await call('https://worker.example/api/admin/export', authed, {
+      headers: { authorization: 'Bearer secret' },
+    });
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    // Raw full document (not a { data, meta } envelope); the privacy-sensitive
+    // fields the public read path strips are present for the token holder.
+    expect(body.schemaVersion).toBe('0.2.0');
+    expect(body.contact.email).toBeTruthy();
   });
 });

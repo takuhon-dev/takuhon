@@ -29,8 +29,9 @@
  *   returned with only the touched arrays / objects replaced.
  * - When no filter applies (every flag opts into disclosure), the original
  *   reference is returned as-is so callers can compare by identity.
- * - Admin endpoints (`/api/admin/*`, `/api/export`) MUST NOT call this
- *   helper — they always serve the full document to authenticated callers.
+ * - Admin endpoints (`/api/admin/*`, including `/api/admin/export`) MUST NOT
+ *   call this helper — they always serve the full document to authenticated
+ *   callers.
  */
 
 import type { LocalizedTakuhon, Takuhon } from '@takuhon/core';
