@@ -23,9 +23,33 @@ function persistLocaleCookie(locale: LocaleTag): void {
   document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
 }
 
-function syncLocaleQuery(locale: LocaleTag): void {
+// Read a leading `/{locale}` path segment when it matches an available
+// locale. This recognizes the lowercase path form the playground itself
+// writes (see `syncLocalePath`); unlike the server's `matchAvailable`, it
+// does not do case-insensitive or primary-subtag matching — sufficient for
+// a demo that only ever generates exact-case locale segments.
+function pathLocale(available: readonly string[]): LocaleTag | undefined {
+  const seg = window.location.pathname.split('/')[1];
+  if (seg && available.includes(seg)) return seg;
+  return undefined;
+}
+
+// Rewrite the URL to the path form `/{locale}/...`, replacing an existing
+// leading locale segment or inserting one, and dropping any legacy
+// `?lang=`. Relies on the Vite dev server's SPA fallback to serve `/ja/`
+// from index.html on a hard reload; this is a demo surface, not the
+// product's own routing.
+function syncLocalePath(locale: LocaleTag, available: readonly string[]): void {
   const url = new URL(window.location.href);
-  url.searchParams.set(QUERY_PARAM, locale);
+  url.searchParams.delete(QUERY_PARAM);
+  const segments = url.pathname.split('/');
+  const first = segments[1];
+  if (first !== undefined && available.includes(first)) {
+    segments[1] = locale;
+  } else {
+    segments.splice(1, 0, locale);
+  }
+  url.pathname = segments.join('/') || `/${locale}/`;
   window.history.replaceState({}, '', url);
 }
 
@@ -33,6 +57,8 @@ function resolveInitialLocale(takuhon: Takuhon): LocaleTag {
   const available = takuhon.settings.availableLocales;
   const query = new URLSearchParams(window.location.search).get(QUERY_PARAM);
   if (query && available.includes(query)) return query;
+  const fromPath = pathLocale(available);
+  if (fromPath) return fromPath;
   const cookie = readCookie(COOKIE_NAME);
   if (cookie && available.includes(cookie)) return cookie;
   const nav = typeof navigator !== 'undefined' ? navigator.language : undefined;
@@ -53,7 +79,7 @@ function App({ takuhon }: { takuhon: Takuhon }): React.JSX.Element {
   const handleSelect = (next: LocaleTag): void => {
     setLocale(next);
     persistLocaleCookie(next);
-    syncLocaleQuery(next);
+    syncLocalePath(next, takuhon.settings.availableLocales);
   };
 
   return (

@@ -14,7 +14,15 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 - The worker's top-level router now applies `localePrefixGetPath`. This is the production-critical placement: Hono's `route()` flattens each mounted sub-app's routes into the top-level router and dispatches with that router's `getPath` only, so the prefix is stripped consistently for both the public app and direct requests. Admin mounts remain locale-agnostic via the remainder allowlist.
 
-This is the resolution half of the URL-path-locale feature; the SEO/generation half (path-form `hreflang`/canonical in `@takuhon/ui`) follows in a separate change. No schema, storage, or migration change — `schemaVersion` stays `0.2.0` and all 0.3.0 profiles validate unchanged. Per the lockstep release policy this ships as part of the 0.4.0 minor across all packages.
+### Changed — `@takuhon/ui`
+
+- `TakuhonHead` now advertises the **path form** (`/ja/...`) as the canonical locale URL. `<link rel="canonical">`, `og:url`, and the `hreflang` alternates (including `x-default`) emit `/{locale}/path` instead of `?lang={locale}`, consolidating SEO signals on one URL per locale and avoiding duplicate content. The builder is locale-neutral-aware: when the current page is already locale-prefixed it **replaces** the segment rather than stacking (`/ja/profile` + `en` → `/en/profile`, never `/en/ja/profile`), and it drops any legacy `?lang=` query. `?lang=` remains a valid resolution input on the server but is no longer advertised.
+
+Scope note: `TakuhonHead` is deployment-agnostic — it inserts a locale segment into whatever page URL it is given. The built-in `@takuhon/api` public app honors path prefixes for its own surfaces (`/` landing, `/api/profile`, `/api/jsonld`) per the `LOCALE_AWARE_REMAINDERS` allowlist; the canonical deployment serves the rendered HTML profile at the site root, so its advertised `/ja/` form is resolved out of the box. A deployment that serves the HTML profile at a non-root path owns routing those locale-prefixed page paths itself (the public app serves JSON, not the rendered profile). No schema, storage, or migration change — `schemaVersion` stays `0.2.0` and all 0.3.0 profiles validate unchanged. Per the lockstep release policy this ships as part of the 0.4.0 minor across all packages.
+
+### Changed — `@takuhon/playground`
+
+- The demo now syncs locale changes to the path form (`/ja/`) via `history.replaceState` and reads a leading `/{locale}` segment as an initial-locale candidate (priority #2, after `?lang=`), mirroring the server resolution order. Relies on the Vite dev server's SPA fallback to serve `/ja/` from `index.html` on reload.
 
 ## [0.3.0] - 2026-05-27
 
