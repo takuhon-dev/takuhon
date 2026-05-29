@@ -85,6 +85,15 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
 
   app.get('/', (c) => c.text('takuhon — visit /api/profile or /api/schema\n'));
 
+  // Liveness probe. Intentionally storage-independent: it reports that the
+  // worker itself is serving requests, not that the profile store is
+  // reachable. A readiness probe that also checks storage can be added
+  // later under a separate path if deployment platforms need it.
+  app.get('/health', (c) => {
+    c.header('cache-control', 'no-store');
+    return c.json({ status: 'ok', schemaVersion: SCHEMA_VERSION });
+  });
+
   app.get('/api/profile', async (c) => {
     const { data, version } = await loadProfile(deps);
     const { locale, fallbackLocale } = resolveRequestLocales(c, data.settings.availableLocales);
