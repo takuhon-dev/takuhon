@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.3.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/0.4.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -92,6 +92,11 @@
       "type": "array",
       "maxItems": 30,
       "items": { "$ref": "#/$defs/TestScore" }
+    },
+    "recommendations": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Recommendation" }
     },
     "contact": { "$ref": "#/$defs/Contact" },
     "settings": { "$ref": "#/$defs/Settings" },
@@ -631,6 +636,51 @@
         "description": { "$ref": "#/$defs/LocalizedBody" },
         "url": { "$ref": "#/$defs/Url" },
         "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Recommendation": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "body", "author"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "body": { "$ref": "#/$defs/LocalizedBody" },
+        "author": { "$ref": "#/$defs/RecommendationAuthor" },
+        "relationship": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "How the recommender relates to the profile owner (e.g. 'managed directly', 'worked together')."
+        },
+        "date": { "$ref": "#/$defs/YearMonth" },
+        "relatedCareerId": {
+          "$ref": "#/$defs/Slug",
+          "description": "Optional reference to a careers[].id (the position the recommendation pertains to)."
+        },
+        "relatedEducationId": {
+          "$ref": "#/$defs/Slug",
+          "description": "Optional reference to an education[].id (e.g. a recommendation from a professor)."
+        },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "RecommendationAuthor": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Recommender's name, in its original script. Owner-curated; takuhon does not verify it."
+        },
+        "headline": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "Recommender's title / role / organization at the time of the recommendation."
+        },
+        "url": {
+          "$ref": "#/$defs/Url",
+          "description": "Link to the recommender's profile, for external verification by the reader."
+        }
       }
     }
   }

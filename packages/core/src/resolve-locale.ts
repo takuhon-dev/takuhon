@@ -57,6 +57,8 @@ import type {
   LocalizedProfile,
   LocalizedProject,
   LocalizedPublication,
+  LocalizedRecommendation,
+  LocalizedRecommendationAuthor,
   LocalizedTakuhon,
   LocalizedTestScore,
   LocalizedTitle,
@@ -66,6 +68,8 @@ import type {
   Profile,
   Project,
   Publication,
+  Recommendation,
+  RecommendationAuthor,
   Takuhon,
   TestScore,
   Volunteering,
@@ -105,6 +109,7 @@ export function resolveLocale(
     courses: data.courses.map((c) => resolveCourse(c, candidates)),
     patents: data.patents.map((p) => resolvePatent(p, candidates)),
     testScores: data.testScores.map((t) => resolveTestScore(t, candidates)),
+    recommendations: data.recommendations.map((r) => resolveRecommendation(r, candidates)),
     contact: data.contact,
     settings: data.settings,
     meta: data.meta,
@@ -425,5 +430,38 @@ function resolveTestScore(testScore: TestScore, candidates: LocaleTag[]): Locali
   }
   if (testScore.url !== undefined) out.url = testScore.url;
   if (testScore.order !== undefined) out.order = testScore.order;
+  return out;
+}
+
+function resolveRecommendation(
+  recommendation: Recommendation,
+  candidates: LocaleTag[],
+): LocalizedRecommendation {
+  const out: LocalizedRecommendation = {
+    id: recommendation.id,
+    body: pickLocalized(recommendation.body, candidates) ?? '',
+    author: resolveRecommendationAuthor(recommendation.author, candidates),
+  };
+  const relationship = pickLocalized(recommendation.relationship, candidates);
+  if (relationship !== undefined) out.relationship = relationship;
+  if (recommendation.date !== undefined) out.date = recommendation.date;
+  if (recommendation.relatedCareerId !== undefined) {
+    out.relatedCareerId = recommendation.relatedCareerId;
+  }
+  if (recommendation.relatedEducationId !== undefined) {
+    out.relatedEducationId = recommendation.relatedEducationId;
+  }
+  if (recommendation.order !== undefined) out.order = recommendation.order;
+  return out;
+}
+
+function resolveRecommendationAuthor(
+  author: RecommendationAuthor,
+  candidates: LocaleTag[],
+): LocalizedRecommendationAuthor {
+  const out: LocalizedRecommendationAuthor = { name: author.name };
+  const headline = pickLocalized(author.headline, candidates);
+  if (headline !== undefined) out.headline = headline;
+  if (author.url !== undefined) out.url = author.url;
   return out;
 }

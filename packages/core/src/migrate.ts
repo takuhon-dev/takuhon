@@ -3,9 +3,9 @@
  *
  * {@link migrateTakuhon} composes a chain of {@link Migration} entries from
  * the registry (`./migrations`) and applies them in order. The registry
- * currently ships the `0.1.0 → 0.2.0` and `0.2.0 → 0.3.0` forward
- * migrations; a request whose source has no chain to the target throws
- * {@link MigrationError}.
+ * currently ships the `0.1.0 → 0.2.0`, `0.2.0 → 0.3.0`, and `0.3.0 → 0.4.0`
+ * forward migrations; a request whose source has no chain to the target
+ * throws {@link MigrationError}.
  *
  * Scope (deliberately narrow, mirroring `export.ts`):
  * - Pure data transform — no I/O, no backup creation, no storage write.

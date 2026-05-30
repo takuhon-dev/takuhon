@@ -235,4 +235,30 @@ describe('resolveLocale() 0.2.0 / 0.3.0 entity helpers', () => {
     expect(resolved.testScores[0]?.relatedEducationId).toBe('todai');
     expect(resolved.testScores[0]?.url).toBe('https://example.org/scores/gre');
   });
+
+  it('resolves Localized fields on recommendations including the nested author.headline', () => {
+    const data = cloneExample();
+    data.recommendations = [
+      {
+        id: 'rec-1',
+        body: { en: 'Great engineer.', ja: '素晴らしいエンジニアです。' },
+        author: {
+          name: 'Jordan Avery',
+          headline: { en: 'Engineering Manager', ja: 'エンジニアリングマネージャー' },
+          url: 'https://example.org/in/jordan',
+        },
+        relationship: { en: 'Managed directly', ja: '直属の上司' },
+        date: '2023-09',
+        relatedCareerId: 'acme',
+      },
+    ];
+    const resolved = resolveLocale(data, 'ja');
+    expect(resolved.recommendations[0]?.body).toBe('素晴らしいエンジニアです。');
+    expect(resolved.recommendations[0]?.author.name).toBe('Jordan Avery');
+    expect(resolved.recommendations[0]?.author.headline).toBe('エンジニアリングマネージャー');
+    expect(resolved.recommendations[0]?.author.url).toBe('https://example.org/in/jordan');
+    expect(resolved.recommendations[0]?.relationship).toBe('直属の上司');
+    expect(resolved.recommendations[0]?.date).toBe('2023-09');
+    expect(resolved.recommendations[0]?.relatedCareerId).toBe('acme');
+  });
 });

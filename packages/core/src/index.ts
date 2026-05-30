@@ -23,8 +23,8 @@
  *   {@link ExportedTakuhon} / {@link ImportError}: roundtrip-stable
  *   serialisation for transport (file, API response, …).
  * - {@link migrateTakuhon} / {@link Migration} / {@link migrations} /
- *   {@link MigrationError}: forward-only migration registry. Empty in
- *   Phase 1; first entry lands with the v0.2.0 schema bump.
+ *   {@link MigrationError}: forward-only migration registry, chaining
+ *   `0.1.0 → 0.2.0 → 0.3.0 → 0.4.0`.
  * - Domain types: {@link Takuhon} and its constituent shapes (`Profile`,
  *   `Settings`, `Career`, `Project`, `Link` discriminated union, etc.).
  */
@@ -91,6 +91,8 @@ export type {
   LocalizedProfile,
   LocalizedProject,
   LocalizedPublication,
+  LocalizedRecommendation,
+  LocalizedRecommendationAuthor,
   LocalizedTakuhon,
   LocalizedTestScore,
   LocalizedTitle,
@@ -104,6 +106,8 @@ export type {
   Profile,
   Project,
   Publication,
+  Recommendation,
+  RecommendationAuthor,
   Settings,
   Skill,
   Slug,
@@ -118,4 +122,4 @@ export type {
  * A takuhon profile document's `schemaVersion` field must be migrate-compatible
  * with this version. See operational-lifecycle docs for the migration policy.
  */
-export const SCHEMA_VERSION = '0.3.0';
+export const SCHEMA_VERSION = '0.4.0';
