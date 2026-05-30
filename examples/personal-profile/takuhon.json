@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "profile": {
     "displayName": {
       "en": "Pat Rivera",
@@ -399,6 +399,39 @@
       },
       "filingDate": "2024-08",
       "url": "https://patents.example.org/us-pending-focus",
+      "order": 1
+    }
+  ],
+  "testScores": [
+    {
+      "id": "celpe-bras-2023",
+      "title": {
+        "en": "CELPE-Bras (Brazilian Portuguese Proficiency)",
+        "ja": "CELPE-Bras (ブラジルポルトガル語能力試験)"
+      },
+      "score": "Upper Intermediate",
+      "date": "2023-05",
+      "description": {
+        "en": "Brazilian government certificate of proficiency in Portuguese as a foreign language.",
+        "ja": "ブラジル政府認定の外国語としてのポルトガル語能力証明書。"
+      },
+      "url": "https://example.org/scores/celpe-bras-2023",
+      "order": 0
+    },
+    {
+      "id": "gre-general-2013",
+      "title": {
+        "en": "GRE General Test",
+        "ja": "GRE 一般試験"
+      },
+      "score": "332 / 340",
+      "date": "2013-10",
+      "relatedEducationId": "westbrook-bsc-2018",
+      "description": {
+        "en": "Combined verbal and quantitative reasoning score submitted with the Westbrook University application.",
+        "ja": "ウェストブルック大学出願時に提出した言語・数的推論の合計スコア。"
+      },
+      "url": "https://example.org/scores/gre-general-2013",
       "order": 1
     }
   ],

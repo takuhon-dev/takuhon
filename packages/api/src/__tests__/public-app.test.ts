@@ -65,7 +65,7 @@ describe('createPublicApp', () => {
     const body: any = await res.json();
     expect(body.data.profile.displayName).toBe('Pat Rivera');
     expect(body.meta.locale).toBe('en');
-    expect(body.meta.schemaVersion).toBe('0.2.0');
+    expect(body.meta.schemaVersion).toBe('0.3.0');
     expect(res.headers.get('etag')).toBe('"v1"');
     expect(res.headers.get('cache-control')).toBe('private, max-age=300');
   });
@@ -127,7 +127,7 @@ describe('createPublicApp', () => {
     const res = await fetchPath(app, '/.well-known/takuhon.json');
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
     const body: any = await res.json();
-    expect(body.schemaVersion).toBe('0.2.0');
+    expect(body.schemaVersion).toBe('0.3.0');
     expect(body.canonical).toBe('/takuhon.json');
   });
 

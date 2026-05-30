@@ -92,6 +92,7 @@ export type {
   LocalizedProject,
   LocalizedPublication,
   LocalizedTakuhon,
+  LocalizedTestScore,
   LocalizedTitle,
   LocalizedVolunteering,
   Membership,
@@ -107,6 +108,7 @@ export type {
   Skill,
   Slug,
   Takuhon,
+  TestScore,
   Volunteering,
   YearMonth,
 } from './types.js';
@@ -116,4 +118,4 @@ export type {
  * A takuhon profile document's `schemaVersion` field must be migrate-compatible
  * with this version. See operational-lifecycle docs for the migration policy.
  */
-export const SCHEMA_VERSION = '0.2.0';
+export const SCHEMA_VERSION = '0.3.0';

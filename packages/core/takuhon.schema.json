@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.2.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/0.3.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -87,6 +87,11 @@
       "type": "array",
       "maxItems": 50,
       "items": { "$ref": "#/$defs/Patent" }
+    },
+    "testScores": {
+      "type": "array",
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/TestScore" }
     },
     "contact": { "$ref": "#/$defs/Contact" },
     "settings": { "$ref": "#/$defs/Settings" },
@@ -602,6 +607,29 @@
           "maxItems": 20,
           "items": { "type": "string", "minLength": 1, "maxLength": 100 }
         },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "TestScore": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "score", "date"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "title": { "$ref": "#/$defs/LocalizedTitle" },
+        "score": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Free-form score string (e.g. '112 / 120', '330', 'N1 Pass', or a percentile). The validator does not interpret its contents."
+        },
+        "date": { "$ref": "#/$defs/YearMonth" },
+        "relatedEducationId": {
+          "$ref": "#/$defs/Slug",
+          "description": "Optional reference to an education[].id (e.g. for a university course exam)."
+        },
+        "description": { "$ref": "#/$defs/LocalizedBody" },
+        "url": { "$ref": "#/$defs/Url" },
         "order": { "type": "integer", "minimum": 0 }
       }
     }

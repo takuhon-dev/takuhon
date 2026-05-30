@@ -58,6 +58,7 @@ import type {
   LocalizedProject,
   LocalizedPublication,
   LocalizedTakuhon,
+  LocalizedTestScore,
   LocalizedTitle,
   LocalizedVolunteering,
   Membership,
@@ -66,6 +67,7 @@ import type {
   Project,
   Publication,
   Takuhon,
+  TestScore,
   Volunteering,
 } from './types.js';
 
@@ -102,6 +104,7 @@ export function resolveLocale(
     languages: data.languages.map((l) => resolveLanguage(l, candidates)),
     courses: data.courses.map((c) => resolveCourse(c, candidates)),
     patents: data.patents.map((p) => resolvePatent(p, candidates)),
+    testScores: data.testScores.map((t) => resolveTestScore(t, candidates)),
     contact: data.contact,
     settings: data.settings,
     meta: data.meta,
@@ -405,5 +408,22 @@ function resolvePatent(patent: Patent, candidates: LocaleTag[]): LocalizedPatent
   if (patent.url !== undefined) out.url = patent.url;
   if (patent.coInventors !== undefined) out.coInventors = patent.coInventors;
   if (patent.order !== undefined) out.order = patent.order;
+  return out;
+}
+
+function resolveTestScore(testScore: TestScore, candidates: LocaleTag[]): LocalizedTestScore {
+  const out: LocalizedTestScore = {
+    id: testScore.id,
+    title: pickLocalized(testScore.title, candidates) ?? '',
+    score: testScore.score,
+    date: testScore.date,
+  };
+  const description = pickLocalized(testScore.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (testScore.relatedEducationId !== undefined) {
+    out.relatedEducationId = testScore.relatedEducationId;
+  }
+  if (testScore.url !== undefined) out.url = testScore.url;
+  if (testScore.order !== undefined) out.order = testScore.order;
   return out;
 }
