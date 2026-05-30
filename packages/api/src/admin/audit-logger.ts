@@ -11,6 +11,7 @@ export type AuditEventType =
   | 'admin.auth.failure'
   | 'admin.profile.update'
   | 'admin.profile.delete'
+  | 'admin.profile.export'
   | 'admin.cache.purge';
 
 export interface AuditEvent {

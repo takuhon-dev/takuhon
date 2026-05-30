@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { createAdminApiApp } from '../admin/admin-api-app.js';
-import { noopAuditLogger, type AuditLogger } from '../admin/audit-logger.js';
+import { noopAuditLogger, type AuditEvent, type AuditLogger } from '../admin/audit-logger.js';
 import { noopCachePurger, type CachePurger } from '../admin/cache-purger.js';
 import { FakeStorage } from '../test-utils/fake-storage.js';
 
@@ -252,5 +252,75 @@ describe('createAdminApiApp method and route handling', () => {
     expect(res.status).toBe(404);
     const body: any = await res.json();
     expect(body.type).toBe('https://takuhon.org/errors/not-found');
+  });
+});
+
+describe('createAdminApiApp GET /export', () => {
+  it('returns 401 without a Bearer token', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    const res = await fetchPath(app, '/export', { method: 'GET' });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 404 when no profile has been stored', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/export', {
+      method: 'GET',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(res.status).toBe(404);
+    const body: any = await res.json();
+    expect(body.type).toBe('https://takuhon.org/errors/not-found');
+  });
+
+  it('returns the full stored document, bypassing the public privacy filter', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    const res = await fetchPath(app, '/export', {
+      method: 'GET',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('private, no-store');
+
+    const body = (await res.json()) as Takuhon & { data?: unknown };
+    // Raw transport form: the document itself, not a { data, meta } envelope.
+    expect(body.schemaVersion).toBe('0.2.0');
+    expect(body.data).toBeUndefined();
+    // Privacy-sensitive fields the public read filter strips are present here.
+    expect(body.contact?.email).toBeTruthy();
+    expect(body.certifications.some((cert) => typeof cert.credentialId === 'string')).toBe(true);
+    expect(body.education.some((edu) => typeof edu.grade === 'string')).toBe(true);
+  });
+
+  it('preserves the stored meta.updatedAt (no export-time restamp)', async () => {
+    const sample = makeSample();
+    const { app, storage } = makeApp();
+    await storage.saveProfile(sample);
+    const res = await fetchPath(app, '/export', {
+      method: 'GET',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    const body: any = await res.json();
+    expect(body.meta.updatedAt).toBe(sample.meta.updatedAt);
+  });
+
+  it('emits an admin.profile.export audit event on success', async () => {
+    const auditLogger = vi.fn<(event: AuditEvent) => void>();
+    const { app, storage } = makeApp({ auditLogger });
+    await storage.saveProfile(makeSample());
+    await fetchPath(app, '/export', {
+      method: 'GET',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    // The bearer middleware also logs `admin.auth.success`, so locate the
+    // export event among the recorded calls rather than asserting a count.
+    const exportEvent = auditLogger.mock.calls
+      .map((call) => call[0])
+      .find((e) => e.type === 'admin.profile.export');
+    expect(exportEvent).toBeDefined();
+    expect(exportEvent?.result.status).toBe(200);
+    expect(exportEvent?.request.method).toBe('GET');
   });
 });

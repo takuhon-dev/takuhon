@@ -400,7 +400,7 @@
     "MetaPrivacy": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Opt-out flags that strip personally identifying fields from public API output (GET /api/profile, /api/jsonld, /takuhon.json). Admin endpoints (PUT /api/admin/*, GET /api/export) ignore these flags. Privacy-by-default: omitting the object or individual flags is equivalent to true.",
+      "description": "Opt-out flags that strip personally identifying fields from public API output (GET /api/profile, /api/jsonld, /takuhon.json). Admin endpoints (PUT /api/admin/*, GET /api/admin/export) ignore these flags. Privacy-by-default: omitting the object or individual flags is equivalent to true.",
       "properties": {
         "hideCredentialIds": {
           "type": "boolean",

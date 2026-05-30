@@ -6,6 +6,14 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+### Added — `@takuhon/api`
+
+- `GET /api/admin/export` — full-document export for the profile owner. Returns the complete stored document (the raw `exportTakuhon()` transport form, no `{ data, meta }` envelope) with the public privacy filter **bypassed**, so a token holder retrieves `credentialId` / `grade` / `email` and every other field for backup or portability. Requires the admin Bearer token (it is mounted under the admin app at `/api/admin`), returns `404` when no profile is stored, carries `Cache-Control: private, no-store`, preserves the stored `meta.updatedAt` (no export-time restamp), and emits an `admin.profile.export` audit event. This resolves a prior contradiction: `/api/export` was advertised in `.well-known/takuhon.json` but unimplemented (404), and the spec disagreed with itself on its auth (none vs token). It is now admin/full and relocated to `/api/admin/export`.
+
+### Changed — `@takuhon/api`
+
+- The `.well-known/takuhon.json` `export` field now points to `/api/admin/export` (was `/api/export`, which never resolved).
+
 ### Release engineering
 
 - `release.yml` bumps `softprops/action-gh-release` from v2.6.2 (Node 20) to v3.0.0 (Node 24). The action's `v2` line never moved off the Node 20 runtime, and per GitHub's Node 20 deprecation notice the runners begin defaulting to Node 24 on 2026-06-16, with Node 20 removed later in fall 2026. v3.0.0 is a runtime-only major — no input or behavior change — so the `github-release` job's `tag_name` / `name` / `generate_release_notes` / `fail_on_unmatched_files` / `files` inputs are unchanged. `sigstore/cosign-installer@v3` is a composite action and is unaffected by the Node 20 deprecation. CI tooling only; no published package contents change.

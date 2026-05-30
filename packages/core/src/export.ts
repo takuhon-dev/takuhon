@@ -26,7 +26,7 @@ import { validate, type ValidationError } from './validate.js';
  * Structural alias of {@link Takuhon}: the transport form is the document
  * itself. A wrapping envelope (e.g. `{ format, version, data, hash }`) is
  * intentionally avoided in Phase 1 — adding one later would be a breaking
- * change to the `GET /api/export` response shape and would require a major
+ * change to the `GET /api/admin/export` response shape and would require a major
  * version bump of `@takuhon/core`.
  */
 export type ExportedTakuhon = Takuhon;
