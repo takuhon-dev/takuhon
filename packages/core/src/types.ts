@@ -292,6 +292,23 @@ export interface Patent {
   order?: number;
 }
 
+export interface TestScore {
+  id: Slug;
+  title: LocalizedTitle;
+  /**
+   * Free-form score string (e.g. '112 / 120', '330', 'N1 Pass', a percentile).
+   * Stored verbatim; the validator does not interpret its contents.
+   */
+  score: string;
+  /** Test date (year-month). */
+  date: YearMonth;
+  /** Optional reference to an `education[].id` (e.g. for a university course exam). */
+  relatedEducationId?: Slug;
+  description?: LocalizedBody;
+  url?: string;
+  order?: number;
+}
+
 export interface Contact {
   email?: string;
   showEmail?: boolean;
@@ -353,10 +370,11 @@ export interface Meta {
 /**
  * A complete takuhon profile document.
  *
- * Schema-level, the nine new arrays from 0.2.0 (`certifications` through
- * `patents`) are optional for 0.1.x back-compat. At the TypeScript layer they
- * are typed as required because `validate()` and `normalize()` defensively
- * coerce missing arrays to `[]` so downstream consumers never see `undefined`.
+ * Schema-level, the nine arrays added in 0.2.0 (`certifications` through
+ * `patents`) and `testScores` (added in 0.3.0) are optional for back-compat
+ * with older documents. At the TypeScript layer they are typed as required
+ * because `validate()` and `normalize()` defensively coerce missing arrays to
+ * `[]` so downstream consumers never see `undefined`.
  */
 export interface Takuhon {
   schemaVersion: string;
@@ -374,6 +392,7 @@ export interface Takuhon {
   languages: Language[];
   courses: Course[];
   patents: Patent[];
+  testScores: TestScore[];
   contact: Contact;
   settings: Settings;
   meta: Meta;
@@ -580,6 +599,18 @@ export interface LocalizedPatent {
   order?: number;
 }
 
+/** Test score with localized fields collapsed to single strings. */
+export interface LocalizedTestScore {
+  id: Slug;
+  title: string;
+  score: string;
+  date: YearMonth;
+  relatedEducationId?: Slug;
+  description?: string;
+  url?: string;
+  order?: number;
+}
+
 /**
  * A takuhon document with every localized map flattened to a single string,
  * plus a `resolvedLocale` field recording which tag was actually used as the
@@ -604,6 +635,7 @@ export interface LocalizedTakuhon {
   languages: LocalizedLanguage[];
   courses: LocalizedCourse[];
   patents: LocalizedPatent[];
+  testScores: LocalizedTestScore[];
   contact: Contact;
   settings: Settings;
   meta: Meta;

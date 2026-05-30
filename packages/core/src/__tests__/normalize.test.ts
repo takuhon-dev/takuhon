@@ -102,9 +102,10 @@ describe('normalize() ordering', () => {
     expectAscendingOrder(normalized.skills);
   });
 
-  it('coerces missing 0.2.0 arrays to [] (defensive against pre-coercion input)', () => {
-    // Simulates a stored 0.1.x profile being read after a worker upgrade —
-    // the data arrives typed as Takuhon but lacks the nine new arrays.
+  it('coerces missing 0.2.0 / 0.3.0 arrays to [] (defensive against pre-coercion input)', () => {
+    // Simulates a stored older profile being read after a worker upgrade —
+    // the data arrives typed as Takuhon but lacks the nine 0.2.0 arrays and
+    // the 0.3.0 testScores array.
     const draft = cloneExample();
     const bag = draft as unknown as Record<string, unknown>;
     delete bag.certifications;
@@ -116,6 +117,7 @@ describe('normalize() ordering', () => {
     delete bag.languages;
     delete bag.courses;
     delete bag.patents;
+    delete bag.testScores;
 
     const normalized = normalize(draft);
 
@@ -128,6 +130,7 @@ describe('normalize() ordering', () => {
     expect(normalized.languages).toEqual([]);
     expect(normalized.courses).toEqual([]);
     expect(normalized.patents).toEqual([]);
+    expect(normalized.testScores).toEqual([]);
   });
 
   it('sorts the new 0.2.0 arrays by ascending order alongside existing ones', () => {
@@ -152,9 +155,14 @@ describe('normalize() ordering', () => {
       { id: 'b', title: { en: 'B' }, issuer: { en: 'X' }, date: '2024-01', order: 2 },
       { id: 'a', title: { en: 'A' }, issuer: { en: 'X' }, date: '2024-01', order: 1 },
     ];
+    draft.testScores = [
+      { id: 'b', title: { en: 'B' }, score: '100', date: '2024-01', order: 2 },
+      { id: 'a', title: { en: 'A' }, score: '100', date: '2024-01', order: 1 },
+    ];
     const normalized = normalize(draft);
     expect(normalized.certifications.map((c) => c.id)).toEqual(['a', 'b']);
     expect(normalized.honors.map((h) => h.id)).toEqual(['a', 'b']);
+    expect(normalized.testScores.map((t) => t.id)).toEqual(['a', 'b']);
   });
 });
 

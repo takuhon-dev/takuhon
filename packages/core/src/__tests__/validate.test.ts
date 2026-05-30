@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.2.0');
+      expect(result.data.schemaVersion).toBe('0.3.0');
     }
   });
 
@@ -345,5 +345,69 @@ describe('validate() 0.2.0 additions', () => {
     };
     const result = validate(profile);
     expect(result.ok).toBe(true);
+  });
+});
+
+describe('validate() 0.3.0 additions (testScores)', () => {
+  it('accepts a 0.3.0 document carrying testScores', () => {
+    const withScores = {
+      schemaVersion: '0.3.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      testScores: [
+        { id: 'gre', title: { en: 'GRE General Test' }, score: '332 / 340', date: '2024-01' },
+      ],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(withScores);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.testScores).toHaveLength(1);
+    expect(result.data.testScores[0]?.score).toBe('332 / 340');
+  });
+
+  it('coerces a missing testScores array to [] (Takuhon TS contract)', () => {
+    const minimal = {
+      schemaVersion: '0.3.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(minimal);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.testScores).toEqual([]);
+  });
+
+  it('rejects a testScore entry missing its required score field', () => {
+    const broken = {
+      schemaVersion: '0.3.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      testScores: [{ id: 'gre', title: { en: 'GRE' }, date: '2024-01' }],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(broken);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const missingScore = result.errors.find(
+      (e) => e.keyword === 'required' && e.pointer === '/testScores/0/score',
+    );
+    expect(missingScore).toBeDefined();
   });
 });

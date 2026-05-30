@@ -32,7 +32,7 @@ function prepareWith(mutate: (data: LocalizedTakuhon) => void, locale = 'en'): L
 // the raw (non-localized) document; callers run normalize + resolveLocale.
 function createMinimalFixture(): Takuhon {
   return {
-    schemaVersion: '0.2.0',
+    schemaVersion: '0.3.0',
     profile: { displayName: { en: 'Minimal' } },
     links: [],
     careers: [],
@@ -47,6 +47,7 @@ function createMinimalFixture(): Takuhon {
     languages: [],
     courses: [],
     patents: [],
+    testScores: [],
     contact: {},
     settings: { defaultLocale: 'en', availableLocales: ['en'] },
     meta: { contentLicense: { spdxId: 'CC0-1.0' } },

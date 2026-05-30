@@ -133,7 +133,7 @@ describe('resolveLocale() does not mutate input', () => {
   });
 });
 
-describe('resolveLocale() 0.2.0 entity helpers', () => {
+describe('resolveLocale() 0.2.0 / 0.3.0 entity helpers', () => {
   it('resolves Localized fields on certifications and preserves scalar fields', () => {
     const data = cloneExample();
     data.certifications = [
@@ -212,5 +212,27 @@ describe('resolveLocale() 0.2.0 entity helpers', () => {
     const resolved = resolveLocale(data, 'en');
     expect(resolved.publications[0]?.coAuthors).toEqual(['Jane Smith', '山田 太郎']);
     expect(resolved.patents[0]?.coInventors).toEqual(['Carlos Ruiz']);
+  });
+
+  it('resolves Localized fields on testScores and passes through score / date / ref', () => {
+    const data = cloneExample();
+    data.testScores = [
+      {
+        id: 'gre',
+        title: { en: 'GRE General Test', ja: 'GRE 一般試験' },
+        score: '332 / 340',
+        date: '2013-10',
+        relatedEducationId: 'todai',
+        description: { en: 'Combined score', ja: '合計スコア' },
+        url: 'https://example.org/scores/gre',
+      },
+    ];
+    const resolved = resolveLocale(data, 'ja');
+    expect(resolved.testScores[0]?.title).toBe('GRE 一般試験');
+    expect(resolved.testScores[0]?.description).toBe('合計スコア');
+    expect(resolved.testScores[0]?.score).toBe('332 / 340');
+    expect(resolved.testScores[0]?.date).toBe('2013-10');
+    expect(resolved.testScores[0]?.relatedEducationId).toBe('todai');
+    expect(resolved.testScores[0]?.url).toBe('https://example.org/scores/gre');
   });
 });

@@ -16,7 +16,7 @@ describe('examples/personal-profile/takuhon.json', () => {
     expect(example.schemaVersion).toBe(SCHEMA_VERSION);
   });
 
-  it('contains every required top-level field plus the nine 0.2.0 arrays', () => {
+  it('contains every required top-level field plus the nine 0.2.0 arrays and 0.3.0 testScores', () => {
     const keys = Object.keys(example).sort();
     expect(keys).toEqual(
       [
@@ -35,6 +35,7 @@ describe('examples/personal-profile/takuhon.json', () => {
         'languages',
         'courses',
         'patents',
+        'testScores',
         'contact',
         'settings',
         'meta',
@@ -128,5 +129,12 @@ describe('examples/personal-profile/takuhon.json', () => {
     expect(linked).toBeDefined();
     const careerIds = new Set(example.careers.map((career) => career.id));
     expect(careerIds.has(linked?.relatedCareerId ?? '')).toBe(true);
+  });
+
+  it('ties at least one test score to an education entry via relatedEducationId', () => {
+    const linked = example.testScores.find((score) => score.relatedEducationId !== undefined);
+    expect(linked).toBeDefined();
+    const educationIds = new Set(example.education.map((entry) => entry.id));
+    expect(educationIds.has(linked?.relatedEducationId ?? '')).toBe(true);
   });
 });

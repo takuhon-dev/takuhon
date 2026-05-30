@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { schema, SCHEMA_VERSION } from '../index.js';
 
-// Root `required` list — unchanged from 0.1.x for back-compat. The nine new
-// 0.2.0 arrays are added as optional properties so existing 0.1.x documents
-// continue to validate against the 0.2.0 schema (Spec §24-15).
+// Root `required` list — unchanged from 0.1.x for back-compat. The nine
+// 0.2.0 arrays and the 0.3.0 `testScores` array are added as optional
+// properties so existing 0.1.x / 0.2.x documents continue to validate
+// against the current schema (Spec §24-15, §24-18).
 const expectedRequiredKeys = [
   'schemaVersion',
   'profile',
@@ -28,6 +29,7 @@ const expectedPropertyKeys = [
   'languages',
   'courses',
   'patents',
+  'testScores',
 ] as const;
 
 const expectedDefs = [
@@ -59,6 +61,7 @@ const expectedDefs = [
   'Settings',
   'Skill',
   'Slug',
+  'TestScore',
   'Url',
   'Volunteering',
   'YearMonth',
@@ -77,7 +80,7 @@ describe('takuhon.schema.json structural shape', () => {
     expect(schema.required).toEqual([...expectedRequiredKeys]);
   });
 
-  it('declares all expected top-level properties (original nine + nine 0.2.0 arrays)', () => {
+  it('declares all expected top-level properties (original nine + nine 0.2.0 arrays + 0.3.0 testScores)', () => {
     expect(Object.keys(schema.properties).sort()).toEqual([...expectedPropertyKeys].sort());
   });
 
@@ -104,6 +107,7 @@ describe('takuhon.schema.json structural shape', () => {
     expect(schema.properties.languages.maxItems).toBe(30);
     expect(schema.properties.courses.maxItems).toBe(100);
     expect(schema.properties.patents.maxItems).toBe(50);
+    expect(schema.properties.testScores.maxItems).toBe(30);
   });
 
   it('enumerates every known link type', () => {

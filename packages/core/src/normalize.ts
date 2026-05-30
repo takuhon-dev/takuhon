@@ -48,9 +48,10 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   // `lib.es2022.d.ts` and `lib.dom.d.ts` across TypeScript major releases).
   const out = JSON.parse(JSON.stringify(data)) as Takuhon;
 
-  // Defensive: the 0.2.0 schema marks the nine new top-level arrays as
-  // optional for back-compat, so a stored 0.1.x profile read from KV after
-  // an upgrade may arrive here without them. The TypeScript `Takuhon` shape
+  // Defensive: the schema marks several top-level arrays as optional for
+  // back-compat (the nine added in 0.2.0 plus `testScores` in 0.3.0), so a
+  // stored older profile read from KV after an upgrade may arrive here
+  // without them. The TypeScript `Takuhon` shape
   // requires them; coerce missing values to `[]` so downstream iteration
   // never trips on `undefined`. Idempotent: arrays already present are left
   // untouched.
@@ -144,6 +145,12 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   }
   out.patents = stableSortByOrder(out.patents);
 
+  for (const t of out.testScores) {
+    cleanRequiredLocalized(t.title);
+    cleanOptionalLocalized(t, 'description');
+  }
+  out.testScores = stableSortByOrder(out.testScores);
+
   return out;
 }
 
@@ -212,4 +219,5 @@ const NORMALIZED_ARRAYS = [
   'languages',
   'courses',
   'patents',
+  'testScores',
 ] as const;
