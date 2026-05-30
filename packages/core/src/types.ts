@@ -309,6 +309,31 @@ export interface TestScore {
   order?: number;
 }
 
+export interface RecommendationAuthor {
+  /** Recommender's name in its original script. Owner-curated; not verified by takuhon. */
+  name: string;
+  /** Recommender's title / role / organization at the time of the recommendation. */
+  headline?: LocalizedTitle;
+  /** Link to the recommender's profile, for external verification by the reader. */
+  url?: string;
+}
+
+export interface Recommendation {
+  id: Slug;
+  /** The recommendation text (testimonial body). */
+  body: LocalizedBody;
+  author: RecommendationAuthor;
+  /** How the recommender relates to the profile owner (e.g. 'managed directly'). */
+  relationship?: LocalizedTitle;
+  /** When the recommendation was given (year-month). */
+  date?: YearMonth;
+  /** Optional reference to a `careers[].id` the recommendation pertains to. */
+  relatedCareerId?: Slug;
+  /** Optional reference to an `education[].id` the recommendation pertains to. */
+  relatedEducationId?: Slug;
+  order?: number;
+}
+
 export interface Contact {
   email?: string;
   showEmail?: boolean;
@@ -371,10 +396,10 @@ export interface Meta {
  * A complete takuhon profile document.
  *
  * Schema-level, the nine arrays added in 0.2.0 (`certifications` through
- * `patents`) and `testScores` (added in 0.3.0) are optional for back-compat
- * with older documents. At the TypeScript layer they are typed as required
- * because `validate()` and `normalize()` defensively coerce missing arrays to
- * `[]` so downstream consumers never see `undefined`.
+ * `patents`), `testScores` (0.3.0), and `recommendations` (0.4.0) are optional
+ * for back-compat with older documents. At the TypeScript layer they are typed
+ * as required because `validate()` and `normalize()` defensively coerce missing
+ * arrays to `[]` so downstream consumers never see `undefined`.
  */
 export interface Takuhon {
   schemaVersion: string;
@@ -393,6 +418,7 @@ export interface Takuhon {
   courses: Course[];
   patents: Patent[];
   testScores: TestScore[];
+  recommendations: Recommendation[];
   contact: Contact;
   settings: Settings;
   meta: Meta;
@@ -611,6 +637,25 @@ export interface LocalizedTestScore {
   order?: number;
 }
 
+/** Recommendation author with `headline` collapsed to a single string. */
+export interface LocalizedRecommendationAuthor {
+  name: string;
+  headline?: string;
+  url?: string;
+}
+
+/** Recommendation with localized fields collapsed to single strings. */
+export interface LocalizedRecommendation {
+  id: Slug;
+  body: string;
+  author: LocalizedRecommendationAuthor;
+  relationship?: string;
+  date?: YearMonth;
+  relatedCareerId?: Slug;
+  relatedEducationId?: Slug;
+  order?: number;
+}
+
 /**
  * A takuhon document with every localized map flattened to a single string,
  * plus a `resolvedLocale` field recording which tag was actually used as the
@@ -636,6 +681,7 @@ export interface LocalizedTakuhon {
   courses: LocalizedCourse[];
   patents: LocalizedPatent[];
   testScores: LocalizedTestScore[];
+  recommendations: LocalizedRecommendation[];
   contact: Contact;
   settings: Settings;
   meta: Meta;

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.4.0",
   "profile": {
     "displayName": {
       "en": "Pat Rivera",
@@ -432,6 +432,47 @@
         "ja": "ウェストブルック大学出願時に提出した言語・数的推論の合計スコア。"
       },
       "url": "https://example.org/scores/gre-general-2013",
+      "order": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "rec-jordan-stellar",
+      "body": {
+        "en": "Pat is one of the most rigorous accessibility engineers I have worked with. They turned our design-token audit into a repeatable process and mentored the whole team on assistive-technology testing.",
+        "ja": "Pat は私が共に働いた中で最も厳格なアクセシビリティエンジニアの一人です。デザイントークン監査を再現可能なプロセスに変え、支援技術テストについてチーム全体を指導してくれました。"
+      },
+      "author": {
+        "name": "Jordan Avery",
+        "headline": {
+          "en": "Engineering Manager at Stellar UX",
+          "ja": "Stellar UX エンジニアリングマネージャー"
+        },
+        "url": "https://example.org/in/jordan-avery"
+      },
+      "relationship": {
+        "en": "Managed Pat directly at Stellar UX",
+        "ja": "Stellar UX で Pat を直属で管理"
+      },
+      "date": "2023-09",
+      "relatedCareerId": "stellar-ux",
+      "order": 0
+    },
+    {
+      "id": "rec-sofia-harbor",
+      "body": {
+        "en": "I collaborated with Pat on a screen-reader testing harness at Harbor Labs. Their attention to non-visual user journeys raised the bar for the entire engineering org.",
+        "ja": "Harbor Labs でスクリーンリーダーのテストハーネスを Pat と共同開発しました。非視覚ユーザーの導線への配慮は、エンジニアリング組織全体の基準を引き上げました。"
+      },
+      "author": {
+        "name": "Sofia Almeida",
+        "headline": {
+          "en": "Staff Engineer at Harbor Labs",
+          "ja": "Harbor Labs スタッフエンジニア"
+        }
+      },
+      "date": "2021-06",
+      "relatedCareerId": "harbor-labs",
       "order": 1
     }
   ],

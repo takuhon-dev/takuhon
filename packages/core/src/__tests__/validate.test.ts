@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.3.0');
+      expect(result.data.schemaVersion).toBe('0.4.0');
     }
   });
 
@@ -409,5 +409,81 @@ describe('validate() 0.3.0 additions (testScores)', () => {
       (e) => e.keyword === 'required' && e.pointer === '/testScores/0/score',
     );
     expect(missingScore).toBeDefined();
+  });
+});
+
+describe('validate() 0.4.0 additions (recommendations)', () => {
+  it('accepts a 0.4.0 document carrying recommendations', () => {
+    const withRecs = {
+      schemaVersion: '0.4.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      recommendations: [
+        {
+          id: 'rec-1',
+          body: { en: 'Great engineer.' },
+          author: {
+            name: 'Jordan Avery',
+            headline: { en: 'Manager' },
+            url: 'https://example.com/j',
+          },
+          relationship: { en: 'Managed directly' },
+          date: '2023-09',
+        },
+      ],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(withRecs);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.recommendations).toHaveLength(1);
+    expect(result.data.recommendations[0]?.author.name).toBe('Jordan Avery');
+  });
+
+  it('coerces a missing recommendations array to [] (Takuhon TS contract)', () => {
+    const minimal = {
+      schemaVersion: '0.4.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(minimal);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.recommendations).toEqual([]);
+  });
+
+  it('rejects a recommendation whose author is missing its required name', () => {
+    const broken = {
+      schemaVersion: '0.4.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      recommendations: [
+        { id: 'rec-1', body: { en: 'Great.' }, author: { headline: { en: 'Manager' } } },
+      ],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(broken);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const missingName = result.errors.find(
+      (e) => e.keyword === 'required' && e.pointer === '/recommendations/0/author/name',
+    );
+    expect(missingName).toBeDefined();
   });
 });

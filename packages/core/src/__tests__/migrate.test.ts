@@ -197,6 +197,80 @@ describe('migrateTakuhon', () => {
     expect(validate(out).ok).toBe(true);
   });
 
+  it('migrates a 0.3.0 input forward to 0.4.0 by adding an empty recommendations array', () => {
+    const v030 = {
+      schemaVersion: '0.3.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      certifications: [],
+      memberships: [],
+      volunteering: [],
+      honors: [],
+      education: [],
+      publications: [],
+      languages: [],
+      courses: [],
+      patents: [],
+      testScores: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v030, '0.4.0');
+    expect(out.schemaVersion).toBe('0.4.0');
+    expect(out.recommendations).toEqual([]);
+    // Pre-existing fields pass through untouched (additive migration).
+    expect(out.profile.displayName).toEqual({ en: 'Test' });
+    expect(out.testScores).toEqual([]);
+    expect(out.patents).toEqual([]);
+    expect(validate(out).ok).toBe(true);
+  });
+
+  it('preserves a pre-existing recommendations value during migration (no overwrite)', () => {
+    const input = {
+      schemaVersion: '0.3.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      recommendations: [{ id: 'pre', body: { en: 'Pre' }, author: { name: 'Ref' } }],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(input, '0.4.0');
+    expect(out.recommendations).toHaveLength(1);
+    expect(out.recommendations[0]?.id).toBe('pre');
+  });
+
+  it('chains 0.1.0 → 0.4.0 through all three registered migrations', () => {
+    const v010 = {
+      schemaVersion: '0.1.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v010, '0.4.0');
+    expect(out.schemaVersion).toBe('0.4.0');
+    // All three hops applied: nine 0.2.0 arrays + 0.3.0 testScores + 0.4.0 recommendations.
+    expect(out.certifications).toEqual([]);
+    expect(out.testScores).toEqual([]);
+    expect(out.recommendations).toEqual([]);
+    expect(validate(out).ok).toBe(true);
+  });
+
   it('MigrationError is an Error with the right name', () => {
     const err = new MigrationError('boom');
     expect(err).toBeInstanceOf(Error);
@@ -213,9 +287,10 @@ describe('migrateTakuhon', () => {
 });
 
 describe('migrations registry', () => {
-  it('contains the v0.1.0 → v0.2.0 and v0.2.0 → v0.3.0 entries in chain order', () => {
-    expect(migrations).toHaveLength(2);
+  it('contains the v0.1.0 → v0.2.0, v0.2.0 → v0.3.0, and v0.3.0 → v0.4.0 entries in chain order', () => {
+    expect(migrations).toHaveLength(3);
     expect(migrations[0]).toMatchObject({ from: '0.1.0', to: '0.2.0' });
     expect(migrations[1]).toMatchObject({ from: '0.2.0', to: '0.3.0' });
+    expect(migrations[2]).toMatchObject({ from: '0.3.0', to: '0.4.0' });
   });
 });

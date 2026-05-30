@@ -49,9 +49,9 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   const out = JSON.parse(JSON.stringify(data)) as Takuhon;
 
   // Defensive: the schema marks several top-level arrays as optional for
-  // back-compat (the nine added in 0.2.0 plus `testScores` in 0.3.0), so a
-  // stored older profile read from KV after an upgrade may arrive here
-  // without them. The TypeScript `Takuhon` shape
+  // back-compat (the nine added in 0.2.0, `testScores` in 0.3.0, and
+  // `recommendations` in 0.4.0), so a stored older profile read from KV after
+  // an upgrade may arrive here without them. The TypeScript `Takuhon` shape
   // requires them; coerce missing values to `[]` so downstream iteration
   // never trips on `undefined`. Idempotent: arrays already present are left
   // untouched.
@@ -151,6 +151,13 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   }
   out.testScores = stableSortByOrder(out.testScores);
 
+  for (const r of out.recommendations) {
+    cleanRequiredLocalized(r.body);
+    cleanOptionalLocalized(r, 'relationship');
+    cleanOptionalLocalized(r.author, 'headline');
+  }
+  out.recommendations = stableSortByOrder(out.recommendations);
+
   return out;
 }
 
@@ -220,4 +227,5 @@ const NORMALIZED_ARRAYS = [
   'courses',
   'patents',
   'testScores',
+  'recommendations',
 ] as const;

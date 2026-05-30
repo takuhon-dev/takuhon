@@ -34,7 +34,7 @@ import type { Takuhon } from './types.js';
  * versions whose JSON Schema this package literally bundles, not the full
  * support window seen by end users.
  */
-export const SUPPORTED_SCHEMA_VERSIONS = ['0.1.0', '0.2.0', '0.3.0'] as const;
+export const SUPPORTED_SCHEMA_VERSIONS = ['0.1.0', '0.2.0', '0.3.0', '0.4.0'] as const;
 
 /**
  * A single validation failure.
@@ -122,8 +122,8 @@ export function validate(data: unknown): ValidationResult {
 
   if (compiled(data)) {
     // The schema marks several top-level arrays as optional for back-compat
-    // (the nine added in 0.2.0 plus `testScores` in 0.3.0). The TypeScript
-    // `Takuhon` shape requires them so
+    // (the nine added in 0.2.0, `testScores` in 0.3.0, and `recommendations`
+    // in 0.4.0). The TypeScript `Takuhon` shape requires them so
     // downstream code never has to check for `undefined`. We clone the
     // caller's input before coercing so a successful validate() never
     // mutates the original — callers can keep referencing the value they
@@ -171,6 +171,7 @@ const COERCED_ARRAY_KEYS = [
   'courses',
   'patents',
   'testScores',
+  'recommendations',
 ] as const;
 
 function coerceMissingArrays(data: Takuhon): void {

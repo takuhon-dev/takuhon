@@ -16,7 +16,7 @@ describe('examples/personal-profile/takuhon.json', () => {
     expect(example.schemaVersion).toBe(SCHEMA_VERSION);
   });
 
-  it('contains every required top-level field plus the nine 0.2.0 arrays and 0.3.0 testScores', () => {
+  it('contains every required top-level field plus the nine 0.2.0 arrays, 0.3.0 testScores, and 0.4.0 recommendations', () => {
     const keys = Object.keys(example).sort();
     expect(keys).toEqual(
       [
@@ -36,6 +36,7 @@ describe('examples/personal-profile/takuhon.json', () => {
         'courses',
         'patents',
         'testScores',
+        'recommendations',
         'contact',
         'settings',
         'meta',
@@ -136,5 +137,21 @@ describe('examples/personal-profile/takuhon.json', () => {
     expect(linked).toBeDefined();
     const educationIds = new Set(example.education.map((entry) => entry.id));
     expect(educationIds.has(linked?.relatedEducationId ?? '')).toBe(true);
+  });
+
+  it('ties at least one recommendation to a career entry via relatedCareerId', () => {
+    const linked = example.recommendations.find((rec) => rec.relatedCareerId !== undefined);
+    expect(linked).toBeDefined();
+    const careerIds = new Set(example.careers.map((career) => career.id));
+    expect(careerIds.has(linked?.relatedCareerId ?? '')).toBe(true);
+  });
+
+  it('gives every recommendation an owner-curated author with a name', () => {
+    expect(example.recommendations.length).toBeGreaterThan(0);
+    for (const rec of example.recommendations) {
+      expect(rec.author.name).toBeTypeOf('string');
+      expect(rec.author.name.length).toBeGreaterThan(0);
+      expect(Object.keys(rec.body).length).toBeGreaterThan(0);
+    }
   });
 });
