@@ -35,19 +35,19 @@ export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element
       <ProfileHeader profile={data.profile} />
       <LinksList links={data.links} />
       <EducationTimeline education={data.education} locale={locale} />
-      <Courses courses={data.courses} />
+      <Courses courses={data.courses} locale={locale} />
       <CareerTimeline careers={data.careers} locale={locale} />
       <Memberships memberships={data.memberships} locale={locale} />
       <Certifications certifications={data.certifications} locale={locale} />
       <Patents patents={data.patents} locale={locale} />
       <ProjectsList projects={data.projects} locale={locale} />
       <Publications publications={data.publications} locale={locale} />
-      <HonorsList honors={data.honors} />
-      <Recommendations recommendations={data.recommendations} />
+      <HonorsList honors={data.honors} locale={locale} />
+      <Recommendations recommendations={data.recommendations} locale={locale} />
       <Volunteering volunteering={data.volunteering} locale={locale} />
       <SkillsList skills={data.skills} />
       <Languages languages={data.languages} locale={locale} />
-      <TestScores testScores={data.testScores} />
+      <TestScores testScores={data.testScores} locale={locale} />
       <ContactInfo contact={data.contact} />
       {showFooter ? <Footer /> : null}
     </article>

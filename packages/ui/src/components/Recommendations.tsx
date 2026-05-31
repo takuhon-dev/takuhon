@@ -1,9 +1,12 @@
-import type { LocalizedRecommendation } from '@takuhon/core';
+import type { LocalizedRecommendation, LocaleTag } from '@takuhon/core';
+
+import { formatYearMonth } from '../lib/date-formatter.js';
 
 import styles from './Recommendations.module.css';
 
 export interface RecommendationsProps {
   recommendations: LocalizedRecommendation[];
+  locale?: LocaleTag;
 }
 
 function sortRecommendations(entries: LocalizedRecommendation[]): LocalizedRecommendation[] {
@@ -17,6 +20,7 @@ function sortRecommendations(entries: LocalizedRecommendation[]): LocalizedRecom
 
 export function Recommendations({
   recommendations,
+  locale = 'en',
 }: RecommendationsProps): React.JSX.Element | null {
   if (recommendations.length === 0) return null;
   const ordered = sortRecommendations(recommendations);
@@ -54,7 +58,7 @@ export function Recommendations({
             {entry.relationship ? <p className={styles.meta}>{entry.relationship}</p> : null}
             {entry.date ? (
               <p className={styles.meta}>
-                <time dateTime={entry.date}>{entry.date}</time>
+                <time dateTime={entry.date}>{formatYearMonth(entry.date, locale)}</time>
               </p>
             ) : null}
           </li>

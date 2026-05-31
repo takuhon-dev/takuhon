@@ -1,9 +1,12 @@
-import type { LocalizedHonor } from '@takuhon/core';
+import type { LocalizedHonor, LocaleTag } from '@takuhon/core';
+
+import { formatYearMonth } from '../lib/date-formatter.js';
 
 import styles from './HonorsList.module.css';
 
 export interface HonorsListProps {
   honors: LocalizedHonor[];
+  locale?: LocaleTag;
 }
 
 function sortHonors(honors: LocalizedHonor[]): LocalizedHonor[] {
@@ -15,7 +18,7 @@ function sortHonors(honors: LocalizedHonor[]): LocalizedHonor[] {
   });
 }
 
-export function HonorsList({ honors }: HonorsListProps): React.JSX.Element | null {
+export function HonorsList({ honors, locale = 'en' }: HonorsListProps): React.JSX.Element | null {
   if (honors.length === 0) return null;
   const ordered = sortHonors(honors);
 
@@ -44,7 +47,7 @@ export function HonorsList({ honors }: HonorsListProps): React.JSX.Element | nul
             <p className={styles.meta}>
               {honor.issuer}
               {' · '}
-              <time dateTime={honor.date}>{honor.date}</time>
+              <time dateTime={honor.date}>{formatYearMonth(honor.date, locale)}</time>
             </p>
             {honor.description ? <p className={styles.description}>{honor.description}</p> : null}
           </li>

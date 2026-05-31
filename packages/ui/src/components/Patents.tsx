@@ -1,5 +1,6 @@
 import type { LocaleTag, LocalizedPatent } from '@takuhon/core';
 
+import { formatYearMonth } from '../lib/date-formatter.js';
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Patents.module.css';
@@ -57,14 +58,18 @@ export function Patents({ patents, locale = 'en' }: PatentsProps): React.JSX.Ele
                 {entry.filingDate ? (
                   <>
                     {`${getUILabel('patent.filed', locale)} `}
-                    <time dateTime={entry.filingDate}>{entry.filingDate}</time>
+                    <time dateTime={entry.filingDate}>
+                      {formatYearMonth(entry.filingDate, locale)}
+                    </time>
                   </>
                 ) : null}
                 {entry.filingDate && entry.grantDate ? ' · ' : null}
                 {entry.grantDate ? (
                   <>
                     {`${getUILabel('patent.granted', locale)} `}
-                    <time dateTime={entry.grantDate}>{entry.grantDate}</time>
+                    <time dateTime={entry.grantDate}>
+                      {formatYearMonth(entry.grantDate, locale)}
+                    </time>
                   </>
                 ) : null}
               </p>

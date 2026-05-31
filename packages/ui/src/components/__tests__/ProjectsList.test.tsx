@@ -4,6 +4,7 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
+import { formatYearMonth } from '../../lib/date-formatter.js';
 import { ProjectsList } from '../ProjectsList.js';
 
 const example = resolveLocale(exampleJson as unknown as Takuhon, 'en');
@@ -28,13 +29,14 @@ describe('ProjectsList', () => {
     expect(tagLists.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('exposes machine-readable dateTime on project <time> elements', () => {
-    render(<ProjectsList projects={example.projects} />);
-    const times = screen.queryAllByText(/^\d{4}-\d{2}$/);
+  it('keeps a machine-readable YYYY-MM dateTime while displaying a localized label', () => {
+    const { container } = render(<ProjectsList projects={example.projects} />);
+    const times = container.querySelectorAll('time');
     expect(times.length).toBeGreaterThan(0);
     for (const t of times) {
-      expect(t.tagName.toLowerCase()).toBe('time');
-      expect(t).toHaveAttribute('datetime', t.textContent ?? '');
+      const raw = t.getAttribute('datetime') ?? '';
+      expect(raw).toMatch(/^\d{4}-\d{2}$/);
+      expect(t.textContent).toBe(formatYearMonth(raw, 'en'));
     }
   });
 

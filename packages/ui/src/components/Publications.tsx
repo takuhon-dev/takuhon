@@ -1,5 +1,6 @@
 import type { LocalizedPublication, LocaleTag } from '@takuhon/core';
 
+import { formatYearMonth } from '../lib/date-formatter.js';
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Publications.module.css';
@@ -56,7 +57,7 @@ export function Publications({
             </p>
             {entry.publisher ? <p className={styles.publisher}>{entry.publisher}</p> : null}
             <p className={styles.date}>
-              <time dateTime={entry.date}>{entry.date}</time>
+              <time dateTime={entry.date}>{formatYearMonth(entry.date, locale)}</time>
             </p>
             {entry.coAuthors && entry.coAuthors.length > 0 ? (
               <p className={styles.coAuthors}>
