@@ -31,7 +31,7 @@ export function ProjectsList({
   return (
     <section className={styles.section} aria-labelledby="takuhon-projects-heading">
       <h2 id="takuhon-projects-heading" className={styles.heading}>
-        Projects
+        {getUILabel('section.projects', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((project) => (
@@ -71,7 +71,7 @@ export function ProjectsList({
               <p className={styles.description}>{project.description}</p>
             ) : null}
             {project.tags && project.tags.length > 0 ? (
-              <ul className={styles.tags} aria-label="Tags">
+              <ul className={styles.tags} aria-label={getUILabel('a11y.tags', locale)}>
                 {project.tags.map((tag) => (
                   <li key={tag} className={styles.tag}>
                     {tag}

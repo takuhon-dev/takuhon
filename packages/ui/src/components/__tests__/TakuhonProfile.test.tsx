@@ -58,10 +58,12 @@ describe('TakuhonProfile', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 
-  it('passes the resolved locale down to localized section labels', () => {
+  it('passes the resolved locale down to localized labels and section headings', () => {
     const { container } = render(<TakuhonProfile data={{ ...example, resolvedLocale: 'ja' }} />);
-    // The ongoing-period marker is the most broadly present localized label;
-    // its Japanese form confirms the locale reaches the section components.
+    // Inline label (ongoing-period marker) and a section heading both confirm
+    // the locale reaches inline text and the section <h2> chrome.
     expect(container.textContent).toMatch(/現在/);
+    expect(screen.getByRole('region', { name: '職歴' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /^Career$/ })).toBeNull();
   });
 });

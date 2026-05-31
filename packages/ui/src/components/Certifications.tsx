@@ -29,7 +29,7 @@ export function Certifications({
   return (
     <section className={styles.section} aria-labelledby="takuhon-certifications-heading">
       <h2 id="takuhon-certifications-heading" className={styles.heading}>
-        Certifications
+        {getUILabel('section.certifications', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((cert) => (

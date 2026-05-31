@@ -78,7 +78,9 @@ describe('Patents', () => {
   it('localizes status, date prefixes, and co-inventors via the locale prop', () => {
     render(<Patents patents={sample} locale="ja" />);
     expect(screen.getByText('共同発明者：Jamie Chen')).toBeInTheDocument();
-    const section = screen.getByRole('region', { name: /patents/i });
+    // Region named by its <h2>: finding it by the Japanese heading confirms
+    // the heading is localized too.
+    const section = screen.getByRole('region', { name: '特許' });
     // Pin each label to its date so the date-prefix path is verified distinctly
     // from the status badge (出願 vs 出願中, 登録 vs 登録済 would otherwise overlap).
     expect(section.textContent).toMatch(/出願 2022年4月/); // filed date prefix

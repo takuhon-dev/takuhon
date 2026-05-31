@@ -1,19 +1,25 @@
-import type { Contact } from '@takuhon/core';
+import type { Contact, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './ContactInfo.module.css';
 
 export interface ContactInfoProps {
   contact: Contact;
+  locale?: LocaleTag;
 }
 
-export function ContactInfo({ contact }: ContactInfoProps): React.JSX.Element | null {
+export function ContactInfo({
+  contact,
+  locale = 'en',
+}: ContactInfoProps): React.JSX.Element | null {
   const showEmail = contact.showEmail === true && contact.email !== undefined;
   if (!showEmail && contact.formUrl === undefined) return null;
 
   return (
     <section className={styles.section} aria-labelledby="takuhon-contact-heading">
       <h2 id="takuhon-contact-heading" className={styles.heading}>
-        Contact
+        {getUILabel('section.contact', locale)}
       </h2>
       <ul className={styles.list}>
         {showEmail && contact.email !== undefined ? (
@@ -31,7 +37,7 @@ export function ContactInfo({ contact }: ContactInfoProps): React.JSX.Element | 
               target="_blank"
               rel="noopener noreferrer"
             >
-              Contact form
+              {getUILabel('contact.formLink', locale)}
             </a>
           </li>
         ) : null}

@@ -1,6 +1,7 @@
 import type { LocalizedHonor, LocaleTag } from '@takuhon/core';
 
 import { formatYearMonth } from '../lib/date-formatter.js';
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './HonorsList.module.css';
 
@@ -25,7 +26,7 @@ export function HonorsList({ honors, locale = 'en' }: HonorsListProps): React.JS
   return (
     <section className={styles.section} aria-labelledby="takuhon-honors-heading">
       <h2 id="takuhon-honors-heading" className={styles.heading}>
-        Honors &amp; Awards
+        {getUILabel('section.honors', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((honor) => (

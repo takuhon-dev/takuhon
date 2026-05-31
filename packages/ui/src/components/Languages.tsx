@@ -24,7 +24,7 @@ export function Languages({ languages, locale = 'en' }: LanguagesProps): React.J
   return (
     <section className={styles.section} aria-labelledby="takuhon-languages-heading">
       <h2 id="takuhon-languages-heading" className={styles.heading}>
-        Languages
+        {getUILabel('section.languages', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((entry) => (

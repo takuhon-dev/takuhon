@@ -33,7 +33,7 @@ export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element
   return (
     <article className={styles.root}>
       <ProfileHeader profile={data.profile} />
-      <LinksList links={data.links} />
+      <LinksList links={data.links} locale={locale} />
       <EducationTimeline education={data.education} locale={locale} />
       <Courses courses={data.courses} locale={locale} />
       <CareerTimeline careers={data.careers} locale={locale} />
@@ -45,10 +45,10 @@ export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element
       <HonorsList honors={data.honors} locale={locale} />
       <Recommendations recommendations={data.recommendations} locale={locale} />
       <Volunteering volunteering={data.volunteering} locale={locale} />
-      <SkillsList skills={data.skills} />
+      <SkillsList skills={data.skills} locale={locale} />
       <Languages languages={data.languages} locale={locale} />
       <TestScores testScores={data.testScores} locale={locale} />
-      <ContactInfo contact={data.contact} />
+      <ContactInfo contact={data.contact} locale={locale} />
       {showFooter ? <Footer /> : null}
     </article>
   );

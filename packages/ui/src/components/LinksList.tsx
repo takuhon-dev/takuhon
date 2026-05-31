@@ -1,9 +1,12 @@
-import type { LocalizedLink } from '@takuhon/core';
+import type { LocaleTag, LocalizedLink } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './LinksList.module.css';
 
 export interface LinksListProps {
   links: LocalizedLink[];
+  locale?: LocaleTag;
 }
 
 function sortLinks(links: LocalizedLink[]): LocalizedLink[] {
@@ -23,13 +26,13 @@ function formatLinkLabel(link: LocalizedLink): string {
   return link.type;
 }
 
-export function LinksList({ links }: LinksListProps): React.JSX.Element | null {
+export function LinksList({ links, locale = 'en' }: LinksListProps): React.JSX.Element | null {
   if (links.length === 0) return null;
 
   const ordered = sortLinks(links);
 
   return (
-    <nav aria-label="Profile links" className={styles.nav}>
+    <nav aria-label={getUILabel('a11y.profileLinks', locale)} className={styles.nav}>
       <ul className={styles.list}>
         {ordered.map((link) => (
           <li key={link.id} className={styles.item}>
