@@ -34,6 +34,11 @@ describe('Certifications', () => {
     expect(screen.getByText(/No expiration/)).toBeInTheDocument();
   });
 
+  it('localizes the "No expiration" hint via the locale prop', () => {
+    render(<Certifications certifications={sample} locale="ja" />);
+    expect(screen.getByText(/無期限/)).toBeInTheDocument();
+  });
+
   it('returns nothing when given an empty list', () => {
     const { container } = render(<Certifications certifications={[]} />);
     expect(container).toBeEmptyDOMElement();

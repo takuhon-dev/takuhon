@@ -1,9 +1,12 @@
-import type { LocalizedEducation } from '@takuhon/core';
+import type { LocalizedEducation, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './EducationTimeline.module.css';
 
 export interface EducationTimelineProps {
   education: LocalizedEducation[];
+  locale?: LocaleTag;
 }
 
 function sortEducation(entries: LocalizedEducation[]): LocalizedEducation[] {
@@ -26,7 +29,10 @@ function composeStudyLine(entry: LocalizedEducation): string | undefined {
   return entry.degree ?? entry.fieldOfStudy;
 }
 
-export function EducationTimeline({ education }: EducationTimelineProps): React.JSX.Element | null {
+export function EducationTimeline({
+  education,
+  locale = 'en',
+}: EducationTimelineProps): React.JSX.Element | null {
   if (education.length === 0) return null;
   const ordered = sortEducation(education);
 
@@ -61,8 +67,7 @@ export function EducationTimeline({ education }: EducationTimelineProps): React.
                   <time dateTime={entry.startDate}>{entry.startDate}</time>
                   {' – '}
                   {isOngoing(entry) ? (
-                    // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
-                    'Present'
+                    getUILabel('timeline.present', locale)
                   ) : (
                     <time dateTime={entry.endDate!}>{entry.endDate}</time>
                   )}

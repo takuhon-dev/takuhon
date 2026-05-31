@@ -1,9 +1,12 @@
-import type { LocalizedPublication } from '@takuhon/core';
+import type { LocalizedPublication, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Publications.module.css';
 
 export interface PublicationsProps {
   publications: LocalizedPublication[];
+  locale?: LocaleTag;
 }
 
 function sortPublications(entries: LocalizedPublication[]): LocalizedPublication[] {
@@ -22,7 +25,10 @@ function normalizeDoi(doi: string): string {
   return doi.replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '');
 }
 
-export function Publications({ publications }: PublicationsProps): React.JSX.Element | null {
+export function Publications({
+  publications,
+  locale = 'en',
+}: PublicationsProps): React.JSX.Element | null {
   if (publications.length === 0) return null;
   const ordered = sortPublications(publications);
 
@@ -53,10 +59,9 @@ export function Publications({ publications }: PublicationsProps): React.JSX.Ele
               <time dateTime={entry.date}>{entry.date}</time>
             </p>
             {entry.coAuthors && entry.coAuthors.length > 0 ? (
-              <>
-                {/* TODO(i18n-phase-2): Localize the 'with' prefix via the locale resolver. */}
-                <p className={styles.coAuthors}>{`with ${entry.coAuthors.join(', ')}`}</p>
-              </>
+              <p className={styles.coAuthors}>
+                {`${getUILabel('publication.coAuthorsPrefix', locale)}${entry.coAuthors.join(', ')}`}
+              </p>
             ) : null}
             {entry.doi
               ? (() => {

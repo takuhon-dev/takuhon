@@ -28,24 +28,25 @@ export interface TakuhonProfileProps {
 
 export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element {
   const showFooter = data.settings.showPoweredBy !== false;
+  const locale = data.resolvedLocale;
 
   return (
     <article className={styles.root}>
       <ProfileHeader profile={data.profile} />
       <LinksList links={data.links} />
-      <EducationTimeline education={data.education} />
+      <EducationTimeline education={data.education} locale={locale} />
       <Courses courses={data.courses} />
-      <CareerTimeline careers={data.careers} />
-      <Memberships memberships={data.memberships} />
-      <Certifications certifications={data.certifications} />
-      <Patents patents={data.patents} />
-      <ProjectsList projects={data.projects} />
-      <Publications publications={data.publications} />
+      <CareerTimeline careers={data.careers} locale={locale} />
+      <Memberships memberships={data.memberships} locale={locale} />
+      <Certifications certifications={data.certifications} locale={locale} />
+      <Patents patents={data.patents} locale={locale} />
+      <ProjectsList projects={data.projects} locale={locale} />
+      <Publications publications={data.publications} locale={locale} />
       <HonorsList honors={data.honors} />
       <Recommendations recommendations={data.recommendations} />
-      <Volunteering volunteering={data.volunteering} />
+      <Volunteering volunteering={data.volunteering} locale={locale} />
       <SkillsList skills={data.skills} />
-      <Languages languages={data.languages} />
+      <Languages languages={data.languages} locale={locale} />
       <TestScores testScores={data.testScores} />
       <ContactInfo contact={data.contact} />
       {showFooter ? <Footer /> : null}

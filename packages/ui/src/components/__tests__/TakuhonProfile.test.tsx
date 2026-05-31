@@ -57,4 +57,11 @@ describe('TakuhonProfile', () => {
     render(<TakuhonProfile data={example} />);
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
+
+  it('passes the resolved locale down to localized section labels', () => {
+    const { container } = render(<TakuhonProfile data={{ ...example, resolvedLocale: 'ja' }} />);
+    // The ongoing-period marker is the most broadly present localized label;
+    // its Japanese form confirms the locale reaches the section components.
+    expect(container.textContent).toMatch(/現在/);
+  });
 });

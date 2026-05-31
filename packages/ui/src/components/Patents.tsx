@@ -1,19 +1,13 @@
-import type { LocalizedPatent, PatentStatus } from '@takuhon/core';
+import type { LocaleTag, LocalizedPatent } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Patents.module.css';
 
 export interface PatentsProps {
   patents: LocalizedPatent[];
+  locale?: LocaleTag;
 }
-
-// TODO(i18n-phase-2): Extract these labels into the locale resolver once Phase 2 i18n lands,
-// mirroring the PROFICIENCY_LABEL pattern in Languages.tsx.
-const STATUS_LABEL: Record<PatentStatus, string> = {
-  pending: 'Pending',
-  issued: 'Issued',
-  expired: 'Expired',
-  abandoned: 'Abandoned',
-};
 
 function sortPatents(entries: LocalizedPatent[]): LocalizedPatent[] {
   return [...entries].sort((a, b) => {
@@ -26,7 +20,7 @@ function sortPatents(entries: LocalizedPatent[]): LocalizedPatent[] {
   });
 }
 
-export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
+export function Patents({ patents, locale = 'en' }: PatentsProps): React.JSX.Element | null {
   if (patents.length === 0) return null;
   const ordered = sortPatents(patents);
 
@@ -53,7 +47,7 @@ export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
               )}
               <span className={styles.statusBadge} data-status={entry.status}>
                 <span className={styles.srOnly}>Status: </span>
-                {STATUS_LABEL[entry.status]}
+                {getUILabel(`patentStatus.${entry.status}`, locale)}
               </span>
             </p>
             <p className={styles.patentNumber}>{entry.patentNumber}</p>
@@ -62,26 +56,23 @@ export function Patents({ patents }: PatentsProps): React.JSX.Element | null {
               <p className={styles.dates}>
                 {entry.filingDate ? (
                   <>
-                    {/* TODO(i18n-phase-2): Localize the 'Filed' label via the locale resolver. */}
-                    {'Filed '}
+                    {`${getUILabel('patent.filed', locale)} `}
                     <time dateTime={entry.filingDate}>{entry.filingDate}</time>
                   </>
                 ) : null}
                 {entry.filingDate && entry.grantDate ? ' · ' : null}
                 {entry.grantDate ? (
                   <>
-                    {/* TODO(i18n-phase-2): Localize the 'Granted' label via the locale resolver. */}
-                    {'Granted '}
+                    {`${getUILabel('patent.granted', locale)} `}
                     <time dateTime={entry.grantDate}>{entry.grantDate}</time>
                   </>
                 ) : null}
               </p>
             ) : null}
             {entry.coInventors && entry.coInventors.length > 0 ? (
-              <>
-                {/* TODO(i18n-phase-2): Localize the 'with' prefix via the locale resolver. */}
-                <p className={styles.coInventors}>{`with ${entry.coInventors.join(', ')}`}</p>
-              </>
+              <p className={styles.coInventors}>
+                {`${getUILabel('patent.coInventorsPrefix', locale)}${entry.coInventors.join(', ')}`}
+              </p>
             ) : null}
             {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
           </li>

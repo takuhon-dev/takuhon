@@ -1,9 +1,12 @@
-import type { LocalizedMembership } from '@takuhon/core';
+import type { LocalizedMembership, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Memberships.module.css';
 
 export interface MembershipsProps {
   memberships: LocalizedMembership[];
+  locale?: LocaleTag;
 }
 
 function sortMemberships(entries: LocalizedMembership[]): LocalizedMembership[] {
@@ -19,7 +22,10 @@ function isOngoing(entry: LocalizedMembership): boolean {
   return entry.isCurrent === true || entry.endDate === null || entry.endDate === undefined;
 }
 
-export function Memberships({ memberships }: MembershipsProps): React.JSX.Element | null {
+export function Memberships({
+  memberships,
+  locale = 'en',
+}: MembershipsProps): React.JSX.Element | null {
   if (memberships.length === 0) return null;
   const ordered = sortMemberships(memberships);
 
@@ -52,8 +58,7 @@ export function Memberships({ memberships }: MembershipsProps): React.JSX.Elemen
                 <time dateTime={entry.startDate}>{entry.startDate}</time>
                 {' – '}
                 {isOngoing(entry) ? (
-                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
-                  'Present'
+                  getUILabel('timeline.present', locale)
                 ) : (
                   <time dateTime={entry.endDate!}>{entry.endDate}</time>
                 )}

@@ -22,6 +22,12 @@ describe('Languages', () => {
     expect(screen.getByText('Fluent')).toBeInTheDocument();
   });
 
+  it('localizes proficiency labels via the locale prop', () => {
+    render(<Languages languages={sample} locale="ja" />);
+    expect(screen.getByText('ネイティブ')).toBeInTheDocument();
+    expect(screen.getByText('流暢')).toBeInTheDocument();
+  });
+
   it('sets lang attribute on the language name element', () => {
     render(<Languages languages={sample} />);
     const ja = screen.getByText('Japanese');

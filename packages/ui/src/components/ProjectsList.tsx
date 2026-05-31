@@ -1,9 +1,12 @@
-import type { LocalizedProject } from '@takuhon/core';
+import type { LocalizedProject, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './ProjectsList.module.css';
 
 export interface ProjectsListProps {
   projects: LocalizedProject[];
+  locale?: LocaleTag;
 }
 
 function sortProjects(projects: LocalizedProject[]): LocalizedProject[] {
@@ -17,7 +20,10 @@ function sortProjects(projects: LocalizedProject[]): LocalizedProject[] {
   });
 }
 
-export function ProjectsList({ projects }: ProjectsListProps): React.JSX.Element | null {
+export function ProjectsList({
+  projects,
+  locale = 'en',
+}: ProjectsListProps): React.JSX.Element | null {
   if (projects.length === 0) return null;
   const ordered = sortProjects(projects);
 
@@ -54,8 +60,7 @@ export function ProjectsList({ projects }: ProjectsListProps): React.JSX.Element
                 {project.endDate ? (
                   <time dateTime={project.endDate}>{project.endDate}</time>
                 ) : (
-                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
-                  'Present'
+                  getUILabel('timeline.present', locale)
                 )}
               </p>
             ) : null}

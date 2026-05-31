@@ -62,6 +62,11 @@ describe('Publications', () => {
     expect(screen.getByText('with Jamie Chen, Sofia Almeida')).toBeInTheDocument();
   });
 
+  it('localizes the co-author prefix via the locale prop', () => {
+    render(<Publications publications={sample} locale="ja" />);
+    expect(screen.getByText('共著者：Jamie Chen, Sofia Almeida')).toBeInTheDocument();
+  });
+
   it('renders date as <time dateTime>', () => {
     const { container } = render(<Publications publications={sample} />);
     const time = container.querySelector('time');

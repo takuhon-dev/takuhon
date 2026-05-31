@@ -1,9 +1,12 @@
-import type { LocalizedCertification } from '@takuhon/core';
+import type { LocalizedCertification, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Certifications.module.css';
 
 export interface CertificationsProps {
   certifications: LocalizedCertification[];
+  locale?: LocaleTag;
 }
 
 function sortCerts(certs: LocalizedCertification[]): LocalizedCertification[] {
@@ -15,7 +18,10 @@ function sortCerts(certs: LocalizedCertification[]): LocalizedCertification[] {
   });
 }
 
-export function Certifications({ certifications }: CertificationsProps): React.JSX.Element | null {
+export function Certifications({
+  certifications,
+  locale = 'en',
+}: CertificationsProps): React.JSX.Element | null {
   if (certifications.length === 0) return null;
   const ordered = sortCerts(certifications);
 
@@ -45,8 +51,10 @@ export function Certifications({ certifications }: CertificationsProps): React.J
             <p className={styles.range}>
               <time dateTime={cert.issueDate}>{cert.issueDate}</time>
               {cert.expirationDate === null ? (
-                // TODO(i18n-phase-2): Localize the 'No expiration' label via the locale resolver.
-                <span className={styles.tag}> · No expiration</span>
+                <span className={styles.tag}>
+                  {' '}
+                  · {getUILabel('certification.noExpiration', locale)}
+                </span>
               ) : cert.expirationDate !== undefined ? (
                 <>
                   {' – '}

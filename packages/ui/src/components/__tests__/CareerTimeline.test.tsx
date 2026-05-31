@@ -23,6 +23,13 @@ describe('CareerTimeline', () => {
     expect(section.textContent).toMatch(/2023-04\s+–\s+Present/);
   });
 
+  it('localizes the ongoing-period marker via the locale prop', () => {
+    render(<CareerTimeline careers={example.careers} locale="ja" />);
+    const section = screen.getByRole('region', { name: /career/i });
+    expect(section.textContent).toMatch(/現在/);
+    expect(section.textContent).not.toMatch(/Present/);
+  });
+
   it('exposes machine-readable dateTime on the startDate <time> element', () => {
     render(<CareerTimeline careers={example.careers} />);
     const section = screen.getByRole('region', { name: /career/i });
