@@ -16,8 +16,10 @@ export { Certifications, type CertificationsProps } from './components/Certifica
 export { Memberships, type MembershipsProps } from './components/Memberships.js';
 export { Volunteering, type VolunteeringProps } from './components/Volunteering.js';
 export { HonorsList, type HonorsListProps } from './components/HonorsList.js';
+export { Recommendations, type RecommendationsProps } from './components/Recommendations.js';
 export { Publications, type PublicationsProps } from './components/Publications.js';
 export { Languages, type LanguagesProps } from './components/Languages.js';
+export { TestScores, type TestScoresProps } from './components/TestScores.js';
 export { Courses, type CoursesProps } from './components/Courses.js';
 export { Patents, type PatentsProps } from './components/Patents.js';
 export { ProjectsList, type ProjectsListProps } from './components/ProjectsList.js';

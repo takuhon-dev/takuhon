@@ -16,8 +16,10 @@ import { Patents } from './Patents.js';
 import { ProfileHeader } from './ProfileHeader.js';
 import { ProjectsList } from './ProjectsList.js';
 import { Publications } from './Publications.js';
+import { Recommendations } from './Recommendations.js';
 import { SkillsList } from './SkillsList.js';
 import styles from './TakuhonProfile.module.css';
+import { TestScores } from './TestScores.js';
 import { Volunteering } from './Volunteering.js';
 
 export interface TakuhonProfileProps {
@@ -40,9 +42,11 @@ export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element
       <ProjectsList projects={data.projects} />
       <Publications publications={data.publications} />
       <HonorsList honors={data.honors} />
+      <Recommendations recommendations={data.recommendations} />
       <Volunteering volunteering={data.volunteering} />
       <SkillsList skills={data.skills} />
       <Languages languages={data.languages} />
+      <TestScores testScores={data.testScores} />
       <ContactInfo contact={data.contact} />
       {showFooter ? <Footer /> : null}
     </article>
