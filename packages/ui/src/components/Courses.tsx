@@ -1,6 +1,7 @@
 import type { LocalizedCourse, LocaleTag } from '@takuhon/core';
 
 import { formatYearMonth } from '../lib/date-formatter.js';
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Courses.module.css';
 
@@ -25,7 +26,7 @@ export function Courses({ courses, locale = 'en' }: CoursesProps): React.JSX.Ele
   return (
     <section className={styles.section} aria-labelledby="takuhon-courses-heading">
       <h2 id="takuhon-courses-heading" className={styles.heading}>
-        Courses
+        {getUILabel('section.courses', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((entry) => (

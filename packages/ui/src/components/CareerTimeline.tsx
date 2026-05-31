@@ -33,7 +33,7 @@ export function CareerTimeline({
   return (
     <section className={styles.section} aria-labelledby="takuhon-career-heading">
       <h2 id="takuhon-career-heading" className={styles.heading}>
-        Career
+        {getUILabel('section.career', locale)}
       </h2>
       <ol className={styles.list}>
         {ordered.map((career) => (

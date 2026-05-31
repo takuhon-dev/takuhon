@@ -33,7 +33,7 @@ export function Volunteering({
   return (
     <section className={styles.section} aria-labelledby="takuhon-volunteering-heading">
       <h2 id="takuhon-volunteering-heading" className={styles.heading}>
-        Volunteering
+        {getUILabel('section.volunteering', locale)}
       </h2>
       <ol className={styles.list}>
         {ordered.map((entry) => (
@@ -58,7 +58,7 @@ export function Volunteering({
                 {entry.role}
                 {entry.cause ? (
                   <span className={styles.cause}>
-                    <span className={styles.srOnly}>Cause: </span>
+                    <span className={styles.srOnly}>{getUILabel('a11y.causePrefix', locale)}</span>
                     {entry.cause}
                   </span>
                 ) : null}

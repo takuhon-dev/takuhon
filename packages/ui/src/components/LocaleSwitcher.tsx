@@ -1,5 +1,7 @@
 import type { LocaleTag } from '@takuhon/core';
 
+import { getUILabel } from '../lib/ui-labels.js';
+
 import styles from './LocaleSwitcher.module.css';
 
 export interface LocaleSwitcherProps {
@@ -10,8 +12,6 @@ export interface LocaleSwitcherProps {
   formatLocale?: (locale: LocaleTag) => string;
 }
 
-const DEFAULT_ARIA_LABEL = 'Select language';
-
 export function LocaleSwitcher({
   availableLocales,
   currentLocale,
@@ -19,7 +19,7 @@ export function LocaleSwitcher({
   ariaLabel,
   formatLocale,
 }: LocaleSwitcherProps): React.JSX.Element {
-  const label = ariaLabel ?? DEFAULT_ARIA_LABEL;
+  const label = ariaLabel ?? getUILabel('a11y.selectLanguage', currentLocale);
   const format = formatLocale ?? ((locale: LocaleTag) => locale);
   return (
     <div className={styles.wrapper}>

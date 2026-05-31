@@ -1,6 +1,7 @@
 import type { LocalizedRecommendation, LocaleTag } from '@takuhon/core';
 
 import { formatYearMonth } from '../lib/date-formatter.js';
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Recommendations.module.css';
 
@@ -28,7 +29,7 @@ export function Recommendations({
   return (
     <section className={styles.section} aria-labelledby="takuhon-recommendations-heading">
       <h2 id="takuhon-recommendations-heading" className={styles.heading}>
-        Recommendations
+        {getUILabel('section.recommendations', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((entry) => (

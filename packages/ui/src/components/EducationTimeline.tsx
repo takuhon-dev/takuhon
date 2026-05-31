@@ -40,7 +40,7 @@ export function EducationTimeline({
   return (
     <section className={styles.section} aria-labelledby="takuhon-education-heading">
       <h2 id="takuhon-education-heading" className={styles.heading}>
-        Education
+        {getUILabel('section.education', locale)}
       </h2>
       <ol className={styles.list}>
         {ordered.map((entry) => {

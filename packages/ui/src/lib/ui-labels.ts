@@ -10,6 +10,24 @@ import type { LanguageProficiency, LocaleTag, PatentStatus } from '@takuhon/core
  * core enums so the dictionaries below stay in lockstep with the schema: adding
  * a value to either enum turns the missing dictionary entry into a type error.
  */
+/** Section heading identifiers — the `<h2>` of each profile section. */
+type SectionKey =
+  | 'career'
+  | 'education'
+  | 'certifications'
+  | 'patents'
+  | 'projects'
+  | 'publications'
+  | 'honors'
+  | 'recommendations'
+  | 'volunteering'
+  | 'memberships'
+  | 'courses'
+  | 'languages'
+  | 'testScores'
+  | 'skills'
+  | 'contact';
+
 export type UILabelKey =
   | 'timeline.present'
   | 'certification.noExpiration'
@@ -18,7 +36,16 @@ export type UILabelKey =
   | 'patent.coInventorsPrefix'
   | 'publication.coAuthorsPrefix'
   | `proficiency.${LanguageProficiency}`
-  | `patentStatus.${PatentStatus}`;
+  | `patentStatus.${PatentStatus}`
+  | `section.${SectionKey}`
+  | 'a11y.statusPrefix'
+  | 'a11y.causePrefix'
+  | 'a11y.profileLinks'
+  | 'a11y.tags'
+  | 'a11y.skillsSuffix'
+  | 'a11y.selectLanguage'
+  | 'contact.formLink'
+  | 'skills.uncategorized';
 
 type LabelDictionary = Record<UILabelKey, string>;
 
@@ -48,6 +75,31 @@ const EN: LabelDictionary = {
   'patentStatus.issued': 'Issued',
   'patentStatus.expired': 'Expired',
   'patentStatus.abandoned': 'Abandoned',
+  'section.career': 'Career',
+  'section.education': 'Education',
+  'section.certifications': 'Certifications',
+  'section.patents': 'Patents',
+  'section.projects': 'Projects',
+  'section.publications': 'Publications',
+  'section.honors': 'Honors & Awards',
+  'section.recommendations': 'Recommendations',
+  'section.volunteering': 'Volunteering',
+  'section.memberships': 'Memberships',
+  'section.courses': 'Courses',
+  'section.languages': 'Languages',
+  'section.testScores': 'Test Scores',
+  'section.skills': 'Skills',
+  'section.contact': 'Contact',
+  // a11y / chrome affixes. Status/Cause prefixes carry their trailing
+  // separator (a space in English) so callers concatenate prefix + value.
+  'a11y.statusPrefix': 'Status: ',
+  'a11y.causePrefix': 'Cause: ',
+  'a11y.profileLinks': 'Profile links',
+  'a11y.tags': 'Tags',
+  'a11y.skillsSuffix': 'skills',
+  'a11y.selectLanguage': 'Select language',
+  'contact.formLink': 'Contact form',
+  'skills.uncategorized': 'Other',
 };
 
 /**
@@ -72,6 +124,31 @@ const JA: LabelDictionary = {
   'patentStatus.issued': '登録済',
   'patentStatus.expired': '失効',
   'patentStatus.abandoned': '放棄',
+  'section.career': '職歴',
+  'section.education': '学歴',
+  'section.certifications': '資格・認定',
+  'section.patents': '特許',
+  'section.projects': 'プロジェクト',
+  'section.publications': '論文・出版',
+  'section.honors': '受賞・栄誉',
+  'section.recommendations': '推薦',
+  'section.volunteering': 'ボランティア',
+  'section.memberships': '所属',
+  'section.courses': '講座',
+  'section.languages': '言語',
+  'section.testScores': 'テストスコア',
+  'section.skills': 'スキル',
+  'section.contact': '連絡先',
+  // Status/Cause prefixes use a full-width colon (no trailing space), the
+  // conventional Japanese form, mirroring the co-author prefix convention.
+  'a11y.statusPrefix': 'ステータス：',
+  'a11y.causePrefix': '分野：',
+  'a11y.profileLinks': 'プロフィールリンク',
+  'a11y.tags': 'タグ',
+  'a11y.skillsSuffix': 'スキル',
+  'a11y.selectLanguage': '言語を選択',
+  'contact.formLink': 'お問い合わせフォーム',
+  'skills.uncategorized': 'その他',
 };
 
 const DICTIONARIES: Record<LocaleTag, LabelDictionary> = {

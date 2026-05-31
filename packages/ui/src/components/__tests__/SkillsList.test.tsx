@@ -34,6 +34,15 @@ describe('SkillsList', () => {
     expect(screen.getByRole('list', { name: /other skills/i })).toBeInTheDocument();
   });
 
+  it('localizes the heading and uncategorized fallback group for ja', () => {
+    render(<SkillsList skills={[{ id: 'curiosity', label: 'Curiosity' }]} locale="ja" />);
+    // Section heading and the uncategorized fallback are localized; a
+    // user-provided category name would stay as-is (it is profile data).
+    expect(screen.getByRole('region', { name: 'スキル' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'その他' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'その他 スキル' })).toBeInTheDocument();
+  });
+
   it('renders each category label as a level-3 heading', () => {
     render(<SkillsList skills={skills} />);
     const categoryHeadings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);

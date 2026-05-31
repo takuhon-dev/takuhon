@@ -1,6 +1,7 @@
 import type { LocalizedTestScore, LocaleTag } from '@takuhon/core';
 
 import { formatYearMonth } from '../lib/date-formatter.js';
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './TestScores.module.css';
 
@@ -28,7 +29,7 @@ export function TestScores({
   return (
     <section className={styles.section} aria-labelledby="takuhon-test-scores-heading">
       <h2 id="takuhon-test-scores-heading" className={styles.heading}>
-        Test Scores
+        {getUILabel('section.testScores', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((entry) => (

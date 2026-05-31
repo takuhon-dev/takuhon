@@ -36,7 +36,7 @@ export function Publications({
   return (
     <section className={styles.section} aria-labelledby="takuhon-publications-heading">
       <h2 id="takuhon-publications-heading" className={styles.heading}>
-        Publications
+        {getUILabel('section.publications', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((entry) => (

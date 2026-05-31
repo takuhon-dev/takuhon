@@ -28,7 +28,7 @@ export function Patents({ patents, locale = 'en' }: PatentsProps): React.JSX.Ele
   return (
     <section className={styles.section} aria-labelledby="takuhon-patents-heading">
       <h2 id="takuhon-patents-heading" className={styles.heading}>
-        Patents
+        {getUILabel('section.patents', locale)}
       </h2>
       <ul className={styles.list}>
         {ordered.map((entry) => (
@@ -47,7 +47,7 @@ export function Patents({ patents, locale = 'en' }: PatentsProps): React.JSX.Ele
                 entry.title
               )}
               <span className={styles.statusBadge} data-status={entry.status}>
-                <span className={styles.srOnly}>Status: </span>
+                <span className={styles.srOnly}>{getUILabel('a11y.statusPrefix', locale)}</span>
                 {getUILabel(`patentStatus.${entry.status}`, locale)}
               </span>
             </p>

@@ -33,7 +33,7 @@ export function Memberships({
   return (
     <section className={styles.section} aria-labelledby="takuhon-memberships-heading">
       <h2 id="takuhon-memberships-heading" className={styles.heading}>
-        Memberships
+        {getUILabel('section.memberships', locale)}
       </h2>
       <ol className={styles.list}>
         {ordered.map((entry) => (

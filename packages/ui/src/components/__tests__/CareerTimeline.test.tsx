@@ -24,9 +24,11 @@ describe('CareerTimeline', () => {
     expect(section.textContent).toMatch(/Apr 2023\s+–\s+Present/);
   });
 
-  it('localizes the ongoing-period marker via the locale prop', () => {
+  it('localizes the heading and ongoing-period marker via the locale prop', () => {
     render(<CareerTimeline careers={example.careers} locale="ja" />);
-    const section = screen.getByRole('region', { name: /career/i });
+    // The region is named by its <h2>, so finding it by the Japanese heading
+    // also confirms the heading itself is localized.
+    const section = screen.getByRole('region', { name: '職歴' });
     expect(section.textContent).toMatch(/現在/);
     expect(section.textContent).not.toMatch(/Present/);
   });
