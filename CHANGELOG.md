@@ -6,6 +6,14 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+### Added — `@takuhon/ui`
+
+- UI fixed-label internationalization (the spec §8.5 Phase 2+ i18n pass for fixed labels). A new `getUILabel(key, locale)` helper (`packages/ui/src/lib/ui-labels.ts`) resolves the UI-generated fixed labels — the ongoing-period marker (`Present`), certification `No expiration`, patent `Filed` / `Granted`, the co-inventor / co-author prefixes (`with`), and the language-proficiency and patent-status enums — from a shipped dictionary keyed by `LocalizedTakuhon.resolvedLocale`. English (the fallback) and Japanese ship today; the dictionary is `Record<LocaleTag, …>` so further locales drop in without a code change, and a regional tag (e.g. `ja-JP`) resolves through its base language (`ja`), mirroring core's `resolveLocale`. This clears every `TODO(i18n-phase-2)` marker in the section components and generalizes the former per-component `PROFICIENCY_LABEL` / `STATUS_LABEL` English-only maps. Section headings and screen-reader-only affixes (e.g. `Status:`) stay hard-coded English as separate Phase 2+ items.
+
+### Changed — `@takuhon/ui`
+
+- The localized section components (`CareerTimeline`, `EducationTimeline`, `Memberships`, `ProjectsList`, `Volunteering`, `Certifications`, `Patents`, `Publications`, `Languages`) now accept an optional `locale?: LocaleTag` prop (default `'en'`), and `TakuhonProfile` forwards `data.resolvedLocale` to each. The prop is optional and English-defaulted, so existing consumers of an individual section component are unaffected. No schema change: this is a UI-only change with no `@takuhon/core` involvement; the bundled `schemaVersion` stays `0.4.0` and no migration is required.
+
 ## [0.5.0] - 2026-05-31
 
 Minor release. This is the first release to ship the `testScores` (the LinkedIn `Test_Scores.csv` equivalent) and `recommendations` (the LinkedIn `Recommendations_Received.csv` equivalent) top-level arrays — both added to `@takuhon/core` since v0.4.0 — together with the `@takuhon/ui` `TestScores` and `Recommendations` section components that render them. The bundled `schemaVersion` advances from `0.2.0` (shipped in v0.4.0) to `0.4.0`, and `SUPPORTED_SCHEMA_VERSIONS` now spans `0.1.0` through `0.4.0`; the forward migrations `v0.2.0-to-v0.3.0` and `v0.3.0-to-v0.4.0` chain so every existing profile still validates and migrates forward unchanged. Also ships the admin full-document export endpoint (`GET /api/admin/export`). Per the lockstep release policy all six publishable artifacts bump to 0.5.0.

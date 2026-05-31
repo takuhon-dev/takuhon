@@ -1,9 +1,12 @@
-import type { LocalizedVolunteering } from '@takuhon/core';
+import type { LocalizedVolunteering, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Volunteering.module.css';
 
 export interface VolunteeringProps {
   volunteering: LocalizedVolunteering[];
+  locale?: LocaleTag;
 }
 
 function sortVolunteering(entries: LocalizedVolunteering[]): LocalizedVolunteering[] {
@@ -19,7 +22,10 @@ function isOngoing(entry: LocalizedVolunteering): boolean {
   return entry.isCurrent === true || entry.endDate === null || entry.endDate === undefined;
 }
 
-export function Volunteering({ volunteering }: VolunteeringProps): React.JSX.Element | null {
+export function Volunteering({
+  volunteering,
+  locale = 'en',
+}: VolunteeringProps): React.JSX.Element | null {
   if (volunteering.length === 0) return null;
   const ordered = sortVolunteering(volunteering);
 
@@ -60,8 +66,7 @@ export function Volunteering({ volunteering }: VolunteeringProps): React.JSX.Ele
                 <time dateTime={entry.startDate}>{entry.startDate}</time>
                 {' – '}
                 {isOngoing(entry) ? (
-                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
-                  'Present'
+                  getUILabel('timeline.present', locale)
                 ) : (
                   <time dateTime={entry.endDate!}>{entry.endDate}</time>
                 )}

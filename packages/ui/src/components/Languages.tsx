@@ -1,18 +1,13 @@
-import type { LanguageProficiency, LocalizedLanguage } from '@takuhon/core';
+import type { LocaleTag, LocalizedLanguage } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Languages.module.css';
 
 export interface LanguagesProps {
   languages: LocalizedLanguage[];
+  locale?: LocaleTag;
 }
-
-const PROFICIENCY_LABEL: Record<LanguageProficiency, string> = {
-  native: 'Native',
-  fluent: 'Fluent',
-  professional: 'Professional working',
-  intermediate: 'Intermediate',
-  basic: 'Basic',
-};
 
 function sortLanguages(languages: LocalizedLanguage[]): LocalizedLanguage[] {
   return [...languages].sort((a, b) => {
@@ -22,7 +17,7 @@ function sortLanguages(languages: LocalizedLanguage[]): LocalizedLanguage[] {
   });
 }
 
-export function Languages({ languages }: LanguagesProps): React.JSX.Element | null {
+export function Languages({ languages, locale = 'en' }: LanguagesProps): React.JSX.Element | null {
   if (languages.length === 0) return null;
   const ordered = sortLanguages(languages);
 
@@ -37,7 +32,9 @@ export function Languages({ languages }: LanguagesProps): React.JSX.Element | nu
             <span className={styles.name} lang={entry.language}>
               {entry.displayName ?? entry.language}
             </span>
-            <span className={styles.proficiency}>{PROFICIENCY_LABEL[entry.proficiency]}</span>
+            <span className={styles.proficiency}>
+              {getUILabel(`proficiency.${entry.proficiency}`, locale)}
+            </span>
           </li>
         ))}
       </ul>

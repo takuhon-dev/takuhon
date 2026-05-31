@@ -1,9 +1,12 @@
-import type { LocalizedCareer } from '@takuhon/core';
+import type { LocalizedCareer, LocaleTag } from '@takuhon/core';
+
+import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './CareerTimeline.module.css';
 
 export interface CareerTimelineProps {
   careers: LocalizedCareer[];
+  locale?: LocaleTag;
 }
 
 function sortCareers(careers: LocalizedCareer[]): LocalizedCareer[] {
@@ -19,7 +22,10 @@ function isOngoing(career: LocalizedCareer): boolean {
   return career.isCurrent === true || career.endDate === null || career.endDate === undefined;
 }
 
-export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Element | null {
+export function CareerTimeline({
+  careers,
+  locale = 'en',
+}: CareerTimelineProps): React.JSX.Element | null {
   if (careers.length === 0) return null;
   const ordered = sortCareers(careers);
 
@@ -53,8 +59,7 @@ export function CareerTimeline({ careers }: CareerTimelineProps): React.JSX.Elem
                 <time dateTime={career.startDate}>{career.startDate}</time>
                 {' – '}
                 {isOngoing(career) ? (
-                  // TODO(i18n-phase-2): Localize the 'Present' label via the locale resolver.
-                  'Present'
+                  getUILabel('timeline.present', locale)
                 ) : (
                   <time dateTime={career.endDate!}>{career.endDate}</time>
                 )}
