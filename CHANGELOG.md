@@ -6,12 +6,27 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-31
+
+Minor release. This is the first release to ship the `testScores` (the LinkedIn `Test_Scores.csv` equivalent) and `recommendations` (the LinkedIn `Recommendations_Received.csv` equivalent) top-level arrays — both added to `@takuhon/core` since v0.4.0 — together with the `@takuhon/ui` `TestScores` and `Recommendations` section components that render them. The bundled `schemaVersion` advances from `0.2.0` (shipped in v0.4.0) to `0.4.0`, and `SUPPORTED_SCHEMA_VERSIONS` now spans `0.1.0` through `0.4.0`; the forward migrations `v0.2.0-to-v0.3.0` and `v0.3.0-to-v0.4.0` chain so every existing profile still validates and migrates forward unchanged. Also ships the admin full-document export endpoint (`GET /api/admin/export`). Per the lockstep release policy all six publishable artifacts bump to 0.5.0.
+
 ### Added — `@takuhon/core`
 
 - `testScores` top-level array — standardized test / exam scores (the LinkedIn `Test_Scores.csv` equivalent). Each entry carries `id`, a localized `title`, a free-form `score` string (e.g. `"112 / 120"`, `"330"`, `"N1 Pass"`, or a percentile — stored verbatim; the validator does not interpret it), a `date` (year-month), and optional `relatedEducationId` (a reference to an `education[].id`, the same idiom as `courses[].relatedEducationId`), localized `description`, `url`, and `order`. The array is optional and a missing value coerces to `[]`, mirroring the nine arrays added in 0.2.0. Scores are always public (no `meta.privacy` flag, like `honors` / `courses`) and are intentionally **not** emitted in JSON-LD: Schema.org has no established test-score type, so structured output stays a known gap until a suitable vocabulary stabilizes. Size limits: `testScores[]` ≤ 30 entries, `score` ≤ 50 chars, `title` ≤ 200 chars, `description` ≤ 5000 chars.
-- Forward migration `v0.2.0-to-v0.3.0`. The bundled `schemaVersion` advances **0.2.0 → 0.3.0** (a backward-compatible MINOR schema addition; the schema `$id` follows) and the migration initialises a missing `testScores` to `[]` — additive, conditional-spread, existing fields untouched. `SUPPORTED_SCHEMA_VERSIONS` now accepts `0.1.0` / `0.2.0` / `0.3.0`, so every existing document still validates unchanged, and the registry chains `0.1.0 → 0.3.0` automatically. The renderer (`@takuhon/ui`) does not yet display test scores — schema and types lead, UI follows, as with the 0.2.0 arrays.
+- Forward migration `v0.2.0-to-v0.3.0`. The bundled `schemaVersion` advances **0.2.0 → 0.3.0** (a backward-compatible MINOR schema addition; the schema `$id` follows) and the migration initialises a missing `testScores` to `[]` — additive, conditional-spread, existing fields untouched. `SUPPORTED_SCHEMA_VERSIONS` now accepts `0.1.0` / `0.2.0` / `0.3.0`, so every existing document still validates unchanged, and the registry chains `0.1.0 → 0.3.0` automatically. The `@takuhon/ui` renderer displays test scores as of this release (see the `@takuhon/ui` section below).
 - `recommendations` top-level array — owner-curated testimonials (the LinkedIn `Recommendations_Received.csv` equivalent). Each entry carries `id`, a localized `body` (the testimonial text), and an `author` object (`name` required, plus optional localized `headline` and a `url` for external verification), with optional localized `relationship`, `date` (year-month), `relatedCareerId` / `relatedEducationId` (references to `careers[].id` / `education[].id`), and `order`. The array is optional and a missing value coerces to `[]`. The model is deliberately **owner-curated**: the profile owner self-enters recommendations they received (porting their LinkedIn export), and there is no server-side submission, moderation, or verification — trust is owner-assertion plus the optional `author.url`, keeping takuhon aligned with its self-owned, platform-independent, no-database principles. Recommendations are always public (no `meta.privacy` flag); obtaining consent to display a recommender's name is the owner's responsibility. They are intentionally **not** emitted in JSON-LD: Schema.org `Review` is technically possible but self-published reviews are an SEO/trust grey zone, so structured output stays a known gap to revisit. Size limits: `recommendations[]` ≤ 50 entries, `author.name` ≤ 100 chars, `body` ≤ 5000 chars, `headline` / `relationship` ≤ 200 chars.
-- Forward migration `v0.3.0-to-v0.4.0`. The bundled `schemaVersion` advances **0.3.0 → 0.4.0** (a backward-compatible MINOR schema addition; the schema `$id` follows) and the migration initialises a missing `recommendations` to `[]` — additive, conditional-spread, existing fields untouched. `SUPPORTED_SCHEMA_VERSIONS` now also accepts `0.4.0`, so every existing document still validates unchanged, and the registry chains `0.1.0 → 0.4.0` automatically. The renderer does not yet display recommendations — schema and types lead, UI follows.
+- Forward migration `v0.3.0-to-v0.4.0`. The bundled `schemaVersion` advances **0.3.0 → 0.4.0** (a backward-compatible MINOR schema addition; the schema `$id` follows) and the migration initialises a missing `recommendations` to `[]` — additive, conditional-spread, existing fields untouched. `SUPPORTED_SCHEMA_VERSIONS` now also accepts `0.4.0`, so every existing document still validates unchanged, and the registry chains `0.1.0 → 0.4.0` automatically. The `@takuhon/ui` renderer displays recommendations as of this release (see the `@takuhon/ui` section below).
+
+### Added — `@takuhon/ui`
+
+- Two new mobile-first section components that render the `testScores` (0.3.0) and `recommendations` (0.4.0) arrays:
+  - `TestScores` — sits in the spec §8.2 **Capabilities** group, immediately after `Languages`. Each entry shows the localized `title` (a `url` link when present), the free-form `score` (emphasized) with the `date` (`<time dateTime>`), and the optional localized `description`. Sorted by `order` ascending then `date` descending.
+  - `Recommendations` — sits in the spec §8.2 **Recognition & service** group, between `HonorsList` and `Volunteering`, keeping received recognition (`honors` + `recommendations`) adjacent. The testimonial `body` uses `<blockquote>` semantics with the author attribution — name (a `url` link when present), optional `headline`, `relationship`, and `date` — placed outside the quote per the HTML spec. Sorted by `order` ascending then `date` descending, with undated entries last.
+- Both accept a single locale-resolved prop (`LocalizedTestScore[]` / `LocalizedRecommendation[]`), return `null` on empty input, and reuse the established `.section` / `.heading` / `.list` / `.item` CSS-module conventions plus `tokens.css` — no new design tokens. The section headings (`Test Scores`, `Recommendations`) are hard-coded English pending the Phase 2 i18n pass.
+
+### Changed — `@takuhon/ui`
+
+- `TakuhonProfile` now composes 18 sections (was 16): `Recommendations` slots in after `HonorsList` and `TestScores` after `Languages`, per the spec §8.2 semantic-kinship grouping.
 
 ### Added — `@takuhon/api`
 
@@ -28,6 +43,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 ### Internal
 
 - Added the missing `TODO(i18n-phase-2)` marker to the `with` co-author prefix in `Publications`. The 0.4.0 i18n-marker pass flagged the analogous `with` prefix in `Patents` but skipped this one; both hard-coded `with` strings are now marked consistently for the Phase 2 i18n extraction. No render change.
+
+### Lockstep version bump
+
+- All six publishable artifacts bump from `0.4.0` to `0.5.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect.
 
 ## [0.4.0] - 2026-05-29
 
@@ -273,7 +292,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/takuhon-dev/takuhon/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/takuhon-dev/takuhon/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/takuhon-dev/takuhon/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/takuhon-dev/takuhon/compare/v0.1.1...v0.2.0
