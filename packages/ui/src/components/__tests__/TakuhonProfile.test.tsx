@@ -38,6 +38,12 @@ describe('TakuhonProfile', () => {
     expect(screen.getByRole('region', { name: /patents/i })).toBeInTheDocument();
   });
 
+  it('renders Test Scores and Recommendations sections as labelled regions when the fixture populates them', () => {
+    render(<TakuhonProfile data={example} />);
+    expect(screen.getByRole('region', { name: /test scores/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /recommendations/i })).toBeInTheDocument();
+  });
+
   it('omits the Footer when settings.showPoweredBy is false', () => {
     render(
       <TakuhonProfile
