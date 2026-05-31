@@ -1,5 +1,6 @@
 import type { LocalizedMembership, LocaleTag } from '@takuhon/core';
 
+import { formatYearMonth } from '../lib/date-formatter.js';
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Memberships.module.css';
@@ -55,12 +56,12 @@ export function Memberships({
               </p>
               {entry.role ? <p className={styles.role}>{entry.role}</p> : null}
               <p className={styles.range}>
-                <time dateTime={entry.startDate}>{entry.startDate}</time>
+                <time dateTime={entry.startDate}>{formatYearMonth(entry.startDate, locale)}</time>
                 {' – '}
                 {isOngoing(entry) ? (
                   getUILabel('timeline.present', locale)
                 ) : (
-                  <time dateTime={entry.endDate!}>{entry.endDate}</time>
+                  <time dateTime={entry.endDate!}>{formatYearMonth(entry.endDate!, locale)}</time>
                 )}
               </p>
               {entry.description ? <p className={styles.description}>{entry.description}</p> : null}

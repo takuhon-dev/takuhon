@@ -1,9 +1,12 @@
-import type { LocalizedCourse } from '@takuhon/core';
+import type { LocalizedCourse, LocaleTag } from '@takuhon/core';
+
+import { formatYearMonth } from '../lib/date-formatter.js';
 
 import styles from './Courses.module.css';
 
 export interface CoursesProps {
   courses: LocalizedCourse[];
+  locale?: LocaleTag;
 }
 
 function sortCourses(entries: LocalizedCourse[]): LocalizedCourse[] {
@@ -15,7 +18,7 @@ function sortCourses(entries: LocalizedCourse[]): LocalizedCourse[] {
   });
 }
 
-export function Courses({ courses }: CoursesProps): React.JSX.Element | null {
+export function Courses({ courses, locale = 'en' }: CoursesProps): React.JSX.Element | null {
   if (courses.length === 0) return null;
   const ordered = sortCourses(courses);
 
@@ -47,7 +50,9 @@ export function Courses({ courses }: CoursesProps): React.JSX.Element | null {
             ) : null}
             {entry.completionDate ? (
               <p className={styles.date}>
-                <time dateTime={entry.completionDate}>{entry.completionDate}</time>
+                <time dateTime={entry.completionDate}>
+                  {formatYearMonth(entry.completionDate, locale)}
+                </time>
               </p>
             ) : null}
             {entry.description ? <p className={styles.description}>{entry.description}</p> : null}

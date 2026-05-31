@@ -20,11 +20,12 @@ describe('HonorsList', () => {
     expect(within(section).getAllByRole('listitem')).toHaveLength(1);
   });
 
-  it('exposes machine-readable dateTime on the date <time> element', () => {
-    render(<HonorsList honors={sample} />);
-    const time = screen.getByText('2023-04');
-    expect(time.tagName.toLowerCase()).toBe('time');
-    expect(time).toHaveAttribute('datetime', '2023-04');
+  it('keeps a machine-readable YYYY-MM dateTime while displaying a localized label', () => {
+    const { container } = render(<HonorsList honors={sample} />);
+    const time = container.querySelector('time');
+    expect(time).not.toBeNull();
+    expect(time?.getAttribute('datetime')).toBe('2023-04'); // raw ISO retained
+    expect(time?.textContent).toBe('Apr 2023'); // localized display (default en)
   });
 
   it('returns nothing when given an empty list', () => {

@@ -81,8 +81,8 @@ describe('Patents', () => {
     const section = screen.getByRole('region', { name: /patents/i });
     // Pin each label to its date so the date-prefix path is verified distinctly
     // from the status badge (出願 vs 出願中, 登録 vs 登録済 would otherwise overlap).
-    expect(section.textContent).toMatch(/出願 2022-04/); // filed date prefix
-    expect(section.textContent).toMatch(/登録 2024-03/); // granted date prefix
+    expect(section.textContent).toMatch(/出願 2022年4月/); // filed date prefix
+    expect(section.textContent).toMatch(/登録 2024年3月/); // granted date prefix
     expect(section.textContent).toMatch(/登録済/); // issued status badge
   });
 

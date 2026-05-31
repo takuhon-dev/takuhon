@@ -1,5 +1,6 @@
 import type { LocalizedProject, LocaleTag } from '@takuhon/core';
 
+import { formatYearMonth } from '../lib/date-formatter.js';
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './ProjectsList.module.css';
@@ -55,10 +56,12 @@ export function ProjectsList({
             </p>
             {project.startDate !== undefined ? (
               <p className={styles.range}>
-                <time dateTime={project.startDate}>{project.startDate}</time>
+                <time dateTime={project.startDate}>
+                  {formatYearMonth(project.startDate, locale)}
+                </time>
                 {' – '}
                 {project.endDate ? (
-                  <time dateTime={project.endDate}>{project.endDate}</time>
+                  <time dateTime={project.endDate}>{formatYearMonth(project.endDate, locale)}</time>
                 ) : (
                   getUILabel('timeline.present', locale)
                 )}

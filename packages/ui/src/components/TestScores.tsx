@@ -1,9 +1,12 @@
-import type { LocalizedTestScore } from '@takuhon/core';
+import type { LocalizedTestScore, LocaleTag } from '@takuhon/core';
+
+import { formatYearMonth } from '../lib/date-formatter.js';
 
 import styles from './TestScores.module.css';
 
 export interface TestScoresProps {
   testScores: LocalizedTestScore[];
+  locale?: LocaleTag;
 }
 
 function sortTestScores(entries: LocalizedTestScore[]): LocalizedTestScore[] {
@@ -15,7 +18,10 @@ function sortTestScores(entries: LocalizedTestScore[]): LocalizedTestScore[] {
   });
 }
 
-export function TestScores({ testScores }: TestScoresProps): React.JSX.Element | null {
+export function TestScores({
+  testScores,
+  locale = 'en',
+}: TestScoresProps): React.JSX.Element | null {
   if (testScores.length === 0) return null;
   const ordered = sortTestScores(testScores);
 
@@ -44,7 +50,7 @@ export function TestScores({ testScores }: TestScoresProps): React.JSX.Element |
             <p className={styles.meta}>
               <span className={styles.score}>{entry.score}</span>
               {' · '}
-              <time dateTime={entry.date}>{entry.date}</time>
+              <time dateTime={entry.date}>{formatYearMonth(entry.date, locale)}</time>
             </p>
             {entry.description ? <p className={styles.description}>{entry.description}</p> : null}
           </li>

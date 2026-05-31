@@ -1,5 +1,6 @@
 import type { LocalizedCertification, LocaleTag } from '@takuhon/core';
 
+import { formatYearMonth } from '../lib/date-formatter.js';
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './Certifications.module.css';
@@ -49,7 +50,7 @@ export function Certifications({
             </p>
             <p className={styles.issuer}>{cert.issuingOrganization}</p>
             <p className={styles.range}>
-              <time dateTime={cert.issueDate}>{cert.issueDate}</time>
+              <time dateTime={cert.issueDate}>{formatYearMonth(cert.issueDate, locale)}</time>
               {cert.expirationDate === null ? (
                 <span className={styles.tag}>
                   {' '}
@@ -58,7 +59,9 @@ export function Certifications({
               ) : cert.expirationDate !== undefined ? (
                 <>
                   {' – '}
-                  <time dateTime={cert.expirationDate}>{cert.expirationDate}</time>
+                  <time dateTime={cert.expirationDate}>
+                    {formatYearMonth(cert.expirationDate, locale)}
+                  </time>
                 </>
               ) : null}
             </p>

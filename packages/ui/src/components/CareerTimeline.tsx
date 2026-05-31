@@ -1,5 +1,6 @@
 import type { LocalizedCareer, LocaleTag } from '@takuhon/core';
 
+import { formatYearMonth } from '../lib/date-formatter.js';
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './CareerTimeline.module.css';
@@ -56,12 +57,12 @@ export function CareerTimeline({
                 )}
               </p>
               <p className={styles.range}>
-                <time dateTime={career.startDate}>{career.startDate}</time>
+                <time dateTime={career.startDate}>{formatYearMonth(career.startDate, locale)}</time>
                 {' – '}
                 {isOngoing(career) ? (
                   getUILabel('timeline.present', locale)
                 ) : (
-                  <time dateTime={career.endDate!}>{career.endDate}</time>
+                  <time dateTime={career.endDate!}>{formatYearMonth(career.endDate!, locale)}</time>
                 )}
               </p>
               {career.location?.display ? (
