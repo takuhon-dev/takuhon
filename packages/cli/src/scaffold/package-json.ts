@@ -5,9 +5,11 @@
  * minor of the published `@takuhon/*` packages. Under 0.x semver, a caret
  * does not span minor versions, so the range must move forward with each
  * `@takuhon/core` minor release to keep scaffolded projects on the
- * matching schema generation. `hono` is declared as a direct dependency
- * because the scaffolded `src/index.ts` imports from it; `wrangler` is a
- * devDependency since it's the deploy / dev-server tool.
+ * matching schema generation. `hono` is included as a direct dependency for
+ * projects that extend the Worker with their own Hono routes; the generated
+ * `src/index.ts` reaches Takuhon's handlers through `@takuhon/cloudflare`
+ * rather than importing `hono` directly. `wrangler` is a devDependency since
+ * it's the deploy / dev-server tool.
  */
 
 export interface PackageJsonOptions {
@@ -27,9 +29,9 @@ export function buildPackageJson(opts: PackageJsonOptions): Record<string, unkno
       deploy: 'wrangler deploy',
     },
     dependencies: {
-      '@takuhon/api': '^0.2.0',
-      '@takuhon/cloudflare': '^0.2.0',
-      '@takuhon/core': '^0.2.0',
+      '@takuhon/api': '^0.6.0',
+      '@takuhon/cloudflare': '^0.6.0',
+      '@takuhon/core': '^0.6.0',
       hono: '^4.0.0',
     },
     devDependencies: {
