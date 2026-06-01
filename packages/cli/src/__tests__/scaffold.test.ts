@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { validate } from '@takuhon/core';
+import { SCHEMA_VERSION, validate } from '@takuhon/core';
 import ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -140,6 +140,24 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     const result = validate(parsed);
 
     expect(result.ok).toBe(true);
+  });
+
+  it('stamps takuhon.json with the current @takuhon/core SCHEMA_VERSION', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const raw = await readFile(join(targetDir, 'takuhon.json'), 'utf8');
+    const parsed = JSON.parse(raw) as { schemaVersion?: string };
+
+    // Mirrors examples-fixtures.test.ts: keep the scaffold template in lockstep
+    // with the canonical schema generation. When @takuhon/core bumps
+    // SCHEMA_VERSION this fails until the scaffold body is reviewed and the
+    // version bumped — the guard the scaffold previously lacked, which let it
+    // drift to an older schemaVersion unnoticed.
+    expect(parsed.schemaVersion).toBe(SCHEMA_VERSION);
   });
 
   it('writes the chosen license fragment into takuhon.json meta.contentLicense', async () => {

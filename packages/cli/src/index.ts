@@ -11,7 +11,15 @@
  * && takuhon --help` give the same output.
  */
 
-const VERSION = '0.2.0';
+import { readFileSync } from 'node:fs';
+
+// Source the reported version from package.json (read at runtime relative to
+// this module) so `takuhon --version` can never drift from the published
+// release — there is no hand-maintained version literal to fall out of sync.
+const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+  version: string;
+};
+const VERSION = pkg.version;
 
 const HELP = `takuhon ${VERSION}
 
