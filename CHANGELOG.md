@@ -6,6 +6,19 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-06-01
+
+Patch release. Corrects version drift in `@takuhon/cli`: the `create-takuhon` scaffolder emitted a stale `schemaVersion` and pinned stale `@takuhon/*` dependency ranges, and `takuhon --version` reported a stale hardcoded value. There is no `@takuhon/core` change — the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.6.1.
+
+### Fixed — `@takuhon/cli`
+
+- `create-takuhon` scaffolded a `takuhon.json` stamped with `schemaVersion` `0.2.0` and a `package.json` pinning `@takuhon/api` / `@takuhon/cloudflare` / `@takuhon/core` at `^0.2.0` — both stale against the current generation. The generated `takuhon.json` now stamps `schemaVersion` `0.4.0` (the canonical `SCHEMA_VERSION`) and its body is again an exact copy of `examples/minimal-profile/takuhon.json`: the nine always-empty optional arrays are dropped, and since core coerces a missing optional array to `[]` on validate/normalize the parsed output is unchanged. The scaffolded dependencies now pin `^0.6.0`. A new test asserts the scaffolded `schemaVersion` equals `@takuhon/core`'s `SCHEMA_VERSION` — the drift guard the scaffold previously lacked. (The stale `0.2.0` still validated because it sits inside `SUPPORTED_SCHEMA_VERSIONS`, which is why the drift went unnoticed.)
+- `takuhon --version` reported a hardcoded `0.2.0` while the package was `0.6.0`. It is now derived from `package.json` at runtime, so it tracks the published release and cannot drift again. The generator docstring that incorrectly claimed the scaffolded Worker imports `hono` directly was corrected at the same time.
+
+### Lockstep version bump
+
+- All six publishable artifacts bump from `0.6.0` to `0.6.1`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect. Only `@takuhon/cli` changed functionally; the other five bump for lockstep alignment.
+
 ## [0.6.0] - 2026-06-01
 
 Minor release. This release lands the Phase 2 UI fixed-text internationalization for `@takuhon/ui` (the spec §8.5 i18n pass), clearing the i18n backlog carried forward since 0.3.0. The UI-generated fixed labels — the ongoing-period marker (`Present`), certification `No expiration`, patent `Filed` / `Granted`, the `with` co-author / co-inventor prefix, and the language-proficiency and patent-status enums — now resolve through a new `getUILabel(key, locale)` dictionary; the `YearMonth` values shown across the dated sections render in the resolved locale via a new `formatYearMonth(value, locale)` helper (`Intl.DateTimeFormat`); and the section `<h2>` headings, the screen-reader / `aria-label` chrome, and the contact-form label are localized too. English (the fallback) and Japanese ship. The localized section components gain an optional `locale?: LocaleTag` prop (default `'en'`, non-breaking), wired from `TakuhonProfile`'s `resolvedLocale`. This is a UI-only release with no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. One visible behavior change beyond i18n itself: the English default date format moves from `2024-05` to `May 2024` — the intended locale-aware rendering, not a regression — while the `<time dateTime>` machine-readable value is unchanged. Per the lockstep release policy all six publishable artifacts bump to 0.6.0.
@@ -312,7 +325,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/takuhon-dev/takuhon/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/takuhon-dev/takuhon/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/takuhon-dev/takuhon/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/takuhon-dev/takuhon/compare/v0.3.0...v0.4.0
