@@ -6,6 +6,18 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-02
+
+Minor release. Lands the `takuhon validate` command in `@takuhon/cli` — the first runtime CLI subcommand the docs and the Phase 1 spec promise beyond scaffolding. This is a CLI-only feature with no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.7.0.
+
+### Added — `@takuhon/cli`
+
+- `takuhon validate [path]` validates a `takuhon.json` (default `./takuhon.json`) against `@takuhon/core`'s `validate`, reporting each failure as a JSON-pointer plus message. Exit codes: `0` valid, `1` invalid (parsed but failed schema validation), `2` operational error (bad arguments, a missing or unreadable file, or invalid JSON). `validate --help` prints usage and extra path arguments are rejected. The argument handling and validation live in a pure, unit-testable `runValidate(args)` module returning `{ code, stdout, stderr }`, covered by ten tests.
+
+### Lockstep version bump
+
+- All six publishable artifacts bump from `0.6.1` to `0.7.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect. Only `@takuhon/cli` changed functionally; the other five bump for lockstep alignment.
+
 ## [0.6.1] - 2026-06-01
 
 Patch release. Corrects version drift in `@takuhon/cli`: the `create-takuhon` scaffolder emitted a stale `schemaVersion` and pinned stale `@takuhon/*` dependency ranges, and `takuhon --version` reported a stale hardcoded value. There is no `@takuhon/core` change — the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.6.1.
