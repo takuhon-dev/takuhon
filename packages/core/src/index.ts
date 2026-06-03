@@ -42,6 +42,8 @@ export { generateJsonLd, generatePersonJsonLd, generateProfilePageJsonLd } from 
 export { ImportError, exportTakuhon, importTakuhon } from './export.js';
 export type { ExportOptions, ExportedTakuhon } from './export.js';
 
+export { applyPublicPrivacyFilter } from './privacy-filter.js';
+
 export { MigrationError, migrateTakuhon } from './migrate.js';
 export { migrations } from './migrations/index.js';
 export type { Migration } from './migrations/index.js';
