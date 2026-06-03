@@ -10,6 +10,7 @@ import {
   compactTimestamp,
   createBackup,
   migrateBackupName,
+  preImportName,
   preRestoreName,
 } from '../backup.js';
 
@@ -35,6 +36,10 @@ describe('backup filename builders', () => {
 
   it('preRestoreName follows the pre-restore convention', () => {
     expect(preRestoreName(FIXED)).toBe('pre-restore-20260511T120000Z.json');
+  });
+
+  it('preImportName follows the pre-import convention', () => {
+    expect(preImportName(FIXED)).toBe('pre-import-20260511T120000Z.json');
   });
 
   it('backupDirFor resolves .takuhon-backups beside the target', () => {

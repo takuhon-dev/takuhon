@@ -57,6 +57,11 @@ export function preRestoreName(date: Date, withMillis = false): string {
   return `pre-restore-${compactTimestamp(date, withMillis)}.json`;
 }
 
+/** Build the pre-import backup filename (operational-lifecycle §5.3 step 3). */
+export function preImportName(date: Date, withMillis = false): string {
+  return `pre-import-${compactTimestamp(date, withMillis)}.json`;
+}
+
 /** Resolve the `.takuhon-backups/` directory beside `targetPath`. */
 export function backupDirFor(targetPath: string): string {
   return join(dirname(targetPath), BACKUP_DIR_NAME);
