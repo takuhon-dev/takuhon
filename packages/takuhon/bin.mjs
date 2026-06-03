@@ -1,2 +1,4 @@
 #!/usr/bin/env node
-import '@takuhon/cli';
+import { run } from '@takuhon/cli';
+
+run();
