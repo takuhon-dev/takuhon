@@ -19,6 +19,8 @@ import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
+import { runExport } from './export-command.js';
+import { runImport } from './import-command.js';
 import { runMigrate } from './migrate-command.js';
 import { runRestore } from './restore-command.js';
 import { runValidate } from './validate-command.js';
@@ -46,12 +48,15 @@ Commands:
                                        Add --out <file> to write elsewhere, --dry-run to preview.
   takuhon restore --from <backup>      Restore a profile from a backup (prompts before
                                        overwriting; pass --yes to skip).
+  takuhon export [path] [--output <f>] Serialise a takuhon.json to stdout (or --output file).
+  takuhon import <file> [path]         Import an exported profile into a takuhon.json,
+                                       migrating to the current schema version. Backs up first.
 
 Scaffolding a new profile project:
   npx create-takuhon my-profile
   npx create-takuhon my-profile --license CC-BY-4.0
 
-Subcommands (dev / sync / export) are planned for a future release.
+Subcommands (dev / sync) are planned for a future release.
 Track progress at:
 
   https://github.com/takuhon-dev/takuhon
@@ -76,6 +81,14 @@ async function main(argv: readonly string[]): Promise<number> {
 
   if (first === 'migrate') {
     return emit(runMigrate(argv.slice(1)));
+  }
+
+  if (first === 'export') {
+    return emit(runExport(argv.slice(1)));
+  }
+
+  if (first === 'import') {
+    return emit(runImport(argv.slice(1)));
   }
 
   if (first === 'restore') {
