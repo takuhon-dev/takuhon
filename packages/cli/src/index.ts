@@ -3,16 +3,24 @@
 /**
  * `@takuhon/cli` entry point — the `takuhon` command.
  *
- * At present this exposes `--version` / `--help`, the `validate` command, and
- * a pointer to `create-takuhon` for scaffolding. The dev / sync / export /
- * migrate / restore subcommands land in subsequent releases. The bare-name
- * `takuhon` npm package (`packages/takuhon/`) redirects here via a 4-line
- * shim, so `npm i -g takuhon && takuhon --help` and `npm i -g @takuhon/cli
- * && takuhon --help` give the same output.
+ * Exposes `--version` / `--help`, the `validate`, `migrate`, and `restore`
+ * commands, and a pointer to `create-takuhon` for scaffolding. The dev / sync
+ * / export subcommands land in subsequent releases.
+ *
+ * `main` is pure (returns an exit code, never calls `process.exit`); the only
+ * place that exits the process is {@link run}, invoked either when this module
+ * is the entry script or by the bare-name `takuhon` package's `bin.mjs`, which
+ * imports and calls `run()`. Keeping `process.exit` at that single boundary
+ * lets tests import this module without terminating the test runner.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
+import { stdin, stdout } from 'node:process';
+import { createInterface } from 'node:readline/promises';
+import { fileURLToPath } from 'node:url';
 
+import { runMigrate } from './migrate-command.js';
+import { runRestore } from './restore-command.js';
 import { runValidate } from './validate-command.js';
 
 // Source the reported version from package.json (read at runtime relative to
@@ -32,19 +40,24 @@ Usage:
   takuhon --help               Show this help
 
 Commands:
-  takuhon validate [path]      Validate a takuhon.json (default: ./takuhon.json)
+  takuhon validate [path]              Validate a takuhon.json (default: ./takuhon.json)
+  takuhon migrate [path] [--to <v>]    Forward-migrate a takuhon.json to a newer schema
+                                       version (default target: latest). Backs up first.
+                                       Add --out <file> to write elsewhere, --dry-run to preview.
+  takuhon restore --from <backup>      Restore a profile from a backup (prompts before
+                                       overwriting; pass --yes to skip).
 
 Scaffolding a new profile project:
   npx create-takuhon my-profile
   npx create-takuhon my-profile --license CC-BY-4.0
 
-Subcommands (dev / sync / export / migrate / restore) are planned
-for a future release. Track progress at:
+Subcommands (dev / sync / export) are planned for a future release.
+Track progress at:
 
   https://github.com/takuhon-dev/takuhon
 `;
 
-function main(argv: readonly string[]): number {
+async function main(argv: readonly string[]): Promise<number> {
   const first = argv[0];
 
   if (first === '--version' || first === '-v') {
@@ -58,10 +71,19 @@ function main(argv: readonly string[]): number {
   }
 
   if (first === 'validate') {
-    const { code, stdout, stderr } = runValidate(argv.slice(1));
-    if (stdout) process.stdout.write(stdout);
-    if (stderr) process.stderr.write(stderr);
-    return code;
+    return emit(runValidate(argv.slice(1)));
+  }
+
+  if (first === 'migrate') {
+    return emit(runMigrate(argv.slice(1)));
+  }
+
+  if (first === 'restore') {
+    // Only offer an interactive prompt on a real TTY; otherwise `runRestore`
+    // refuses to overwrite without `--yes`, which is the safe default for
+    // pipelines.
+    const confirm = stdin.isTTY ? promptConfirm : undefined;
+    return emit(await runRestore(argv.slice(1), { confirm }));
   }
 
   process.stderr.write(
@@ -71,4 +93,49 @@ function main(argv: readonly string[]): number {
   return 2;
 }
 
-process.exit(main(process.argv.slice(2)));
+/** Write a command outcome's streams and return its exit code. */
+function emit(outcome: { code: number; stdout: string; stderr: string }): number {
+  if (outcome.stdout) process.stdout.write(outcome.stdout);
+  if (outcome.stderr) process.stderr.write(outcome.stderr);
+  return outcome.code;
+}
+
+/** Interactive [y/N] confirmation used by `restore` on a TTY. */
+async function promptConfirm(message: string): Promise<boolean> {
+  const rl = createInterface({ input: stdin, output: stdout });
+  try {
+    const answer = await rl.question(`${message} `);
+    return /^y(es)?$/i.test(answer.trim());
+  } finally {
+    rl.close();
+  }
+}
+
+/**
+ * Process entry point: run {@link main} and exit with its code. This is the
+ * only function that calls `process.exit`. Exported so the bare-name
+ * `takuhon` package can invoke it after importing this module.
+ */
+export async function run(argv: readonly string[] = process.argv.slice(2)): Promise<void> {
+  try {
+    process.exit(await main(argv));
+  } catch (error) {
+    process.stderr.write(`takuhon: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.exit(1);
+  }
+}
+
+/** True when this module was started directly (`node …/index.js`). */
+function isEntrypoint(): boolean {
+  const entry = process.argv[1];
+  if (entry === undefined) return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint()) {
+  void run();
+}
