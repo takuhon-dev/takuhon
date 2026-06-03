@@ -1,6 +1,7 @@
 import {
   NotFoundError,
   SCHEMA_VERSION,
+  applyPublicPrivacyFilter,
   generateJsonLd,
   normalize,
   resolveLocale,
@@ -13,7 +14,6 @@ import { Hono } from 'hono';
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
 import { localePrefixGetPath, pathLocaleFromUrl } from './locale-prefix.js';
 import { resolveRequestLocales } from './locale-resolution.js';
-import { applyPublicPrivacyFilter } from './privacy-filter.js';
 
 export interface PublicAppDeps {
   storage: TakuhonStorage;

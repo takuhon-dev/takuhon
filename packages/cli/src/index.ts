@@ -19,6 +19,7 @@ import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
+import { runBuild } from './build-command.js';
 import { runExport } from './export-command.js';
 import { runImport } from './import-command.js';
 import { runMigrate } from './migrate-command.js';
@@ -51,6 +52,9 @@ Commands:
   takuhon export [path] [--output <f>] Serialise a takuhon.json to stdout (or --output file).
   takuhon import <file> [path]         Import an exported profile into a takuhon.json,
                                        migrating to the current schema version. Backs up first.
+  takuhon build [path] [--output <d>]  Render a takuhon.json into a static site (HTML +
+                                       JSON-LD, one page per locale). --base-url <url> adds
+                                       absolute canonical/hreflang links.
 
 Scaffolding a new profile project:
   npx create-takuhon my-profile
@@ -85,6 +89,10 @@ async function main(argv: readonly string[]): Promise<number> {
 
   if (first === 'export') {
     return emit(runExport(argv.slice(1)));
+  }
+
+  if (first === 'build') {
+    return emit(runBuild(argv.slice(1)));
   }
 
   if (first === 'import') {

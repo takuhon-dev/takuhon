@@ -2,11 +2,17 @@
  * Public-endpoint privacy filter for takuhon profile documents.
  *
  * Strips fields that the spec's privacy posture marks as opt-in for public
- * exposure, before the response reaches a public reader. The filter is
- * deliberately conservative: when `meta.privacy` is absent the most
- * restrictive interpretation applies (everything sensitive is hidden), and
- * the operator must explicitly opt into disclosure by setting the relevant
- * flag to `false`.
+ * exposure, before the document reaches a public reader (a public API
+ * response, a statically built page, …). The filter is deliberately
+ * conservative: when `meta.privacy` is absent the most restrictive
+ * interpretation applies (everything sensitive is hidden), and the operator
+ * must explicitly opt into disclosure by setting the relevant flag to
+ * `false`.
+ *
+ * This lives in `@takuhon/core` because it is a pure transform over the core
+ * document types with no transport coupling, so every public surface — the
+ * API layer, the CLI's `build`, future renderers — applies the exact same
+ * projection. `@takuhon/api` re-exports it for backwards compatibility.
  *
  * Fields filtered:
  *
@@ -14,10 +20,7 @@
  *   `meta.privacy.hideCredentialIds !== false` (default true).
  * - `education[*].grade` — hidden when
  *   `meta.privacy.hideEducationGrades !== false` (default true).
- * - `contact.email` — hidden when `contact.showEmail !== true`. The
- *   documented contract has required this since the original `Contact`
- *   shape but the 0.1.x runtime never actually applied the filter; bringing
- *   it under the same helper in 0.2.0 closes that drift.
+ * - `contact.email` — hidden when `contact.showEmail !== true`.
  *
  * `patents[*].patentNumber` is **not** filtered. Patent numbers are public
  * records (issued patents are published by the granting office) and Spec
@@ -34,24 +37,22 @@
  *   callers.
  */
 
-import type { LocalizedTakuhon, Takuhon } from '@takuhon/core';
+import type { LocalizedTakuhon, Takuhon } from './types.js';
 
 /**
- * Union of the two profile shapes that traverse the API response path. The
- * fields the filter touches (`certifications[*].credentialId`,
- * `education[*].grade`, `contact.email`) are structurally identical
- * between {@link Takuhon} and {@link LocalizedTakuhon}, so the same logic
- * applies to either shape.
+ * Union of the two profile shapes that traverse the public path. The fields
+ * the filter touches (`certifications[*].credentialId`, `education[*].grade`,
+ * `contact.email`) are structurally identical between {@link Takuhon} and
+ * {@link LocalizedTakuhon}, so the same logic applies to either shape.
  */
 type FilterableProfile = Takuhon | LocalizedTakuhon;
 
 /**
  * Return a privacy-filtered copy of `profile` suitable for public responses.
  *
- * @param profile Either a raw {@link Takuhon} (as served by `/takuhon.json`)
- *                or a locale-resolved {@link LocalizedTakuhon} (as served
- *                by `/api/profile` and `/api/jsonld`). The output preserves
- *                the input's exact shape.
+ * @param profile Either a raw {@link Takuhon} or a locale-resolved
+ *                {@link LocalizedTakuhon}. The output preserves the input's
+ *                exact shape.
  */
 export function applyPublicPrivacyFilter<T extends FilterableProfile>(profile: T): T {
   const hideCredentialIds = profile.meta.privacy?.hideCredentialIds !== false;
