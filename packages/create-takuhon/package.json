@@ -1,0 +1,43 @@
+{
+  "name": "create-takuhon",
+  "version": "0.8.1",
+  "description": "Initializer for Takuhon — run `npm create takuhon` / `npx create-takuhon <dir>` to scaffold a Takuhon profile deployment. A thin redirect to @takuhon/cli's create-takuhon entry.",
+  "license": "Apache-2.0",
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/create-takuhon#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "packages/create-takuhon"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "profile",
+    "cli",
+    "create-takuhon",
+    "scaffolding"
+  ],
+  "type": "module",
+  "bin": {
+    "create-takuhon": "./bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@takuhon/cli": "workspace:*"
+  }
+}

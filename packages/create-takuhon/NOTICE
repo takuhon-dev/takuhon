@@ -1,0 +1,12 @@
+Takuhon
+Copyright 2026 Takuhon contributors
+
+This product includes software developed by the Takuhon project
+(https://github.com/takuhon-dev/takuhon).
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+The WordPress adapter (when present) is separately licensed under
+GPL-2.0-or-later because it is a WordPress derivative work.
+
+Third-party dependencies retain their own licenses; see each package's
+node_modules listing for details.
