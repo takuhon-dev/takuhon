@@ -89,6 +89,9 @@ out/
 .svelte-kit/
 .cache/
 
+## Packaging (npm pack / publish dry-run tarballs)
+*.tgz
+
 ## Test / Coverage
 coverage/
 .nyc_output/
