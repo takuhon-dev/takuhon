@@ -6,6 +6,30 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-04
+
+Minor release. Completes the Phase 1 local-profile lifecycle in `@takuhon/cli`: the data-management commands `migrate` / `restore` and `export` / `import`, the `build` static-site generator, and the `dev` local preview server — the "edit → validate → migrate → build → preview" loop the Phase 1 spec (§5.7, §13, §14.1) promises. This bundles four CLI feature PRs landed since 0.7.0 (which shipped `validate`). The only cross-package change is the relocation of `applyPublicPrivacyFilter` from `@takuhon/api` into `@takuhon/core` (re-exported from `@takuhon/api` for back-compat), so the CLI applies the same privacy projection as the live API without depending on `hono`. There is no schema change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.8.0.
+
+### Added — `@takuhon/cli`
+
+- `takuhon migrate [path] [--to <v>]` forward-migrates a `takuhon.json` to a newer schema version (default target: the latest `SCHEMA_VERSION`), reading the source version from the file's own `schemaVersion`. It writes a timestamped pre-migration backup to a `.takuhon-backups/` directory co-located with the file before writing, supports `--out <file>` to write elsewhere and `--dry-run` to preview without writing, and writes atomically (write-temp-then-rename). Exit codes: `0` migrated (or already current), `1` source is not a valid profile, `2` operational error.
+- `takuhon restore --from <backup>` restores a profile from a backup file, taking a `pre-restore-<timestamp>.json` backup of the current file first. It prompts before overwriting on a TTY (`--yes` skips the prompt; non-TTY pipelines refuse to overwrite without `--yes`, the safe default). Exit codes mirror the other commands.
+- `takuhon export [path] [--output <file>]` serialises a `takuhon.json` to stdout (or to `--output`), faithfully (no coercion beyond refreshing `meta.updatedAt`). Refuses `--output` equal to the source. `takuhon import <file> [path]` imports an exported profile into a `takuhon.json`, migrating it to the current schema version, validating, taking a `pre-import-<timestamp>.json` backup, then writing — backup-first rather than prompting.
+- `takuhon build [path] [--output <dir>] [--base-url <url>]` renders a `takuhon.json` into a deployable static site (Spec §13 Static Edition): one self-contained HTML page per locale with build-time Schema.org JSON-LD, reusing `@takuhon/core` only (no bundler). The default locale is written to `<dir>/index.html` and each other locale to `<dir>/<locale>/index.html`. The public privacy filter is applied; all profile-derived text is HTML-escaped, the JSON-LD payload is unicode-escaped, and `href`/`src` values are scheme-checked (http/https/mailto/relative only). Canonical and `hreflang` links are emitted only with `--base-url` (validated http(s)); the locale switcher uses relative links. Asset URLs are referenced as-is, not copied.
+- `takuhon dev [path] [--port <n>] [--base-url <url>]` serves a `takuhon.json` as a local static preview — the same per-locale surface `build` produces, served over `node:http` (no bundler, no remote/secret coupling) and re-rendered on every request so edits show on reload. Default port `4321`. It binds to loopback (`127.0.0.1`) only so a preview never exposes draft content to the network; a currently-invalid file is served as a live error page with JSON-Pointer details rather than crashing the server; and it shuts down gracefully on `SIGINT`/`SIGTERM`. The server's request handling is factored into pure, unit-testable functions (site generation, route resolution, request handling) split from the thin `node:http` wrapper. Exit codes: `0` served then stopped, `2` bad arguments / missing file / port in use.
+
+### Changed — `@takuhon/core`, `@takuhon/api`
+
+- `applyPublicPrivacyFilter` (the projection that applies `meta.privacy` to produce the public view) moved from `@takuhon/api` into `@takuhon/core` and is now exported from `@takuhon/core`. It is a pure transform over core types, so it belongs in core; `@takuhon/api` re-exports it for backward compatibility, so existing imports of `applyPublicPrivacyFilter` from `@takuhon/api` keep working with no behavior change. This lets `@takuhon/cli` (`build` / `dev`) apply the same privacy projection as the live API without taking a dependency on `hono`. No schema change; `schemaVersion` stays `0.4.0`.
+
+### Changed — bare-name `takuhon`
+
+- The bare-name redirect's `bin.mjs` now imports and calls the `@takuhon/cli` entry's exported `run()` rather than re-implementing dispatch. Confining `process.exit` to that single boundary keeps the CLI entry import-safe (tests and the bare-name shim can import it without terminating the process).
+
+### Lockstep version bump
+
+- All six publishable artifacts bump from `0.7.0` to `0.8.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect. `@takuhon/cli` and `@takuhon/core` changed functionally (and `@takuhon/api` gained a re-export); `@takuhon/ui` and `@takuhon/cloudflare` bump for lockstep alignment.
+
 ## [0.7.0] - 2026-06-02
 
 Minor release. Lands the `takuhon validate` command in `@takuhon/cli` — the first runtime CLI subcommand the docs and the Phase 1 spec promise beyond scaffolding. This is a CLI-only feature with no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.7.0.
@@ -337,7 +361,9 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/takuhon-dev/takuhon/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/takuhon-dev/takuhon/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/takuhon-dev/takuhon/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/takuhon-dev/takuhon/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/takuhon-dev/takuhon/compare/v0.4.0...v0.5.0
