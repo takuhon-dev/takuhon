@@ -3,9 +3,10 @@
 /**
  * `@takuhon/cli` entry point — the `takuhon` command.
  *
- * Exposes `--version` / `--help`, the `validate`, `migrate`, and `restore`
- * commands, and a pointer to `create-takuhon` for scaffolding. The dev / sync
- * / export subcommands land in subsequent releases.
+ * Exposes `--version` / `--help`, the local profile commands (`validate`,
+ * `migrate`, `restore`, `export`, `import`, `build`, `dev`), and a pointer to
+ * `create-takuhon` for scaffolding. The `sync` subcommand lands in a subsequent
+ * release.
  *
  * `main` is pure (returns an exit code, never calls `process.exit`); the only
  * place that exits the process is {@link run}, invoked either when this module
@@ -20,6 +21,7 @@ import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
 import { runBuild } from './build-command.js';
+import { runDev } from './dev-command.js';
 import { runExport } from './export-command.js';
 import { runImport } from './import-command.js';
 import { runMigrate } from './migrate-command.js';
@@ -55,12 +57,15 @@ Commands:
   takuhon build [path] [--output <d>]  Render a takuhon.json into a static site (HTML +
                                        JSON-LD, one page per locale). --base-url <url> adds
                                        absolute canonical/hreflang links.
+  takuhon dev [path] [--port <n>]      Serve a takuhon.json as a local static preview,
+                                       re-rendered on each request (default port: 4321).
+                                       --base-url <url> adds canonical/hreflang links.
 
 Scaffolding a new profile project:
   npx create-takuhon my-profile
   npx create-takuhon my-profile --license CC-BY-4.0
 
-Subcommands (dev / sync) are planned for a future release.
+The sync subcommand is planned for a future release.
 Track progress at:
 
   https://github.com/takuhon-dev/takuhon
@@ -93,6 +98,13 @@ async function main(argv: readonly string[]): Promise<number> {
 
   if (first === 'build') {
     return emit(runBuild(argv.slice(1)));
+  }
+
+  if (first === 'dev') {
+    // `dev` runs a long-lived server and streams its own output, so it does not
+    // go through `emit` (a one-shot result writer); it returns the exit code
+    // directly and resolves only on graceful shutdown.
+    return runDev(argv.slice(1));
   }
 
   if (first === 'import') {
