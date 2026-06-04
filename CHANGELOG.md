@@ -6,6 +6,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-06-04
+
+Patch release. Corrects the `create-takuhon` scaffold's stale `@takuhon/*` dependency pins (a drift fix shipped one release late) and brings the `@takuhon/cli` package README current. Both are `@takuhon/cli`-only and affect what is published, not runtime behavior of any command. There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.8.1.
+
 ### Fixed — `@takuhon/cli`
 
 - `create-takuhon` scaffolded a `package.json` pinning `@takuhon/api` / `@takuhon/cloudflare` / `@takuhon/core` at `^0.6.0`, two minors behind the published `0.8.0` generation (a `^0.6.0` caret does not even resolve `0.8.x` under 0.x semver). The pins now track the current published minor (`^0.8.0`), and a new guard test derives the expected range from the CLI's own version so a missed bump fails CI instead of silently shipping a stale range. The per-release checklist in `docs/publishing.md` now calls out advancing the scaffold pins on a minor bump.
@@ -13,6 +17,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 ### Changed — `@takuhon/cli`
 
 - The package `README.md` is brought current: it dropped the stale "Phase 1 skeleton" placeholder and now documents the implemented commands (`validate`, `migrate`, `restore`, `export`, `import`, `build`, `dev`) and `create-takuhon` scaffolding, with installation and usage. The README ships in the npm tarball, so this corrects the package's npm landing page.
+
+### Lockstep version bump
+
+- All six publishable artifacts bump from `0.8.0` to `0.8.1`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, and the bare-name `takuhon` redirect. Only `@takuhon/cli` changed (the scaffold pins and README); the other five bump for lockstep alignment.
 
 ## [0.8.0] - 2026-06-04
 
@@ -369,7 +377,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/takuhon-dev/takuhon/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/takuhon-dev/takuhon/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/takuhon-dev/takuhon/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/takuhon-dev/takuhon/compare/v0.6.0...v0.6.1
