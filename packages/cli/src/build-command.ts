@@ -26,10 +26,10 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { applyPublicPrivacyFilter, normalize, resolveLocale, validate } from '@takuhon/core';
+import { applyPublicPrivacyFilter, normalize, validate } from '@takuhon/core';
 
 import { writeFileAtomic } from './backup.js';
-import { renderProfileHtml, type Alternate, type LocaleLink } from './build-html.js';
+import { generateSite } from './site.js';
 
 const DEFAULT_PATH = 'takuhon.json';
 const DEFAULT_OUTPUT = 'dist';
@@ -180,31 +180,13 @@ function buildSite(parsed: ParsedArgs): BuildOutcome {
   }
 
   const filtered = applyPublicPrivacyFilter(normalize(result.data));
-  const defaultLocale = filtered.settings.defaultLocale;
-  // Default locale first, then the rest, de-duplicated.
-  const locales = [...new Set([defaultLocale, ...filtered.settings.availableLocales])];
-  const jsonLd = filtered.settings.enableJsonLd !== false;
 
   const written: string[] = [];
   try {
-    for (const locale of locales) {
-      const localized = resolveLocale(filtered, locale);
-      const outFile =
-        locale === defaultLocale ? join(output, 'index.html') : join(output, locale, 'index.html');
-
-      const localeNav: LocaleLink[] = locales.map((to) => ({
-        locale: to,
-        href: localeHref(locale, to, defaultLocale),
-        current: to === locale,
-      }));
-      const canonicalUrl = baseUrl ? absoluteUrl(baseUrl, locale, defaultLocale) : undefined;
-      const alternates: Alternate[] = baseUrl
-        ? buildAlternates(baseUrl, locales, defaultLocale)
-        : [];
-
-      const html = renderProfileHtml({ localized, canonicalUrl, alternates, localeNav, jsonLd });
+    for (const page of generateSite(filtered, { baseUrl })) {
+      const outFile = join(output, page.file);
       mkdirSync(dirname(outFile), { recursive: true });
-      writeFileAtomic(outFile, html);
+      writeFileAtomic(outFile, page.html);
       written.push(outFile);
     }
   } catch (error) {
@@ -218,39 +200,4 @@ function buildSite(parsed: ParsedArgs): BuildOutcome {
     stdout: `built ${written.length} page${written.length === 1 ? '' : 's'} from ${path}:\n${summary}\n`,
     stderr: '',
   };
-}
-
-/** Absolute URL for a locale's page (default locale lives at the site root). */
-function absoluteUrl(baseUrl: string, locale: string, defaultLocale: string): string {
-  return locale === defaultLocale ? `${baseUrl}/` : `${baseUrl}/${locale}/`;
-}
-
-/** hreflang alternates for every locale plus an `x-default` pointing at the default. */
-function buildAlternates(
-  baseUrl: string,
-  locales: readonly string[],
-  defaultLocale: string,
-): Alternate[] {
-  const alternates: Alternate[] = locales.map((locale) => ({
-    hreflang: locale,
-    href: absoluteUrl(baseUrl, locale, defaultLocale),
-  }));
-  alternates.push({
-    hreflang: 'x-default',
-    href: absoluteUrl(baseUrl, defaultLocale, defaultLocale),
-  });
-  return alternates;
-}
-
-/**
- * Depth-correct relative link from the page for `from` to the page for `to`,
- * for the human locale switcher. Always relative (independent of `--base-url`)
- * so the switcher works regardless of where the site is hosted: the default
- * locale lives at the root, every other locale one directory deep.
- */
-function localeHref(from: string, to: string, defaultLocale: string): string {
-  const fromRoot = from === defaultLocale;
-  const toRoot = to === defaultLocale;
-  if (fromRoot) return toRoot ? './' : `${to}/`;
-  return toRoot ? '../' : `../${to}/`;
 }
