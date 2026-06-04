@@ -222,6 +222,34 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     expect(pkg.scripts).toMatchObject({ dev: 'wrangler dev', deploy: 'wrangler deploy' });
   });
 
+  it('pins the scaffolded @takuhon/* dependencies to the published minor', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const pkg = JSON.parse(await readFile(join(targetDir, 'package.json'), 'utf8')) as {
+      dependencies: Record<string, string>;
+    };
+    // Under 0.x semver a caret does not span minors, so the scaffold must pin
+    // the same minor the CLI itself ships at (all @takuhon/* packages release in
+    // lockstep). Deriving the expectation from the CLI's own version turns a
+    // missed bump into a CI failure — the enforcement the scaffold previously
+    // lacked, which let the range drift behind unnoticed.
+    const cli = JSON.parse(
+      await readFile(new URL('../../package.json', import.meta.url), 'utf8'),
+    ) as {
+      version: string;
+    };
+    const [major, minor] = cli.version.split('.');
+    const expected = `^${major}.${minor}.0`;
+
+    expect(pkg.dependencies['@takuhon/core']).toBe(expected);
+    expect(pkg.dependencies['@takuhon/api']).toBe(expected);
+    expect(pkg.dependencies['@takuhon/cloudflare']).toBe(expected);
+  });
+
   it('renders the README with the project name and the chosen license URL', async () => {
     await writeProject({
       targetDir,

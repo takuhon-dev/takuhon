@@ -6,6 +6,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+### Fixed — `@takuhon/cli`
+
+- `create-takuhon` scaffolded a `package.json` pinning `@takuhon/api` / `@takuhon/cloudflare` / `@takuhon/core` at `^0.6.0`, two minors behind the published `0.8.0` generation (a `^0.6.0` caret does not even resolve `0.8.x` under 0.x semver). The pins now track the current published minor (`^0.8.0`), and a new guard test derives the expected range from the CLI's own version so a missed bump fails CI instead of silently shipping a stale range. The per-release checklist in `docs/publishing.md` now calls out advancing the scaffold pins on a minor bump.
+
 ## [0.8.0] - 2026-06-04
 
 Minor release. Completes the Phase 1 local-profile lifecycle in `@takuhon/cli`: the data-management commands `migrate` / `restore` and `export` / `import`, the `build` static-site generator, and the `dev` local preview server — the "edit → validate → migrate → build → preview" loop the Phase 1 spec (§5.7, §13, §14.1) promises. This bundles four CLI feature PRs landed since 0.7.0 (which shipped `validate`). The only cross-package change is the relocation of `applyPublicPrivacyFilter` from `@takuhon/api` into `@takuhon/core` (re-exported from `@takuhon/api` for back-compat), so the CLI applies the same privacy projection as the live API without depending on `hono`. There is no schema change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.8.0.
