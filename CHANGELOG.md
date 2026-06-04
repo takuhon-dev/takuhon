@@ -6,9 +6,17 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-06-04
+
+Patch release. Ships the new `create-takuhon` initializer package — the first published version of a seventh artifact — so the advertised `npm create takuhon` / `npx create-takuhon <dir>` onboarding resolves on npm (previously `create-takuhon` was only a `bin` inside `@takuhon/cli`, with no package of that name, so the command 404'd). There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy the existing six publishable artifacts bump to 0.8.2 alongside the new package.
+
 ### Added — `create-takuhon`
 
-- New `create-takuhon` initializer package, so the advertised `npm create takuhon` / `npx create-takuhon <dir>` onboarding command resolves on npm. It is a thin redirect (the same pattern as the bare-name `takuhon` package): its `bin` runs `@takuhon/cli`'s scaffolder via a new `@takuhon/cli/init` export. To support this, `@takuhon/cli`'s `create-takuhon` entry (`init.ts`) was made import-safe — `process.exit` and the scaffolder are now confined to an exported `run()` behind an entry-point guard, mirroring the `takuhon` entry — and `@takuhon/cli` now exposes an `./init` subpath export. The package is in the workspace and lockstep-versioned but is **not yet wired into the release pipeline**: it first publishes once the npm OIDC trusted-publisher setup and the `release.yml` matrix entry land (see `docs/publishing.md`).
+- New `create-takuhon` initializer package, so `npm create takuhon` / `npx create-takuhon <dir>` resolve on npm. It is a thin redirect (the same pattern as the bare-name `takuhon` package): its `bin` runs `@takuhon/cli`'s scaffolder via a new `@takuhon/cli/init` export. `@takuhon/cli`'s `create-takuhon` entry (`init.ts`) was made import-safe — `process.exit` and the scaffolder are confined to an exported `run()` behind an entry-point guard, mirroring the `takuhon` entry — and `@takuhon/cli` now exposes an `./init` subpath export. The release pipeline publishes it after the scoped packages (an isolated `publish-create-takuhon` job) and includes it in the GitHub Release (seven tarballs + cosign bundles).
+
+### Lockstep version bump
+
+- All seven publishable artifacts bump from `0.8.1` to `0.8.2`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the new `create-takuhon` initializer (its first published version). Only the new package and the release pipeline changed; the other six bump for lockstep alignment.
 
 ## [0.8.1] - 2026-06-04
 
@@ -381,7 +389,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/takuhon-dev/takuhon/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/takuhon-dev/takuhon/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/takuhon-dev/takuhon/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/takuhon-dev/takuhon/compare/v0.6.1...v0.7.0
