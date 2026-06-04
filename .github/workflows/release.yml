@@ -281,12 +281,97 @@ jobs:
           fi
 
   # ==========================================================
+  # 3b. publish-create-takuhon
+  #    The `create-takuhon` initializer is an unscoped redirect package
+  #    (like the bare-name `takuhon`) that depends on `@takuhon/cli` via
+  #    workspace:*. pnpm pack rewrites that to the published semver, and it
+  #    publishes after the scoped packages so `npm create takuhon` always
+  #    finds `@takuhon/cli@<same-version>` already on the registry.
+  #
+  #    It is intentionally NOT a dependency of github-release / update-docs-site:
+  #    isolating it means a stall here (e.g. its first publish before the npm
+  #    trusted publisher is configured) never blocks the scoped release, the
+  #    GitHub Release, or the docs bump. Re-run just this job once resolved.
+  # ==========================================================
+  publish-create-takuhon:
+    name: Publish create-takuhon (initializer)
+    needs: publish-scoped
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Configure npm registry without a token line (so OIDC takes over)
+        run: |
+          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
+          cat ~/.npmrc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all workspace packages
+        run: pnpm build
+
+      - name: Pre-publish tarball sanity check (create-takuhon)
+        run: |
+          set -euo pipefail
+          extract_root="$(mktemp -d)"
+          trap 'rm -rf "$extract_root"' EXIT
+          extract_dir="$extract_root/inspect"
+          mkdir -p "$extract_dir"
+          tarball="$(cd packages/create-takuhon && pnpm pack --pack-destination "$extract_dir" | tail -n 1)"
+          echo "Tarball: $tarball"
+          tar -tzf "$tarball" | sed 's/^/  /'
+          tar -xzf "$tarball" -C "$extract_dir"
+
+          if grep -r -E '\b(meport|ownport-dev|ownport)\b' "$extract_dir/package" 2>/dev/null; then
+            echo "::error file=packages/create-takuhon::Found stale brand identifiers in published tarball — rebuild dist/ from a clean state"
+            exit 1
+          fi
+
+          suspicious_paths="$(grep -r -E '/Users/|/home/' "$extract_dir/package" 2>/dev/null | grep -v '/home/runner/' || true)"
+          if [ -n "$suspicious_paths" ]; then
+            echo "::error file=packages/create-takuhon::Found host-machine absolute paths in published tarball:"
+            printf '%s\n' "$suspicious_paths"
+            exit 1
+          fi
+
+      - name: Pack and publish create-takuhon (OIDC trusted publishing)
+        working-directory: packages/create-takuhon
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "${{ inputs.dry_run || 'false' }}" != "true" ]; then
+            echo "Real publish: pnpm pack + npm publish (OIDC + provenance)"
+            pnpm pack
+            TGZ="$(ls *.tgz | head -1)"
+            echo "Publishing tarball: $TGZ"
+            npm publish "$TGZ" --access public --provenance
+          else
+            echo "Dry-run (event=$GITHUB_EVENT_NAME, dry_run=${{ inputs.dry_run || 'false' }}): pnpm publish --dry-run"
+            pnpm publish --access public --provenance --no-git-checks --dry-run
+          fi
+
+  # ==========================================================
   # 4. github-release
-  #    After all six npm packages publish successfully, create a GitHub
-  #    Release with auto-generated release notes plus the six tarballs as
-  #    assets. Each tarball is signed with cosign keyless sign-blob
-  #    (Sigstore Fulcio + Rekor) so downstream consumers can verify the
-  #    bundle against the originating workflow run.
+  #    After the scoped + bare npm packages publish successfully, create a
+  #    GitHub Release with auto-generated release notes plus the seven
+  #    tarballs as assets. Each tarball is signed with cosign keyless
+  #    sign-blob (Sigstore Fulcio + Rekor) so downstream consumers can verify
+  #    the bundle against the originating workflow run.
   #
   #    Skipped on workflow_dispatch (= dry-run only). The double-gate
   #    here matches the publish jobs above: `event_name == push` AND
@@ -325,14 +410,14 @@ jobs:
       - name: Build all workspace packages
         run: pnpm build
 
-      - name: Pack all six publishable packages to artifacts/
+      - name: Pack all seven publishable packages to artifacts/
         # pnpm pack rewrites workspace:* deps to their actual semver, so the
         # tarballs produced here match the ones published to npm by the
-        # publish-scoped / publish-bare jobs above.
+        # publish-scoped / publish-bare / publish-create-takuhon jobs above.
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/artifacts"
-          for d in packages/core packages/api packages/ui packages/cli adapters/cloudflare packages/takuhon; do
+          for d in packages/core packages/api packages/ui packages/cli adapters/cloudflare packages/takuhon packages/create-takuhon; do
             echo "Packing $d"
             (cd "$d" && pnpm pack --pack-destination "$GITHUB_WORKSPACE/artifacts")
           done
@@ -367,8 +452,8 @@ jobs:
 
   # ==========================================================
   # 5. update-docs-site
-  #    After all six npm packages publish, open a pull request on the
-  #    private takuhon-site repo that bumps its pinned `@takuhon/core`
+  #    After the scoped + bare npm packages publish, open a pull request on
+  #    the private takuhon-site repo that bumps its pinned `@takuhon/core`
   #    dependency to this release and regenerates the product-coupled docs
   #    (the install-page version and the takuhon.json schema reference)
   #    from the freshly published package. takuhon-site's own review/merge
