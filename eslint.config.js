@@ -19,6 +19,7 @@ export default tseslint.config(
       'eslint.config.js',
       '**/*.config.{js,ts,mjs,cjs}',
       'packages/takuhon/**',
+      'packages/create-takuhon/**',
     ],
   },
   js.configs.recommended,

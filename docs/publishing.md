@@ -30,6 +30,13 @@ This is a per-package step on npmjs.com. Run it once per package, before the fir
 
 Once all six packages are configured, the workflow can authenticate via the GitHub Actions OIDC token without any classic `NPM_TOKEN` secret.
 
+### Pending: the `create-takuhon` initializer (7th package)
+
+`packages/create-takuhon` exists in the workspace (a thin redirect to `@takuhon/cli`'s scaffolder, so `npm create takuhon` / `npx create-takuhon` resolve), is lockstep-versioned, but is **deliberately not yet wired into `release.yml`**. Adding it to the publish matrix before its trusted publisher exists would fail every release. Before its first publish:
+
+1. Confirm the unscoped name `create-takuhon` is claimable (an `npm view create-takuhon` 404 is a positive sign). A brand-new OIDC package has no `/access` page until it first exists, so the org owner resolves the bootstrap (e.g. an initial reserve/publish), then configures its Trusted Publisher exactly as above (`https://www.npmjs.com/package/create-takuhon/access`).
+2. Wire `create-takuhon` into `release.yml`: publish it after `publish-scoped` (it depends on `@takuhon/cli`, like the bare-name `takuhon` package), and add it to the `github-release` packing (6 → 7 tarballs / 12 → 14 assets). Update the package counts in this document at the same time.
+
 ### Removing the legacy NPM_TOKEN secret
 
 After at least one end-to-end OIDC publish succeeds, delete the classic-auth secret:

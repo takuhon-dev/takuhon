@@ -6,6 +6,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+### Added — `create-takuhon`
+
+- New `create-takuhon` initializer package, so the advertised `npm create takuhon` / `npx create-takuhon <dir>` onboarding command resolves on npm. It is a thin redirect (the same pattern as the bare-name `takuhon` package): its `bin` runs `@takuhon/cli`'s scaffolder via a new `@takuhon/cli/init` export. To support this, `@takuhon/cli`'s `create-takuhon` entry (`init.ts`) was made import-safe — `process.exit` and the scaffolder are now confined to an exported `run()` behind an entry-point guard, mirroring the `takuhon` entry — and `@takuhon/cli` now exposes an `./init` subpath export. The package is in the workspace and lockstep-versioned but is **not yet wired into the release pipeline**: it first publishes once the npm OIDC trusted-publisher setup and the `release.yml` matrix entry land (see `docs/publishing.md`).
+
 ## [0.8.1] - 2026-06-04
 
 Patch release. Corrects the `create-takuhon` scaffold's stale `@takuhon/*` dependency pins (a drift fix shipped one release late) and brings the `@takuhon/cli` package README current. Both are `@takuhon/cli`-only and affect what is published, not runtime behavior of any command. There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all six publishable artifacts bump to 0.8.1.

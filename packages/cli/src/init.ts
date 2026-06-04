@@ -11,7 +11,9 @@
  * automation use.
  */
 
+import { realpathSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { cancel, intro, outro } from '@clack/prompts';
@@ -146,14 +148,35 @@ async function main(argv: readonly string[]): Promise<number> {
   return 0;
 }
 
-void main(process.argv.slice(2))
-  .then((code) => {
-    process.exit(code);
-  })
-  .catch((err: unknown) => {
+/**
+ * Process entry point: run {@link main} and exit with its code. This is the
+ * only function that calls `process.exit`, mirroring the `takuhon` entry in
+ * `index.ts`. Exported so the `create-takuhon` redirect package can invoke it
+ * after importing this module (`import { run } from '@takuhon/cli/init'`).
+ */
+export async function run(argv: readonly string[] = process.argv.slice(2)): Promise<void> {
+  try {
+    process.exit(await main(argv));
+  } catch (err) {
     // Render only the message — full stack traces can leak host-machine
     // absolute paths and monorepo-internal layout into a published
     // binary's stderr output.
     process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
     process.exit(1);
-  });
+  }
+}
+
+/** True when this module was started directly (`node …/init.js`). */
+function isEntrypoint(): boolean {
+  const entry = process.argv[1];
+  if (entry === undefined) return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint()) {
+  void run();
+}
