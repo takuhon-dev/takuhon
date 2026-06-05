@@ -4,9 +4,9 @@
  * `@takuhon/cli` entry point — the `takuhon` command.
  *
  * Exposes `--version` / `--help`, the local profile commands (`validate`,
- * `migrate`, `restore`, `export`, `import`, `build`, `dev`), and a pointer to
- * `create-takuhon` for scaffolding. The `sync` subcommand lands in a subsequent
- * release.
+ * `migrate`, `restore`, `export`, `import`, `build`, `dev`), `sync` (push a
+ * local profile to a deployment), and a pointer to `create-takuhon` for
+ * scaffolding.
  *
  * `main` is pure (returns an exit code, never calls `process.exit`); the only
  * place that exits the process is {@link run}, invoked either when this module
@@ -26,6 +26,7 @@ import { runExport } from './export-command.js';
 import { runImport } from './import-command.js';
 import { runMigrate } from './migrate-command.js';
 import { runRestore } from './restore-command.js';
+import { runSync } from './sync-command.js';
 import { runValidate } from './validate-command.js';
 
 // Source the reported version from package.json (read at runtime relative to
@@ -60,15 +61,14 @@ Commands:
   takuhon dev [path] [--port <n>]      Serve a takuhon.json as a local static preview,
                                        re-rendered on each request (default port: 4321).
                                        --base-url <url> adds canonical/hreflang links.
+  takuhon sync [path] --url <url>      Push a takuhon.json to a deployment's admin API
+                                       (PUT <url>/api/admin/profile). Reads the admin token
+                                       from TAKUHON_ADMIN_TOKEN. --if-match <etag> opts into
+                                       optimistic locking; --dry-run previews without sending.
 
 Scaffolding a new profile project:
   npx create-takuhon my-profile
   npx create-takuhon my-profile --license CC-BY-4.0
-
-The sync subcommand is planned for a future release.
-Track progress at:
-
-  https://github.com/takuhon-dev/takuhon
 `;
 
 async function main(argv: readonly string[]): Promise<number> {
@@ -117,6 +117,10 @@ async function main(argv: readonly string[]): Promise<number> {
     // pipelines.
     const confirm = stdin.isTTY ? promptConfirm : undefined;
     return emit(await runRestore(argv.slice(1), { confirm }));
+  }
+
+  if (first === 'sync') {
+    return emit(await runSync(argv.slice(1)));
   }
 
   process.stderr.write(
