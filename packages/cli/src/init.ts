@@ -138,10 +138,10 @@ async function main(argv: readonly string[]): Promise<number> {
       `\n` +
       `Next steps:\n` +
       `  cd ${parsed.targetArg}\n` +
-      `  # 1. Edit takuhon.json with your profile data\n` +
-      `  # 2. Provision Cloudflare KV: wrangler kv namespace create TAKUHON_KV\n` +
-      `  # 3. Set admin token: openssl rand -base64 32 | wrangler secret put TAKUHON_ADMIN_TOKEN\n` +
       `  pnpm install\n` +
+      `  # 1. Edit takuhon.json with your profile data\n` +
+      `  # 2. Provision Cloudflare KV: npx wrangler kv namespace create TAKUHON_KV\n` +
+      `  # 3. Set admin token: openssl rand -base64 32 | npx wrangler secret put TAKUHON_ADMIN_TOKEN\n` +
       `  pnpm dev`,
   );
 
