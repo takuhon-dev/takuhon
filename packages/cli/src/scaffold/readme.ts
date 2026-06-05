@@ -1,11 +1,11 @@
 /**
  * Generator for the README.md placed in a freshly scaffolded project.
  *
- * Aims to give a first-time user enough to (1) fill in their profile data,
- * (2) provision Cloudflare KV + admin secret, and (3) `pnpm dev` / `pnpm
- * deploy` once the upstream `@takuhon/*` packages are reachable. Cross-
- * references the published `@takuhon/cloudflare` adapter README as the
- * next-step reference for the route map.
+ * Aims to give a first-time user enough to (1) install dependencies,
+ * (2) fill in their profile data, (3) provision Cloudflare KV + admin
+ * secret, and (4) `pnpm dev` / `pnpm deploy`. Cross-references the published
+ * `@takuhon/cloudflare` adapter README as the next-step reference for the
+ * route map.
  */
 
 import type { ContentLicenseFragment } from '../licenses.js';
@@ -39,32 +39,31 @@ A [Takuhon](https://github.com/takuhon-dev/takuhon) profile deployment, running 
 
 > **Status**: pre-deploy. Edit \`takuhon.json\`, provision Cloudflare KV, then \`pnpm deploy\`.
 
-> **Heads-up — Takuhon is in a pre-publish phase.**
->
-> The \`@takuhon/api\`, \`@takuhon/core\`, and \`@takuhon/cloudflare\` packages
-> referenced in \`package.json\` are not yet on the npm registry.
-> \`pnpm install\` will fail in this directory until they ship. See *Develop*
-> below for the workspace-link recipe in the meantime.
-
 ## What is Takuhon?
 
 Takuhon lets you own your profile as a portable JSON document and publish it as a mobile-first profile page plus a public API (JSON-LD for AI agents and search engines included).
 
 ## Setup
 
-1. **Edit your profile.** Open \`takuhon.json\` and replace the sample fields (\`profile.displayName\`, \`links\`, \`careers\`, \`projects\`, \`skills\`) with your own.
-
-2. **Create the Cloudflare KV namespaces** and copy the returned ids into \`wrangler.toml\`:
+1. **Install dependencies.**
 
    \`\`\`sh
-   wrangler kv namespace create TAKUHON_KV
-   wrangler kv namespace create TAKUHON_KV --preview
+   pnpm install
    \`\`\`
 
-3. **Provision the admin token** as a Wrangler secret (used by \`/api/admin/*\`):
+2. **Edit your profile.** Open \`takuhon.json\` and replace the sample fields (\`profile.displayName\`, \`links\`, \`careers\`, \`projects\`, \`skills\`) with your own.
+
+3. **Create the Cloudflare KV namespaces** and copy the returned ids into \`wrangler.toml\`:
 
    \`\`\`sh
-   openssl rand -base64 32 | wrangler secret put TAKUHON_ADMIN_TOKEN
+   npx wrangler kv namespace create TAKUHON_KV
+   npx wrangler kv namespace create TAKUHON_KV --preview
+   \`\`\`
+
+4. **Provision the admin token** as a Wrangler secret (used by \`/api/admin/*\`):
+
+   \`\`\`sh
+   openssl rand -base64 32 | npx wrangler secret put TAKUHON_ADMIN_TOKEN
    \`\`\`
 
    Leaving the secret unset disables admin writes entirely (every \`PUT\` / \`DELETE\` returns 401).
@@ -73,17 +72,7 @@ Takuhon lets you own your profile as a portable JSON document and publish it as 
 
 The Worker entry at \`src/index.ts\` composes the takuhon adapter via
 \`createTakuhonWorker\` and serves your \`takuhon.json\` as the fallback when
-KV has no stored profile yet. Until the \`@takuhon/*\` packages are on npm,
-clone the upstream repo and link them into this directory (substitute
-your own absolute path for \`<takuhon-repo-path>\`):
-
-\`\`\`sh
-git clone https://github.com/takuhon-dev/takuhon <takuhon-repo-path>
-( cd <takuhon-repo-path> && pnpm install && pnpm build )
-pnpm link <takuhon-repo-path>/packages/api <takuhon-repo-path>/packages/core <takuhon-repo-path>/adapters/cloudflare
-\`\`\`
-
-Then:
+KV has no stored profile yet.
 
 \`\`\`sh
 pnpm dev   # runs \`wrangler dev\` locally
