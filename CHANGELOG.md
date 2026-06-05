@@ -6,6 +6,23 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-05
+
+Minor release. Adds `takuhon sync`, the last planned CLI command (Spec §5.7) and the secondary update path from the Cloudflare update workflow (§9.6): it pushes a local `takuhon.json` to a deployed instance by calling the admin write endpoint. It also refreshes the project that `create-takuhon` scaffolds — the generated README and the post-scaffold steps assumed the `@takuhon/*` packages were not yet published, which is no longer true. There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all seven publishable artifacts bump to 0.9.0.
+
+### Added — `@takuhon/cli`
+
+- `takuhon sync [path] --url <base-url> [--if-match <etag>] [--dry-run]` pushes a local `takuhon.json` to a deployed instance by calling its admin write endpoint (`PUT <base-url>/api/admin/profile`), reusing the server's schema validation, optimistic locking, audit logging, and edge-cache purge — so it needs no `wrangler`/Cloudflare SDK and no new dependency. The local file is the source of truth: the push is an unconditional mirror by default, and `--if-match <etag>` opts into optimistic locking (the server returns 409 on a stale version). The admin bearer token is read from the `TAKUHON_ADMIN_TOKEN` environment variable (never a flag, so it cannot leak into shell history); `--url` must be a bare http(s) origin; the document is validated locally and sent as-is (run `takuhon migrate` first for an older schema version); and `--dry-run` validates and reports the payload without contacting the network. Exit codes: `0` synced, `1` the local file is invalid or the remote refused the write (422 validation / 409 conflict), `2` operational failure (bad arguments, missing file, unset token, 401/403, network error, or any other non-success response).
+
+### Fixed — `@takuhon/cli`
+
+- The project scaffolded by `create-takuhon` no longer tells users that the `@takuhon/*` packages are "not yet on the npm registry" with a clone-and-link workaround — they are published, and the scaffolded `package.json` pins resolve. The generated README's Setup now installs dependencies first and the Develop section is just `pnpm dev`; the provisioning commands use `npx wrangler …` (wrangler is a project devDependency); and the `create-takuhon` post-scaffold steps are reordered to match. Scaffold-output text only; no command behavior changes.
+- The scaffolded `package.json` `@takuhon/*` caret pins advance from `^0.8.0` to `^0.9.0` to track this minor (a caret does not span minors under 0.x); a guard test enforces this.
+
+### Lockstep version bump
+
+- All seven publishable artifacts bump from `0.8.2` to `0.9.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/cli` changed functionally (the `sync` command and the scaffold refresh); the other six bump for lockstep alignment.
+
 ## [0.8.2] - 2026-06-04
 
 Patch release. Ships the new `create-takuhon` initializer package — the first published version of a seventh artifact — so the advertised `npm create takuhon` / `npx create-takuhon <dir>` onboarding resolves on npm (previously `create-takuhon` was only a `bin` inside `@takuhon/cli`, with no package of that name, so the command 404'd). There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy the existing six publishable artifacts bump to 0.8.2 alongside the new package.
@@ -389,7 +406,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/takuhon-dev/takuhon/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/takuhon-dev/takuhon/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/takuhon-dev/takuhon/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/takuhon-dev/takuhon/compare/v0.7.0...v0.8.0
