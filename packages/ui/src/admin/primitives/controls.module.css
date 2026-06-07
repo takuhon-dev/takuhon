@@ -1,0 +1,46 @@
+.control {
+  min-height: var(--takuhon-tap-target);
+  padding-inline: var(--takuhon-space-3);
+  padding-block: var(--takuhon-space-2);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  line-height: var(--takuhon-line-height);
+  transition: border-color var(--takuhon-transition-fast);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}
+
+.control[aria-invalid='true'] {
+  border-color: #b42318;
+}
+
+.textarea {
+  min-height: calc(var(--takuhon-tap-target) * 2);
+  resize: vertical;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: var(--takuhon-space-2);
+  margin-block-end: var(--takuhon-space-4);
+}
+
+.checkbox {
+  inline-size: var(--takuhon-space-5);
+  block-size: var(--takuhon-space-5);
+  accent-color: var(--takuhon-color-primary);
+}
+
+.checkboxLabel {
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  color: var(--takuhon-color-text);
+}

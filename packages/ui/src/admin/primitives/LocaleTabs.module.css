@@ -1,0 +1,114 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-1);
+  margin-block-end: var(--takuhon-space-4);
+}
+
+.groupLabel {
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  font-weight: 600;
+  color: var(--takuhon-color-text);
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+}
+
+.tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--takuhon-space-1);
+}
+
+.tab {
+  min-height: var(--takuhon-tap-target);
+  padding-inline: var(--takuhon-space-3);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm) var(--takuhon-radius-sm) 0 0;
+  background-color: var(--takuhon-color-surface);
+  color: var(--takuhon-color-text-muted);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  cursor: pointer;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}
+
+.tabActive {
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  border-block-end-color: var(--takuhon-color-bg);
+  font-weight: 600;
+}
+
+.tabError {
+  color: #b42318;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-1);
+}
+
+.control {
+  min-height: var(--takuhon-tap-target);
+  padding-inline: var(--takuhon-space-3);
+  padding-block: var(--takuhon-space-2);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  line-height: var(--takuhon-line-height);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}
+
+.control[aria-invalid='true'] {
+  border-color: #b42318;
+}
+
+.textarea {
+  min-height: calc(var(--takuhon-tap-target) * 2);
+  resize: vertical;
+}
+
+.errors {
+  margin: 0;
+  padding-inline-start: var(--takuhon-space-4);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  color: #b42318;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tabError,
+  .errors {
+    color: #fda29b;
+  }
+}
