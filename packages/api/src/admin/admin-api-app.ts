@@ -232,6 +232,11 @@ export function createAdminApiApp(deps: AdminApiAppDeps): Hono {
       result: { status: 200 },
     });
 
+    // Surface the stored version so a form-based editor can load the full
+    // document and its current version in a single request, then send it back
+    // as `If-Match` on the next `PUT` for optimistic locking. Quoted per
+    // RFC 7232, matching the public read endpoints and `stripETag`.
+    c.header('etag', `"${stored.version}"`);
     return c.json(exported);
   });
 
