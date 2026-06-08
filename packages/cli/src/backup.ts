@@ -62,6 +62,11 @@ export function preImportName(date: Date, withMillis = false): string {
   return `pre-import-${compactTimestamp(date, withMillis)}.json`;
 }
 
+/** Build the pre-save backup filename for a `takuhon admin` write. */
+export function preAdminSaveName(date: Date, withMillis = false): string {
+  return `pre-admin-${compactTimestamp(date, withMillis)}.json`;
+}
+
 /** Resolve the `.takuhon-backups/` directory beside `targetPath`. */
 export function backupDirFor(targetPath: string): string {
   return join(dirname(targetPath), BACKUP_DIR_NAME);
