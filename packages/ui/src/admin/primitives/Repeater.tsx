@@ -72,51 +72,53 @@ export function Repeater<T>({
           const caption = itemLabel(item, index);
           return (
             <li key={key(item, index)} className={styles.item}>
-              <div className={styles.itemHeader} role="group" aria-label={caption}>
-                <span className={styles.itemCaption}>{caption}</span>
-                <div className={styles.itemActions}>
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    aria-label={`${moveUpLabel}: ${caption}`}
-                    disabled={index === 0}
-                    onClick={() => {
-                      move(index, index - 1);
-                    }}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    aria-label={`${moveDownLabel}: ${caption}`}
-                    disabled={index === items.length - 1}
-                    onClick={() => {
-                      move(index, index + 1);
-                    }}
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.removeButton}
-                    aria-label={`${removeLabel}: ${caption}`}
-                    onClick={() => {
-                      remove(index);
-                    }}
-                  >
-                    {removeLabel}
-                  </button>
+              <div role="group" aria-label={caption}>
+                <div className={styles.itemHeader}>
+                  <span className={styles.itemCaption}>{caption}</span>
+                  <div className={styles.itemActions}>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      aria-label={`${moveUpLabel}: ${caption}`}
+                      disabled={index === 0}
+                      onClick={() => {
+                        move(index, index - 1);
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      aria-label={`${moveDownLabel}: ${caption}`}
+                      disabled={index === items.length - 1}
+                      onClick={() => {
+                        move(index, index + 1);
+                      }}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.removeButton}
+                      aria-label={`${removeLabel}: ${caption}`}
+                      onClick={() => {
+                        remove(index);
+                      }}
+                    >
+                      {removeLabel}
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.itemBody}>
-                {renderItem(
-                  item,
-                  (next) => {
-                    update(index, next);
-                  },
-                  index,
-                )}
+                <div className={styles.itemBody}>
+                  {renderItem(
+                    item,
+                    (next) => {
+                      update(index, next);
+                    },
+                    index,
+                  )}
+                </div>
               </div>
             </li>
           );

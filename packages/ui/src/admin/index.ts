@@ -11,6 +11,7 @@
 
 export {
   canonicalPointer,
+  collectErrorsUnder,
   errorsAt,
   hasErrorsUnder,
   indexErrors,
@@ -27,3 +28,15 @@ export { SelectField, type SelectFieldProps, type SelectOption } from './primiti
 export { CheckboxField, type CheckboxFieldProps } from './primitives/CheckboxField.js';
 export { LocaleTabs, type LocaleTabsProps } from './primitives/LocaleTabs.js';
 export { Repeater, type RepeaterProps } from './primitives/Repeater.js';
+
+export { getAdminLabel, type AdminLabelKey } from './admin-labels.js';
+
+export { ProfileForm, type ProfileFormProps } from './sections/ProfileForm.js';
+export { LinksForm, type LinksFormProps } from './sections/LinksForm.js';
+export { CareersForm, type CareersFormProps } from './sections/CareersForm.js';
+export { ProjectsForm, type ProjectsFormProps } from './sections/ProjectsForm.js';
+export { SkillsForm, type SkillsFormProps } from './sections/SkillsForm.js';
+export { SettingsForm, type SettingsFormProps } from './sections/SettingsForm.js';
+
+export { RawJsonEditor, type RawJsonEditorProps } from './RawJsonEditor.js';
+export { AdminEditor, type AdminEditorProps, type AdminSaveOutcome } from './AdminEditor.js';

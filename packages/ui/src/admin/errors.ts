@@ -69,5 +69,19 @@ export function hasErrorsUnder(index: FieldErrorIndex, prefix: string): boolean 
   return false;
 }
 
+/**
+ * All messages at or below `prefix`, in pointer order. Used by aggregate
+ * controls (a comma-separated list edited as one field) so item-level failures
+ * reported at `${prefix}/${itemIndex}` still surface on the single input.
+ */
+export function collectErrorsUnder(index: FieldErrorIndex, prefix: string): string[] {
+  const base = canonicalPointer(prefix);
+  const messages: string[] = [];
+  for (const [key, list] of index) {
+    if (key === base || key.startsWith(`${base}/`)) messages.push(...list);
+  }
+  return messages;
+}
+
 /** An empty index, handy as a default prop. */
 export const NO_FIELD_ERRORS: FieldErrorIndex = new Map();

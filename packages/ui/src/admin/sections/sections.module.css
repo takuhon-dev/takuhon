@@ -1,0 +1,22 @@
+.section {
+  margin-block-end: var(--takuhon-space-5);
+  padding: var(--takuhon-space-4);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-md);
+}
+
+.heading {
+  margin: 0 0 var(--takuhon-space-4);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-xl);
+  font-weight: 700;
+  color: var(--takuhon-color-text);
+}
+
+.subheading {
+  margin: var(--takuhon-space-4) 0 var(--takuhon-space-3);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-lg);
+  font-weight: 600;
+  color: var(--takuhon-color-text);
+}

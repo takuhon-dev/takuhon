@@ -9,8 +9,11 @@ export interface TextFieldProps {
   hint?: string;
   required?: boolean;
   placeholder?: string;
-  /** HTML input type. Defaults to `'text'`; use `'url'` for link/avatar URLs. */
-  type?: 'text' | 'url' | 'email';
+  /**
+   * HTML input type. Defaults to `'text'`; `'url'` for link/avatar URLs,
+   * `'month'` for `YearMonth` values (a native month picker emits `YYYY-MM`).
+   */
+  type?: 'text' | 'url' | 'email' | 'month';
   inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
 }
 
