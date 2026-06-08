@@ -30,6 +30,7 @@ export {
 
 export { createAdminApiApp, type AdminApiAppDeps } from './admin/admin-api-app.js';
 export { createAdminUiApp } from './admin/admin-ui-app.js';
+export { adminAssetSecurityHeaders } from './admin/admin-asset-headers.js';
 export {
   noopAuditLogger,
   type AuditEvent,

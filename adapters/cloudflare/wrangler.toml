@@ -3,6 +3,23 @@ main = "src/index.ts"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Bundled admin SPA (built from apps/admin with base "/admin/"). Build it before
+# deploying: `pnpm --filter @takuhon/admin build`.
+#
+# `run_worker_first = true` makes the Worker mediate every request: the admin
+# bundle's files sit at the assets root, so without this they would shadow the
+# public "/" route. The Worker serves the bundle only for /admin/* (attaching
+# the strict admin CSP) and handles everything else itself.
+#
+# SECURITY-CRITICAL: do not set this to false / remove it. The Worker is the
+# only thing that attaches the strict admin CSP (plus HSTS / no-store) to the
+# admin assets; serving them directly would expose the admin UI with no policy.
+[assets]
+directory = "../../apps/admin/dist"
+binding = "ASSETS"
+run_worker_first = true
+not_found_handling = "single-page-application"
+
 # Replace the placeholder ids after running:
 #   wrangler kv namespace create TAKUHON_KV
 #   wrangler kv namespace create TAKUHON_KV --preview

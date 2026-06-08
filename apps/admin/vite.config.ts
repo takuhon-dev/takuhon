@@ -9,7 +9,9 @@ import { defineConfig } from 'vite';
 //   - cssCodeSplit: false       — one external stylesheet, no runtime <style>
 //   - modulePreload.polyfill    — drop Vite's inline preload-polyfill script
 export default defineConfig({
-  base: './',
+  // Served at /admin behind the Cloudflare Worker; absolute asset URLs
+  // (/admin/assets/...) resolve regardless of trailing slash.
+  base: '/admin/',
   plugins: [react()],
   server: {
     // Distinct from the playground (5173) so both can run side by side.
