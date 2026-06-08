@@ -72,6 +72,8 @@
 }
 
 .control {
+  inline-size: 100%;
+  box-sizing: border-box;
   min-height: var(--takuhon-tap-target);
   padding-inline: var(--takuhon-space-3);
   padding-block: var(--takuhon-space-2);

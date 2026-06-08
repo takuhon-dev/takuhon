@@ -30,6 +30,7 @@ const EN = {
   'status.conflict':
     'The profile changed on the server since it was loaded. Reload, then reapply the edits.',
   'status.invalid': 'Some fields need attention before saving.',
+  'status.fixSummary': 'Please fix the following:',
   'status.error': 'Something went wrong. Please try again.',
   'status.imported': 'Imported. Review the fields, then save to apply.',
   'status.importInvalid': 'The imported file is not a valid takuhon document.',

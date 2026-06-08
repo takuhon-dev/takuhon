@@ -7,7 +7,12 @@
  * supplied as a {@link FieldErrorIndex} so server (RFC 7807) and client
  * (`@takuhon/core` `validate`) failures map to the same fields. Co-located CSS
  * Modules are emitted to `dist/admin/` and bundled by the consumer.
+ *
+ * Importing this entry also pulls in the shared design tokens, so the admin
+ * components are themed standalone without depending on the profile UI entry.
  */
+
+import '../styles/tokens.css';
 
 export {
   canonicalPointer,

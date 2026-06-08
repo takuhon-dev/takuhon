@@ -81,6 +81,20 @@
   color: #b42318;
 }
 
+.summary {
+  margin-block-end: var(--takuhon-space-4);
+  padding: var(--takuhon-space-3);
+  border: 1px solid #b42318;
+  border-radius: var(--takuhon-radius-sm);
+  color: #b42318;
+}
+
+.summaryHeading {
+  margin: 0 0 var(--takuhon-space-2);
+  font-size: var(--takuhon-font-size-base);
+  font-weight: 600;
+}
+
 .sections {
   display: flex;
   flex-direction: column;
@@ -91,7 +105,12 @@
     color: #6ce9a6;
   }
 
-  .status[data-tone='error'] {
+  .status[data-tone='error'],
+  .summary {
     color: #fda29b;
+  }
+
+  .summary {
+    border-color: #fda29b;
   }
 }

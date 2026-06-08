@@ -39,6 +39,7 @@
 
 .itemHeader {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--takuhon-space-2);
@@ -46,6 +47,9 @@
 }
 
 .itemCaption {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   font-family: var(--takuhon-font-family);
   font-size: var(--takuhon-font-size-base);
   font-weight: 600;

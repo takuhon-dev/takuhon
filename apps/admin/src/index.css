@@ -1,0 +1,65 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--takuhon-color-bg, #ffffff);
+  color: var(--takuhon-color-text, #1f2933);
+  font-family: var(--takuhon-font-family, system-ui, sans-serif);
+}
+
+.gate,
+.status {
+  max-inline-size: 28rem;
+  margin-inline: auto;
+  padding: var(--takuhon-space-6, 32px) var(--takuhon-space-4, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-3, 12px);
+}
+
+.gate label {
+  font-size: var(--takuhon-font-size-sm, 14px);
+  font-weight: 600;
+}
+
+.gate input {
+  min-height: var(--takuhon-tap-target, 44px);
+  padding-inline: var(--takuhon-space-3, 12px);
+  border: 1px solid var(--takuhon-color-border, #d8dee7);
+  border-radius: var(--takuhon-radius-sm, 6px);
+  background-color: var(--takuhon-color-bg, #ffffff);
+  color: var(--takuhon-color-text, #1f2933);
+  font-size: var(--takuhon-font-size-base, 16px);
+}
+
+.gate input:focus-visible,
+.status button:focus-visible,
+.gate button:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+.gate button,
+.status button {
+  min-height: var(--takuhon-tap-target, 44px);
+  padding-inline: var(--takuhon-space-4, 16px);
+  border: 1px solid var(--takuhon-color-primary, #2563eb);
+  border-radius: var(--takuhon-radius-sm, 6px);
+  background-color: var(--takuhon-color-primary, #2563eb);
+  color: var(--takuhon-color-primary-contrast, #ffffff);
+  font-size: var(--takuhon-font-size-base, 16px);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--takuhon-color-text-muted, #52606d);
+  font-size: var(--takuhon-font-size-sm, 14px);
+}
+
+.error {
+  color: #b42318;
+  font-size: var(--takuhon-font-size-sm, 14px);
+}

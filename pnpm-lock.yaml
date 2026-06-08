@@ -88,6 +88,28 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
 
+  apps/admin:
+    dependencies:
+      '@takuhon/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@takuhon/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      react:
+        specifier: ^19.2.6
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.2.6
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+
   apps/playground:
     dependencies:
       '@takuhon/api':
