@@ -1,12 +1,18 @@
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import { SCHEMA_VERSION, validate } from '@takuhon/core';
 import ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { TargetDirectoryExistsError, writeProject } from '../scaffold/index.js';
+import {
+  copyAdminBundle,
+  resolveAdminBundleDir,
+  TargetDirectoryExistsError,
+  writeProject,
+} from '../scaffold/index.js';
+import { ADMIN_DIST_DIRNAME } from '../scaffold/wrangler-toml.js';
 
 describe('writeProject() — Phase 3.5 MVP scaffold', () => {
   let workDir: string;
@@ -194,6 +200,26 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     expect(toml).not.toMatch(/\bOWNPORT_/);
   });
 
+  it('wires the admin SPA Workers Assets binding into wrangler.toml', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const toml = await readFile(join(targetDir, 'wrangler.toml'), 'utf8');
+    // The [assets] block lets the Worker serve the admin SPA at /admin. The
+    // directory must match where copyAdminBundle() drops the bundle, and
+    // run_worker_first must stay true: if it were omitted, Cloudflare would
+    // serve the admin assets directly, bypassing the Worker that attaches the
+    // strict admin Content-Security-Policy.
+    expect(toml).toContain('[assets]');
+    expect(toml).toContain(`directory = "${ADMIN_DIST_DIRNAME}"`);
+    expect(toml).toContain('binding = "ASSETS"');
+    expect(toml).toContain('run_worker_first = true');
+    expect(toml).toContain('not_found_handling = "single-page-application"');
+  });
+
   it('writes a package.json with takuhon-monorepo dependencies and the project name', async () => {
     await writeProject({
       targetDir,
@@ -292,5 +318,58 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
         license: { spdxId: 'CC0-1.0' },
       }),
     ).rejects.toThrow(/Invalid Cloudflare Worker name/);
+  });
+});
+
+describe('copyAdminBundle() — admin SPA delivery', () => {
+  let workDir: string;
+  let bundleDir: string;
+  let targetDir: string;
+
+  beforeEach(async () => {
+    workDir = await mkdtemp(join(tmpdir(), 'takuhon-cli-admin-bundle-'));
+    // A stand-in for the built apps/admin/dist that ships in @takuhon/cli's
+    // admin-bundle/. Mirrors its shape (index.html at the root plus an assets/
+    // subdirectory) so the copy is exercised recursively without depending on a
+    // real build of apps/admin.
+    bundleDir = join(workDir, 'admin-bundle');
+    targetDir = join(workDir, 'my-profile');
+    await mkdir(join(bundleDir, 'assets'), { recursive: true });
+    await writeFile(join(bundleDir, 'index.html'), '<!doctype html><div id="root"></div>', 'utf8');
+    await writeFile(join(bundleDir, 'assets', 'index.js'), 'console.log("admin");', 'utf8');
+    await writeFile(join(bundleDir, 'assets', 'style.css'), '#root{}', 'utf8');
+  });
+
+  afterEach(async () => {
+    await rm(workDir, { recursive: true, force: true });
+  });
+
+  it('copies the bundle into the project admin-dist/ directory', async () => {
+    const result = await copyAdminBundle({ targetDir, bundleDir });
+
+    expect(result.dest).toBe(join(targetDir, ADMIN_DIST_DIRNAME));
+
+    const index = await stat(join(targetDir, ADMIN_DIST_DIRNAME, 'index.html'));
+    expect(index.isFile()).toBe(true);
+    const js = await stat(join(targetDir, ADMIN_DIST_DIRNAME, 'assets', 'index.js'));
+    expect(js.isFile()).toBe(true);
+    const css = await stat(join(targetDir, ADMIN_DIST_DIRNAME, 'assets', 'style.css'));
+    expect(css.isFile()).toBe(true);
+  });
+
+  it('preserves the bundle contents byte-for-byte', async () => {
+    await copyAdminBundle({ targetDir, bundleDir });
+
+    const copied = await readFile(join(targetDir, ADMIN_DIST_DIRNAME, 'index.html'), 'utf8');
+    const original = await readFile(join(bundleDir, 'index.html'), 'utf8');
+    expect(copied).toBe(original);
+  });
+
+  it('resolves the default bundle directory shipped in the package', () => {
+    // The copy tests inject bundleDir, so guard the default resolution path
+    // separately: it must point at the package-relative admin-bundle/ that the
+    // build copies in and `files` ships. A wrong traversal (e.g. a tsup output
+    // change) would otherwise only surface at runtime in a published package.
+    expect(basename(resolveAdminBundleDir())).toBe('admin-bundle');
   });
 });

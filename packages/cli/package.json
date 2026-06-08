@@ -39,6 +39,7 @@
   },
   "files": [
     "dist",
+    "admin-bundle",
     "README.md",
     "LICENSE",
     "NOTICE"
@@ -52,10 +53,13 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "build": "tsup src/index.ts src/init.ts --format esm --dts --clean --sourcemap"
+    "build": "tsup src/index.ts src/init.ts --format esm --dts --clean --sourcemap && node scripts/copy-admin-bundle.mjs"
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@takuhon/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@takuhon/admin": "workspace:*"
   }
 }

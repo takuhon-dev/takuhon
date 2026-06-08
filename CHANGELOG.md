@@ -6,6 +6,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+### Added — `@takuhon/cli`
+
+- `create-takuhon` now scaffolds the React admin form UI. The compiled admin SPA ships inside the `@takuhon/cli` package (built from `apps/admin` and copied into the package at build time) and is copied into each new project's `admin-dist/` directory at scaffold time; the generated `wrangler.toml` binds it as Workers Assets with `run_worker_first = true`, so the Cloudflare Worker serves it at `/admin` under a strict Content-Security-Policy. Removing the `[assets]` block (or deploying an adapter without the binding) falls back to the minimal inline editor. The bundle is a snapshot taken at scaffold time — re-run `create-takuhon` to refresh it. This requires the `@takuhon/cloudflare` adapter version that serves the admin SPA from Workers Assets, so the scaffolded `@takuhon/*` pins advance with this release (the existing guard test enforces the bump).
+
 ## [0.9.0] - 2026-06-05
 
 Minor release. Adds `takuhon sync`, the last planned CLI command (Spec §5.7) and the secondary update path from the Cloudflare update workflow (§9.6): it pushes a local `takuhon.json` to a deployed instance by calling the admin write endpoint. It also refreshes the project that `create-takuhon` scaffolds — the generated README and the post-scaffold steps assumed the `@takuhon/*` packages were not yet published, which is no longer true. There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all seven publishable artifacts bump to 0.9.0.

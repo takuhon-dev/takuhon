@@ -152,6 +152,10 @@ importers:
       '@takuhon/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@takuhon/admin':
+        specifier: workspace:*
+        version: link:../../apps/admin
 
   packages/core:
     dependencies:
