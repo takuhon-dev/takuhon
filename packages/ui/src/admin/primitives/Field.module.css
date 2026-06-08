@@ -1,0 +1,34 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-1);
+  margin-block-end: var(--takuhon-space-4);
+}
+
+.label {
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  font-weight: 600;
+  color: var(--takuhon-color-text);
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+}
+
+.errors {
+  margin: 0;
+  padding-inline-start: var(--takuhon-space-4);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  color: #b42318;
+}
+
+@media (prefers-color-scheme: dark) {
+  .errors {
+    color: #fda29b;
+  }
+}

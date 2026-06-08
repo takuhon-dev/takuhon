@@ -1,0 +1,97 @@
+.editor {
+  max-inline-size: var(--takuhon-max-content-width);
+  margin-inline: auto;
+  padding: var(--takuhon-space-4);
+  font-family: var(--takuhon-font-family);
+  color: var(--takuhon-color-text);
+  background-color: var(--takuhon-color-bg);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--takuhon-space-3);
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  padding-block: var(--takuhon-space-3);
+  background-color: var(--takuhon-color-bg);
+  border-block-end: 1px solid var(--takuhon-color-border);
+}
+
+.modes,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--takuhon-space-2);
+}
+
+.modeButton,
+.primary,
+.secondary {
+  min-height: var(--takuhon-tap-target);
+  padding-inline: var(--takuhon-space-4);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  cursor: pointer;
+}
+
+.modeButton:focus-visible,
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}
+
+.modeActive {
+  background-color: var(--takuhon-color-surface);
+  font-weight: 600;
+}
+
+.primary {
+  background-color: var(--takuhon-color-primary);
+  color: var(--takuhon-color-primary-contrast);
+  border-color: var(--takuhon-color-primary);
+  font-weight: 600;
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status {
+  min-block-size: var(--takuhon-space-5);
+  margin: var(--takuhon-space-3) 0;
+  font-size: var(--takuhon-font-size-sm);
+}
+
+.status[data-tone='success'] {
+  color: #027a48;
+}
+
+.status[data-tone='error'] {
+  color: #b42318;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status[data-tone='success'] {
+    color: #6ce9a6;
+  }
+
+  .status[data-tone='error'] {
+    color: #fda29b;
+  }
+}
