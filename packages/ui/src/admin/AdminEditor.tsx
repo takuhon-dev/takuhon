@@ -169,6 +169,13 @@ export function AdminEditor({
     }
   };
 
+  // Flattened error list for the summary. This is the safety net that surfaces
+  // failures in sections without a dedicated form (e.g. meta, education): their
+  // pointers would otherwise map to no visible field.
+  const errorEntries = [...errors].flatMap(([pointer, messages]) =>
+    messages.map((message) => ({ pointer, message })),
+  );
+
   return (
     <div className={styles.editor}>
       <div className={styles.toolbar} role="toolbar" aria-label={getAdminLabel('toolbar.label')}>
@@ -246,6 +253,23 @@ export function AdminEditor({
       <p className={styles.status} role="status" aria-live="polite" data-tone={status?.tone}>
         {status?.message ?? ''}
       </p>
+
+      {errorEntries.length > 0 ? (
+        <section className={styles.summary} aria-labelledby="admin-error-summary">
+          <h2 className={styles.summaryHeading} id="admin-error-summary">
+            {getAdminLabel('status.fixSummary')}
+          </h2>
+          <ul>
+            {errorEntries.map((entry, i) => (
+              <li key={i}>
+                {entry.pointer === ''
+                  ? entry.message
+                  : `${entry.pointer.replace(/^\//, '')}: ${entry.message}`}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {mode === 'form' ? (
         <div className={styles.sections}>

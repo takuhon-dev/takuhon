@@ -63,6 +63,17 @@ describe('AdminEditor', () => {
     expect(await screen.findByText('is too long')).toBeInTheDocument();
   });
 
+  it('surfaces errors for sections without a form in the summary', async () => {
+    const onSave = vi.fn<(d: Takuhon) => Promise<AdminSaveOutcome>>().mockResolvedValue({
+      status: 'invalid',
+      errors: [{ path: '#/meta/contentLicense', message: 'is required' }],
+    });
+    render(<AdminEditor initialDocument={sample()} onSave={onSave} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    // No form renders `/meta`, so the summary is the only place it can appear.
+    expect(await screen.findByText('meta/contentLicense: is required')).toBeInTheDocument();
+  });
+
   it('reports a save conflict', async () => {
     const onSave = vi.fn<(d: Takuhon) => Promise<AdminSaveOutcome>>().mockResolvedValue({
       status: 'conflict',
