@@ -294,6 +294,37 @@ describe('createAdminApiApp GET /export', () => {
     expect(body.education.some((edu) => typeof edu.grade === 'string')).toBe(true);
   });
 
+  it('exposes the stored version as a quoted ETag usable as the next If-Match', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+
+    const exported = await fetchPath(app, '/export', {
+      method: 'GET',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(exported.headers.get('etag')).toBe('"v1"');
+
+    // The ETag round-trips: sending it back as If-Match on the next PUT
+    // matches the stored version and is accepted (optimistic locking).
+    const saved = await fetchPath(app, '/profile', {
+      method: 'PUT',
+      headers: authHeaders('test-token', { 'if-match': exported.headers.get('etag') ?? '' }),
+      body: JSON.stringify(makeSample()),
+    });
+    expect(saved.status).toBe(200);
+  });
+
+  it('advances the ETag after a write so the editor can re-sync', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    await storage.saveProfile(makeSample());
+    const res = await fetchPath(app, '/export', {
+      method: 'GET',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(res.headers.get('etag')).toBe('"v2"');
+  });
+
   it('preserves the stored meta.updatedAt (no export-time restamp)', async () => {
     const sample = makeSample();
     const { app, storage } = makeApp();
