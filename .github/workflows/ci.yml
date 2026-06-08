@@ -43,6 +43,12 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # `pnpm build` regenerates the standalone validator via core's `prebuild`.
+      # Fail if it differs from the committed copy, so a schema change without a
+      # matching `pnpm --filter @takuhon/core generate` cannot slip through.
+      - name: Generated validator is up to date
+        run: git diff --exit-code -- packages/core/src/generated
+
       - name: Typecheck
         run: pnpm typecheck
 

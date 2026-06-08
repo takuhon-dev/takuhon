@@ -48,7 +48,9 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
+    "generate": "node scripts/generate-validator.mjs",
+    "prebuild": "node scripts/generate-validator.mjs",
+    "build": "tsup"
   },
   "dependencies": {
     "ajv": "^8.20.0",

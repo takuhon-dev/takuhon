@@ -17,13 +17,17 @@
  *   relevant Spec section without leaking Ajv-specific types.
  * - The Ajv 2020 build is used because the schema declares
  *   `$schema: "https://json-schema.org/draft/2020-12/schema"`.
+ * - The validator is *precompiled* to standalone code at build time
+ *   (`scripts/generate-validator.mjs`) and imported here, so `validate()`
+ *   performs no runtime `new Function`/`eval`. That keeps it usable under a
+ *   strict CSP (`script-src 'self'`, no `'unsafe-eval'`) in the browser admin
+ *   SPA, and in other eval-restricted runtimes. Regenerate after any schema
+ *   change via `pnpm --filter @takuhon/core generate` (wired into `prebuild`).
  */
 
 import type { ErrorObject } from 'ajv';
-import Ajv2020 from 'ajv/dist/2020.js';
-import addFormats from 'ajv-formats';
 
-import { schema } from './schema.js';
+import validateTakuhon from './generated/takuhon-validator.cjs';
 import type { Takuhon } from './types.js';
 
 /**
@@ -65,17 +69,6 @@ export interface ValidationError {
 export type ValidationResult =
   | { ok: true; data: Takuhon }
   | { ok: false; errors: ValidationError[] };
-
-const ajv = new Ajv2020({
-  allErrors: true,
-  strict: true,
-});
-addFormats(ajv);
-
-// Per design decision #5 we skip `JSONSchemaType<Takuhon>` and let Ajv compile
-// the schema object as-is; the `<Takuhon>` type argument only records the
-// validated result type for downstream narrowing.
-const compiled = ajv.compile<Takuhon>(schema);
 
 /**
  * Validate an arbitrary value against the bundled takuhon schema.
@@ -120,7 +113,7 @@ export function validate(data: unknown): ValidationResult {
     };
   }
 
-  if (compiled(data)) {
+  if (validateTakuhon(data)) {
     // The schema marks several top-level arrays as optional for back-compat
     // (the nine added in 0.2.0, `testScores` in 0.3.0, and `recommendations`
     // in 0.4.0). The TypeScript `Takuhon` shape requires them so
@@ -156,7 +149,7 @@ export function validate(data: unknown): ValidationResult {
 
   return {
     ok: false,
-    errors: (compiled.errors ?? []).map(toValidationError),
+    errors: (validateTakuhon.errors ?? []).map(toValidationError),
   };
 }
 
