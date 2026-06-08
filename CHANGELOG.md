@@ -6,9 +6,34 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-06-08
+
+Minor release. Ships the Cloudflare admin **form** UI end-to-end. A React single-page app (built from the new `apps/admin`) replaces the minimal JSON-textarea admin editor: `@takuhon/ui` gains an `@takuhon/ui/admin` component set, the Cloudflare adapter serves the bundle from Workers Assets at `/admin` under a strict Content-Security-Policy (falling back to the inline editor when no bundle is bound), and `create-takuhon` now scaffolds the bundle into new projects so downstream users get the form UI by default. Supporting changes: an `ETag` on the admin export endpoint for optimistic locking, and a precompiled, eval-free `@takuhon/core` validator so the SPA runs under the strict admin CSP. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all seven publishable artifacts bump to 0.10.0.
+
+### Added — `@takuhon/ui`
+
+- New `@takuhon/ui/admin` subpath export with the admin form building blocks: field primitives (`Field`/`Text`/`TextArea`/`Select`/`Checkbox`), a multi-locale `LocaleTabs`, a `Repeater` for list-valued sections, section forms covering the editable subset (profile, links, careers, projects, skills, settings), an `AdminEditor` orchestrator (form ⇄ raw-JSON toggle, client-side validation, client/server error mapping with an error summary, and a save-race guard), and a `RawJsonEditor` that commits only schema-valid drafts. Error normalization maps both core `ValidationError` and RFC 7807 problem bodies to canonical JSON Pointer paths.
+
+### Added — `@takuhon/api`
+
+- `GET /api/admin/export` now returns the stored document's version as an `ETag`, enabling `If-Match` optimistic locking on subsequent admin writes.
+
+### Added — `@takuhon/cloudflare`
+
+- The Worker serves the bundled admin SPA from a Workers Assets binding (`Env.ASSETS`, optional) at `/admin` under a strict, no-nonce CSP (`script-src 'self'`, `require-trusted-types-for 'script'`) plus HSTS and `no-store`, with `run_worker_first` so the Worker — not the asset server — attaches the policy. When the binding is absent the Worker falls back to the inline `createAdminUiApp` editor, so deployments without Workers Assets configured are unaffected.
+
 ### Added — `@takuhon/cli`
 
-- `create-takuhon` now scaffolds the React admin form UI. The compiled admin SPA ships inside the `@takuhon/cli` package (built from `apps/admin` and copied into the package at build time) and is copied into each new project's `admin-dist/` directory at scaffold time; the generated `wrangler.toml` binds it as Workers Assets with `run_worker_first = true`, so the Cloudflare Worker serves it at `/admin` under a strict Content-Security-Policy. Removing the `[assets]` block (or deploying an adapter without the binding) falls back to the minimal inline editor. The bundle is a snapshot taken at scaffold time — re-run `create-takuhon` to refresh it. This requires the `@takuhon/cloudflare` adapter version that serves the admin SPA from Workers Assets, so the scaffolded `@takuhon/*` pins advance with this release (the existing guard test enforces the bump).
+- `create-takuhon` now scaffolds the React admin form UI. The compiled admin SPA ships inside the `@takuhon/cli` package (built from `apps/admin` and copied into the package at build time) and is copied into each new project's `admin-dist/` directory at scaffold time; the generated `wrangler.toml` binds it as Workers Assets with `run_worker_first = true`, so the Cloudflare Worker serves it at `/admin` under a strict Content-Security-Policy. Removing the `[assets]` block (or deploying an adapter without the binding) falls back to the minimal inline editor. The bundle is a snapshot taken at scaffold time — re-run `create-takuhon` to refresh it.
+- The scaffolded `@takuhon/*` caret pins advance from `^0.9.0` to `^0.10.0` to track this minor (a caret does not span minors under 0.x), so a scaffolded project resolves the `@takuhon/cloudflare` version that serves the admin SPA from Workers Assets; a guard test enforces the bump.
+
+### Changed — `@takuhon/core`
+
+- The schema validator is precompiled to a standalone, eval-free module so it runs under a strict CSP (`script-src 'self'` without `unsafe-eval`) in the browser admin UI, where Ajv's runtime `new Function` would otherwise be blocked. Behavior is unchanged — `validate()` accepts and rejects exactly as before — and the schema and `schemaVersion` (`0.4.0`) are unchanged. A CI guard fails if the generated validator drifts from the schema.
+
+### Lockstep version bump
+
+- All seven publishable artifacts bump from `0.9.0` to `0.10.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/ui`, `@takuhon/api`, `@takuhon/cloudflare`, `@takuhon/cli`, and `@takuhon/core` changed functionally; the bare-name `takuhon` and `create-takuhon` redirects bump for lockstep alignment. (`apps/admin`, the SPA bundle source, is private and not published.)
 
 ## [0.9.0] - 2026-06-05
 
