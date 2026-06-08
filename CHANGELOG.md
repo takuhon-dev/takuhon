@@ -6,6 +6,10 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+### Added — `@takuhon/cli`
+
+- `takuhon admin [path] [--port <n>] [--base-url <url>]` runs a local admin server (Spec §14.1 Phase 5 "local Admin"): the React admin **form** UI at `/admin`, the canonical admin API at `/api/admin/*` backed by the project's `takuhon.json`, and the static HTML preview at `/`, all on a loopback port (default 4322). It reuses `@takuhon/api`'s admin app (schema validation, `If-Match` optimistic locking, RFC 7807 errors) over a new filesystem storage, and serves the same admin bundle shipped in this package — so editing in the form writes `takuhon.json` (atomically, after a `.takuhon-backups/pre-admin-*.json` backup) and reloading `/` shows the change. The server binds `127.0.0.1` only and mints a fresh admin token each run, printed for the operator to paste into the sign-in form; the document version is the file's content hash, so an external edit between load and save surfaces as a 409 conflict. `takuhon dev` is unchanged.
+
 ## [0.10.0] - 2026-06-08
 
 Minor release. Ships the Cloudflare admin **form** UI end-to-end. A React single-page app (built from the new `apps/admin`) replaces the minimal JSON-textarea admin editor: `@takuhon/ui` gains an `@takuhon/ui/admin` component set, the Cloudflare adapter serves the bundle from Workers Assets at `/admin` under a strict Content-Security-Policy (falling back to the inline editor when no bundle is bound), and `create-takuhon` now scaffolds the bundle into new projects so downstream users get the form UI by default. Supporting changes: an `ETag` on the admin export endpoint for optimistic locking, and a precompiled, eval-free `@takuhon/core` validator so the SPA runs under the strict admin CSP. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all seven publishable artifacts bump to 0.10.0.

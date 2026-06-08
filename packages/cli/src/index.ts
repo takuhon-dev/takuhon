@@ -4,9 +4,9 @@
  * `@takuhon/cli` entry point — the `takuhon` command.
  *
  * Exposes `--version` / `--help`, the local profile commands (`validate`,
- * `migrate`, `restore`, `export`, `import`, `build`, `dev`), `sync` (push a
- * local profile to a deployment), and a pointer to `create-takuhon` for
- * scaffolding.
+ * `migrate`, `restore`, `export`, `import`, `build`, `dev`, `admin`), `sync`
+ * (push a local profile to a deployment), and a pointer to `create-takuhon`
+ * for scaffolding.
  *
  * `main` is pure (returns an exit code, never calls `process.exit`); the only
  * place that exits the process is {@link run}, invoked either when this module
@@ -20,6 +20,7 @@ import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
+import { runAdmin } from './admin-command.js';
 import { runBuild } from './build-command.js';
 import { runDev } from './dev-command.js';
 import { runExport } from './export-command.js';
@@ -61,6 +62,10 @@ Commands:
   takuhon dev [path] [--port <n>]      Serve a takuhon.json as a local static preview,
                                        re-rendered on each request (default port: 4321).
                                        --base-url <url> adds canonical/hreflang links.
+  takuhon admin [path] [--port <n>]    Run a local admin server: edit the profile through
+                                       the form UI at /admin (writes takuhon.json, backs up
+                                       first) with a preview at / (default port: 4322). Binds
+                                       127.0.0.1; prints a per-run token to paste into the form.
   takuhon sync [path] --url <url>      Push a takuhon.json to a deployment's admin API
                                        (PUT <url>/api/admin/profile). Reads the admin token
                                        from TAKUHON_ADMIN_TOKEN. --if-match <etag> opts into
@@ -105,6 +110,11 @@ async function main(argv: readonly string[]): Promise<number> {
     // go through `emit` (a one-shot result writer); it returns the exit code
     // directly and resolves only on graceful shutdown.
     return runDev(argv.slice(1));
+  }
+
+  if (first === 'admin') {
+    // Long-lived server, like `dev`: returns the exit code directly.
+    return runAdmin(argv.slice(1));
   }
 
   if (first === 'import') {
