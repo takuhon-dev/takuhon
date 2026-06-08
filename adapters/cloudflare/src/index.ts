@@ -1,5 +1,6 @@
 import {
   ERROR_SLUGS,
+  adminAssetSecurityHeaders,
   createAdminApiApp,
   createAdminUiApp,
   createPublicApp,
@@ -30,6 +31,13 @@ export interface Env {
    * acceptable when the admin UI is same-origin; documented in the README).
    */
   TAKUHON_ADMIN_ORIGIN?: string;
+  /**
+   * Workers Assets binding holding the bundled admin SPA (`apps/admin`). When
+   * present, `/admin/*` is served from it under a strict CSP; when absent, the
+   * Worker falls back to the inline `createAdminUiApp` editor, so deployments
+   * without Workers Assets configured still have a working admin.
+   */
+  ASSETS?: Fetcher;
 }
 
 /** Options accepted by {@link createTakuhonWorker}. */
@@ -52,6 +60,42 @@ function parseOrigins(raw: string | undefined): string[] {
     .filter((s) => s !== '');
 }
 
+/** Admin UI (not the `/api/admin` API) request paths served from the SPA bundle. */
+function isAdminUiPath(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
+/**
+ * Serve the admin SPA from the Workers Assets binding. The bundle's files live
+ * at the assets root, so the `/admin` prefix is stripped before lookup; `/admin`
+ * and `/admin/` map to `index.html`. The strict admin CSP / security headers are
+ * applied to every response (the binding's own headers would otherwise cache
+ * the operator-only UI and omit the policy).
+ */
+async function serveAdminSpa(request: Request, assets: Fetcher, url: URL): Promise<Response> {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
+  // Strip the `/admin` mount prefix; `/admin` and `/admin/` map to the bundle
+  // root `/` (which Workers Assets serves as index.html). Requesting
+  // `/index.html` directly would 307-redirect under `auto-trailing-slash`.
+  const rest = url.pathname.slice('/admin'.length);
+  const assetPath = rest === '' ? '/' : rest;
+  const assetResponse = await assets.fetch(new Request(new URL(assetPath, url.origin), request));
+  const headers = new Headers(assetResponse.headers);
+  for (const [name, value] of Object.entries(adminAssetSecurityHeaders())) {
+    headers.set(name, value);
+  }
+  // The admin UI is `private, no-store`, so a conditional-request ETag carried
+  // over from the binding would be misleading — drop it.
+  headers.delete('etag');
+  return new Response(assetResponse.body, {
+    status: assetResponse.status,
+    statusText: assetResponse.statusText,
+    headers,
+  });
+}
+
 /**
  * Build a Cloudflare Worker handler for the takuhon adapter. Wires
  * `@takuhon/api`'s public/admin app factories to the KV-backed storage,
@@ -71,6 +115,14 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
   return {
     fetch(request: Request, env: Env): Response | Promise<Response> {
       const url = new URL(request.url);
+
+      // Serve the bundled admin SPA when a Workers Assets binding is present.
+      // Without it, the request falls through to the inline editor mounted on
+      // the router below, so admin stays available either way.
+      if (env.ASSETS && isAdminUiPath(url.pathname)) {
+        return serveAdminSpa(request, env.ASSETS, url);
+      }
+
       const storage = new KvTakuhonStorage(env.TAKUHON_KV);
       const cachePurger: CachePurger = new CloudflareCachePurger(() => caches.default, {
         origin: url.origin,
