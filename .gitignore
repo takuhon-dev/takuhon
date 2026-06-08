@@ -89,6 +89,11 @@ out/
 .svelte-kit/
 .cache/
 
+## Admin SPA bundle copied into @takuhon/cli at build time (regenerated from
+## apps/admin/dist by scripts/copy-admin-bundle.mjs; shipped via the package's
+## "files" allowlist, so it is published despite being git-ignored — like dist/).
+/packages/cli/admin-bundle/
+
 ## Packaging (npm pack / publish dry-run tarballs)
 *.tgz
 

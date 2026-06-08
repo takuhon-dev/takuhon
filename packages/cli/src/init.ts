@@ -12,6 +12,7 @@
  */
 
 import { realpathSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -20,7 +21,7 @@ import { cancel, intro, outro } from '@clack/prompts';
 
 import { buildContentLicense, isValidSpdxInput } from './licenses.js';
 import { promptLicense } from './prompts.js';
-import { TargetDirectoryExistsError, writeProject } from './scaffold/index.js';
+import { copyAdminBundle, TargetDirectoryExistsError, writeProject } from './scaffold/index.js';
 import { isValidWorkerName } from './scaffold/wrangler-toml.js';
 
 interface CliArgs {
@@ -133,6 +134,17 @@ async function main(argv: readonly string[]): Promise<number> {
     throw err;
   }
 
+  // Copy the bundled admin SPA into the project so the Worker can serve the
+  // form UI at /admin. On failure, remove the just-created project directory so
+  // the user can retry into the same path (writeProject refuses an existing one).
+  try {
+    await copyAdminBundle({ targetDir });
+  } catch (err) {
+    await rm(targetDir, { recursive: true, force: true });
+    cancel(err instanceof Error ? err.message : 'Failed to copy the admin UI bundle.');
+    return 1;
+  }
+
   outro(
     `Created ${projectName} (license: ${spdxId}).\n` +
       `\n` +
@@ -142,7 +154,10 @@ async function main(argv: readonly string[]): Promise<number> {
       `  # 1. Edit takuhon.json with your profile data\n` +
       `  # 2. Provision Cloudflare KV: npx wrangler kv namespace create TAKUHON_KV\n` +
       `  # 3. Set admin token: openssl rand -base64 32 | npx wrangler secret put TAKUHON_ADMIN_TOKEN\n` +
-      `  pnpm dev`,
+      `  pnpm dev\n` +
+      `\n` +
+      `The admin form UI is served at /admin (bundled in admin-dist/); sign in\n` +
+      `with the admin token from step 3.`,
   );
 
   return 0;

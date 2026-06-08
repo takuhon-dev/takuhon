@@ -1,16 +1,20 @@
 /**
  * Top-level scaffolding orchestrator for `create-takuhon`.
  *
- * `writeProject` is the single entry point used by `init.ts`. It creates the
- * target directory (must not already exist), then writes the eight files
- * that make up the scaffold: `takuhon.json`, `wrangler.toml`, `package.json`,
- * `README.md`, `.gitignore`, `.env.example`, `tsconfig.json`, and
- * `src/index.ts` (the Cloudflare Worker entry composed via
+ * `writeProject` creates the target directory (must not already exist), then
+ * writes the eight files that make up the scaffold: `takuhon.json`,
+ * `wrangler.toml`, `package.json`, `README.md`, `.gitignore`, `.env.example`,
+ * `tsconfig.json`, and `src/index.ts` (the Cloudflare Worker entry composed via
  * `createTakuhonWorker` from `@takuhon/cloudflare`).
+ *
+ * `copyAdminBundle` then copies the bundled admin SPA into the project's
+ * `admin-dist/` so the Worker can serve the form UI at `/admin`. `init.ts`
+ * calls both in sequence.
  */
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { ContentLicenseFragment } from '../licenses.js';
 
@@ -21,7 +25,7 @@ import { renderReadme } from './readme.js';
 import { renderTakuhonJson } from './takuhon-json.js';
 import { renderTsconfigJson } from './tsconfig-json.js';
 import { renderWorkerIndexTs } from './worker-index-ts.js';
-import { renderWranglerToml } from './wrangler-toml.js';
+import { ADMIN_DIST_DIRNAME, renderWranglerToml } from './wrangler-toml.js';
 
 export interface WriteProjectOptions {
   /** Absolute path of the directory to create. Must not exist. */
@@ -95,4 +99,60 @@ export async function writeProject(opts: WriteProjectOptions): Promise<WriteProj
 
 function isNodeErrnoException(err: unknown): err is NodeJS.ErrnoException {
   return err instanceof Error && typeof (err as NodeJS.ErrnoException).code === 'string';
+}
+
+/**
+ * Resolve the admin SPA bundle that ships inside this package. The bundle is
+ * copied here from `apps/admin/dist` at build time (see
+ * `scripts/copy-admin-bundle.mjs`) and listed in the package's `files`, so it
+ * is present in the published `@takuhon/cli` tarball. Resolved relative to the
+ * compiled module (`dist/init.js` or `dist/index.js`), whose sibling is
+ * `admin-bundle/`.
+ */
+export function resolveAdminBundleDir(): string {
+  return fileURLToPath(new URL('../admin-bundle', import.meta.url));
+}
+
+export interface CopyAdminBundleOptions {
+  /** Project directory previously created by {@link writeProject}. */
+  readonly targetDir: string;
+  /**
+   * Source bundle directory. Defaults to the bundle shipped in this package
+   * ({@link resolveAdminBundleDir}); overridable for tests.
+   */
+  readonly bundleDir?: string;
+}
+
+export interface CopyAdminBundleResult {
+  /** Absolute path of the directory the bundle was copied into. */
+  readonly dest: string;
+}
+
+/**
+ * Copy the admin SPA bundle into the scaffolded project's
+ * `{@link ADMIN_DIST_DIRNAME}` directory. The generated `wrangler.toml` binds
+ * this directory as `ASSETS`, and the Cloudflare Worker serves it at `/admin`
+ * under a strict CSP (falling back to an inline editor when the binding is
+ * absent). Kept separate from {@link writeProject} so the static-asset copy and
+ * the generated-file rendering are independently testable.
+ */
+export async function copyAdminBundle(
+  opts: CopyAdminBundleOptions,
+): Promise<CopyAdminBundleResult> {
+  const bundleDir = opts.bundleDir ?? resolveAdminBundleDir();
+  const dest = join(opts.targetDir, ADMIN_DIST_DIRNAME);
+  try {
+    await cp(bundleDir, dest, { recursive: true });
+  } catch (err) {
+    // The bundle ships inside @takuhon/cli, so a failure here means a broken
+    // or incomplete install. Surface a sanitized message — the raw error would
+    // embed the absolute node_modules path of this package.
+    const code = isNodeErrnoException(err) ? ` (${err.code})` : '';
+    throw new Error(
+      `Failed to copy the admin UI bundle from @takuhon/cli${code}. ` +
+        `Reinstall or upgrade @takuhon/cli and try again.`,
+      { cause: err },
+    );
+  }
+  return { dest };
 }

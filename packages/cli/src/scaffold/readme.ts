@@ -80,6 +80,12 @@ pnpm dev   # runs \`wrangler dev\` locally
 
 The full route map (public + admin) is documented in the [\`@takuhon/cloudflare\` README](https://github.com/takuhon-dev/takuhon/tree/main/adapters/cloudflare#readme).
 
+## Admin
+
+The admin form UI is served at \`/admin\` under a strict Content-Security-Policy. Its compiled bundle is committed in \`admin-dist/\` and bound as Workers Assets in \`wrangler.toml\`. Sign in with the admin token you set as the \`TAKUHON_ADMIN_TOKEN\` Wrangler secret.
+
+The bundle is a snapshot taken when this project was created. To pick up a newer admin UI, re-run \`create-takuhon\` into a fresh directory and copy its \`admin-dist/\` over. To deploy without the form UI, remove the \`[assets]\` block from \`wrangler.toml\`; the Worker then falls back to a minimal inline editor.
+
 ## Deploy
 
 \`\`\`sh
