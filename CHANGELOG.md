@@ -8,7 +8,11 @@ This is a monorepo. Seven publishable artifacts release in lockstep at the same 
 
 ### Added — `@takuhon/cli`
 
-- `takuhon admin update [path]` refreshes a scaffolded project's `admin-dist/` with the admin form-UI bundle shipped in the installed `@takuhon/cli`, so upgrading the CLI can update the form UI without re-scaffolding (which would clobber the rest of the project). It replaces the bundle atomically — staged in a temporary directory, then swapped in with a rename, which also drops any stale files the previous bundle had — and refuses to run outside a takuhon project or where there is no `admin-dist/` to refresh (creating one remains `create-takuhon`'s job). Exit codes: `0` refreshed, `2` bad arguments / not a takuhon project / no `admin-dist/` / copy failure. `takuhon admin` (the local server) is unchanged.
+- `takuhon admin update [path]` refreshes a scaffolded project's `admin-dist/` with the admin form-UI bundle shipped in the installed `@takuhon/cli`, so upgrading the CLI can update the form UI without re-scaffolding (which would clobber the rest of the project). It replaces the bundle atomically — staged in a temporary directory, then swapped in with a rename, which also drops any stale files the previous bundle had — and refuses to run outside a takuhon project or where there is no `admin-dist/` to refresh (creating one remains `create-takuhon`'s job). Exit codes: `0` refreshed, `2` bad arguments / not a takuhon project / no `admin-dist/` / copy failure.
+
+### Changed — `@takuhon/cli`
+
+- `takuhon admin` now signs the local form UI in automatically: the loopback server injects the per-run token into the served `/admin` document as a `<meta name="takuhon-local-token">` tag and the SPA reads it on load, so the operator no longer pastes the token into a sign-in form. The token is still minted per run and bound to `127.0.0.1`. The injection happens only in the local server's response — the bundle files shipped in `@takuhon/cli` (which the Cloudflare adapter serves verbatim) never carry the tag, so the public `/admin` sign-in gate is unchanged. The tag is a `<meta>`, not an inline script, so it is served under the same strict `script-src 'self'` CSP. If the injected token is somehow rejected, the SPA falls back to the manual sign-in form.
 
 ## [0.11.0] - 2026-06-09
 
