@@ -101,13 +101,46 @@ function localAdminHeaders(): Record<string, string> {
 const plain = (status: number, body: string): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/plain; charset=utf-8' } });
 
+/** Escape a string for safe inclusion in a double-quoted HTML attribute. */
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Inject the per-run token into the served `index.html` as a `<meta>` tag so
+ * the loopback SPA can auto-authenticate instead of asking the operator to
+ * paste the token. This is done at response time on the local server only — the
+ * shipped bundle files (and therefore the public Cloudflare deployment, which
+ * serves them verbatim) never carry the tag, so the public sign-in gate is
+ * unaffected. A `<meta>` is CSP-safe under the strict `script-src 'self'`
+ * policy (it is not script), unlike an inline bootstrap `<script>`.
+ */
+function injectLocalToken(html: string, token: string): string {
+  const meta = `<meta name="takuhon-local-token" content="${escapeHtmlAttr(token)}" />`;
+  if (html.includes('</head>')) return html.replace('</head>', `${meta}</head>`);
+  // No <head> (e.g. a minimal test fixture): the browser still hoists a leading
+  // <meta> into the document head during parsing, so querySelector finds it.
+  return meta + html;
+}
+
 /**
  * Serve a file from the admin bundle for an `/admin*` request. Mirrors the
  * Cloudflare adapter's `serveAdminSpa`: strip the `/admin` prefix, map `/admin`
  * and `/admin/` to `index.html`, fall back to `index.html` for extension-less
  * paths (SPA routes), and 404 for missing assets. Guards against path traversal.
+ * The `index.html` response gets the per-run token injected (see
+ * {@link injectLocalToken}); other assets are served byte-for-byte.
  */
-function serveAdminBundle(bundleDir: string, method: string, pathname: string): Response {
+function serveAdminBundle(
+  bundleDir: string,
+  method: string,
+  pathname: string,
+  token: string,
+): Response {
   if (method !== 'GET' && method !== 'HEAD') return plain(405, 'Method Not Allowed\n');
 
   const rest = pathname.slice('/admin'.length);
@@ -139,8 +172,17 @@ function serveAdminBundle(bundleDir: string, method: string, pathname: string): 
     }
   }
 
+  const contentType = contentTypeFor(full);
   const headers = new Headers(localAdminHeaders());
-  headers.set('content-type', contentTypeFor(full));
+  headers.set('content-type', contentType);
+
+  // The SPA entry document carries the per-run token so the loopback UI can
+  // skip the sign-in form; every other asset is served unchanged.
+  if (contentType.startsWith('text/html')) {
+    const injected = injectLocalToken(body.toString('utf8'), token);
+    return new Response(method === 'HEAD' ? null : injected, { status: 200, headers });
+  }
+
   return new Response(method === 'HEAD' ? null : body, { status: 200, headers });
 }
 
@@ -182,7 +224,7 @@ export function createAdminApp(opts: CreateAdminAppOptions): Hono {
   app.all('*', (c) => {
     const { method, path } = c.req;
     if (path === '/admin' || path.startsWith('/admin/')) {
-      return serveAdminBundle(bundleDir, method, path);
+      return serveAdminBundle(bundleDir, method, path, opts.token);
     }
     const state = loadSiteState(opts.path, opts.baseUrl);
     const res = handleRequest(method, path, state);

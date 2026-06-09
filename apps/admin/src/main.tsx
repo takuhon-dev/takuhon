@@ -1,11 +1,28 @@
 import { validate, type Takuhon } from '@takuhon/core';
 import { AdminEditor } from '@takuhon/ui/admin';
-import { StrictMode, useState } from 'react';
+import { StrictMode, useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { createAdminClient, type AdminClient } from './admin-client.js';
 
 import './index.css';
+
+/**
+ * Read the per-run admin token the local `takuhon admin` server injects into
+ * the served document (`<meta name="takuhon-local-token">`). Present only over
+ * loopback; the public Cloudflare deployment serves the bundle verbatim with no
+ * such tag, so there the gate is shown. Read once at module load.
+ */
+function readLocalToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const content = document
+    .querySelector('meta[name="takuhon-local-token"]')
+    ?.getAttribute('content')
+    ?.trim();
+  return content === undefined || content === '' ? null : content;
+}
+
+const LOCAL_TOKEN = readLocalToken();
 
 /** Trigger a client-side download of the document as `takuhon.json`. */
 function downloadJson(doc: Takuhon): void {
@@ -111,10 +128,14 @@ function TokenGate({
 }
 
 function App(): React.JSX.Element {
-  const [phase, setPhase] = useState<Phase>({ kind: 'auth' });
+  // Over loopback the local server injects the token, so start in 'loading' and
+  // connect on mount; otherwise show the sign-in gate.
+  const [phase, setPhase] = useState<Phase>(
+    LOCAL_TOKEN !== null ? { kind: 'loading' } : { kind: 'auth' },
+  );
   const [client, setClient] = useState<AdminClient | null>(null);
 
-  const connect = async (token: string, baseUrl: string): Promise<void> => {
+  const connect = useCallback(async (token: string, baseUrl: string): Promise<void> => {
     const next = createAdminClient({ token, baseUrl });
     setClient(next);
     setPhase({ kind: 'loading' });
@@ -134,7 +155,13 @@ function App(): React.JSX.Element {
         setPhase({ kind: 'error', message: result.message });
         break;
     }
-  };
+  }, []);
+
+  // Auto-authenticate with the loopback-injected token (same origin, so no
+  // base URL). A bad token falls back to the gate via the 'unauthorized' branch.
+  useEffect(() => {
+    if (LOCAL_TOKEN !== null) void connect(LOCAL_TOKEN, '');
+  }, [connect]);
 
   const importFromFile = async (): Promise<void> => {
     const raw = await pickJsonFile();

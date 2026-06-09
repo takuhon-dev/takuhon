@@ -114,6 +114,24 @@ describe('createAdminApp() request handling', () => {
     expect((await req('/admin/assets/missing.js')).status).toBe(404);
   });
 
+  it('injects the per-run token into the /admin document for loopback auto-auth', async () => {
+    const html = await (await req('/admin')).text();
+    expect(html).toContain(`<meta name="takuhon-local-token" content="${TOKEN}" />`);
+  });
+
+  it('does not inject the token into non-HTML assets', async () => {
+    const js = await (await req('/admin/assets/app.js')).text();
+    expect(js).not.toContain('takuhon-local-token');
+  });
+
+  it('never writes the token into the bundle files (public deployment stays gated)', async () => {
+    // The injection is response-time on the local server only. The shipped
+    // bundle — which the Cloudflare adapter serves verbatim — must not carry the
+    // token meta, so the public /admin still shows the sign-in gate.
+    const onDisk = await readFile(join(bundleDir, 'index.html'), 'utf8');
+    expect(onDisk).not.toContain('takuhon-local-token');
+  });
+
   it('refuses path traversal out of the bundle', async () => {
     // A traversal attempt must never return out-of-bundle content. Hono
     // normalizes dot segments and the bundle handler's own resolve()-prefix
