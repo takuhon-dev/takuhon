@@ -82,8 +82,14 @@ export interface AssetRecord {
 /**
  * Caller hints for {@link TakuhonAssetStorage.putAsset}. Both fields are
  * optional; when omitted, the adapter falls back to the `File` / `Blob`
- * metadata. Adapters are responsible for magic-byte verification, EXIF
- * stripping, and dimension limits — callers must not pre-process.
+ * metadata.
+ *
+ * The caller (`@takuhon/api`'s admin app) verifies the magic bytes, enforces
+ * the size / dimension / frame limits, and strips metadata (EXIF / IPTC / XMP /
+ * color profile) before calling `putAsset`, using the shared `@takuhon/core`
+ * image helpers, so every adapter applies the same checks. An adapter therefore
+ * persists the already-validated, already-stripped bytes verbatim and is
+ * responsible only for storage and key/URL generation.
  */
 export interface AssetOptions {
   filename?: string;
