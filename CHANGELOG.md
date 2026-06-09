@@ -6,9 +6,17 @@ This is a monorepo. All five publishable scoped npm packages (`@takuhon/core`, `
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-06-09
+
+Minor release. Ships `takuhon admin`, a local admin **form** server that brings the Cloudflare admin form UI (added in 0.10.0) to the local lifecycle: `takuhon admin` serves the React admin form at `/admin`, the canonical admin API at `/api/admin/*` backed by the project's `takuhon.json`, and the static HTML preview at `/`, all bound to a loopback port — so editing in the form writes `takuhon.json` and reloading the preview shows the change, with no deployed instance required. It reuses `@takuhon/api`'s admin app and the admin bundle already shipped in `@takuhon/cli`. There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all seven publishable artifacts bump to 0.11.0.
+
 ### Added — `@takuhon/cli`
 
 - `takuhon admin [path] [--port <n>] [--base-url <url>]` runs a local admin server (Spec §14.1 Phase 5 "local Admin"): the React admin **form** UI at `/admin`, the canonical admin API at `/api/admin/*` backed by the project's `takuhon.json`, and the static HTML preview at `/`, all on a loopback port (default 4322). It reuses `@takuhon/api`'s admin app (schema validation, `If-Match` optimistic locking, RFC 7807 errors) over a new filesystem storage, and serves the same admin bundle shipped in this package — so editing in the form writes `takuhon.json` (atomically, after a `.takuhon-backups/pre-admin-*.json` backup) and reloading `/` shows the change. The server binds `127.0.0.1` only and mints a fresh admin token each run, printed for the operator to paste into the sign-in form; the document version is the file's content hash, so an external edit between load and save surfaces as a 409 conflict. `takuhon dev` is unchanged.
+
+### Lockstep version bump
+
+- All seven publishable artifacts bump from `0.10.0` to `0.11.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/cli` changed functionally (the new `takuhon admin` command); the other six bump for lockstep alignment. (`apps/admin`, the SPA bundle source, is private and not published.)
 
 ## [0.10.0] - 2026-06-08
 
@@ -439,7 +447,9 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/takuhon-dev/takuhon/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/takuhon-dev/takuhon/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/takuhon-dev/takuhon/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/takuhon-dev/takuhon/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/takuhon-dev/takuhon/compare/v0.8.0...v0.8.1
