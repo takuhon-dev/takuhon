@@ -1,10 +1,9 @@
 /**
  * Structured audit-log emitter for admin actions (per security.md §5).
  *
- * Phase 3.4 covers the auth + profile-write events. Asset events
- * (`admin.asset.upload`, `admin.asset.delete`) join the union when Phase 3.5
- * lands. Adapters bind a concrete sink (Cloudflare uses `console.log`, which
- * Workers Tail / Logpush captures); tests inject a `vi.fn()` recorder.
+ * Covers the auth, profile-write, and asset events. Adapters bind a concrete
+ * sink (Cloudflare uses `console.log`, which Workers Tail / Logpush captures);
+ * tests inject a `vi.fn()` recorder.
  */
 export type AuditEventType =
   | 'admin.auth.success'
@@ -12,6 +11,8 @@ export type AuditEventType =
   | 'admin.profile.update'
   | 'admin.profile.delete'
   | 'admin.profile.export'
+  | 'admin.asset.upload'
+  | 'admin.asset.delete'
   | 'admin.cache.purge';
 
 export interface AuditEvent {
@@ -34,6 +35,15 @@ export interface AuditEvent {
     status: number;
     /** Opaque storage version emitted by `TakuhonStorage.saveProfile`. */
     version?: string;
+  };
+  /**
+   * Asset details for `admin.asset.upload` / `admin.asset.delete` events
+   * (security.md §5: object key, MIME, and size). Absent for other events.
+   */
+  asset?: {
+    key: string;
+    mimeType?: string;
+    size?: number;
   };
 }
 

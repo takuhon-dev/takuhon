@@ -1,10 +1,17 @@
 import {
   ConflictError,
-  NotFoundError,
+  detectImageMime,
   exportTakuhon,
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_DIMENSION,
+  MAX_IMAGE_FRAMES,
+  NotFoundError,
   normalize,
+  readImageInfo,
+  stripImageMetadata,
   validate,
   type Takuhon,
+  type TakuhonAssetStorage,
   type TakuhonStorage,
   type ValidationError,
 } from '@takuhon/core';
@@ -27,6 +34,12 @@ const ADMIN_API_CSP = ["default-src 'none'", "frame-ancestors 'none'", "base-uri
 
 export interface AdminApiAppDeps {
   storage: TakuhonStorage;
+  /**
+   * Binary-asset store for uploaded images. Optional: when omitted (e.g. a
+   * static export or a deployment without R2), `POST /assets` is not registered
+   * and resolves to 404, so avatars stay URL-only.
+   */
+  assetStorage?: TakuhonAssetStorage;
   /** Returns the configured admin token, or undefined if no secret is set. */
   getAdminToken: () => string | undefined;
   /** Allowlist of origins permitted for browser-originating admin requests. */
@@ -239,6 +252,124 @@ export function createAdminApiApp(deps: AdminApiAppDeps): Hono {
     c.header('etag', `"${stored.version}"`);
     return c.json(exported);
   });
+
+  // Image upload (security.md §4). Registered only when an asset store is
+  // configured; otherwise `POST /assets` falls through to the 404 handler.
+  if (deps.assetStorage) {
+    const assetStorage = deps.assetStorage;
+    app.post('/assets', async (c) => {
+      // Coarse pre-parse guard: reject before buffering the body when the
+      // declared length already exceeds the limit plus a small multipart
+      // overhead. The exact check on the decoded file size happens below.
+      const declared = Number(c.req.header('content-length') ?? '');
+      if (Number.isFinite(declared) && declared > MAX_IMAGE_BYTES + 8192) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.payloadTooLarge,
+          status: 413,
+          title: 'Payload Too Large',
+          detail: `Image exceeds the ${String(MAX_IMAGE_BYTES)}-byte limit.`,
+        });
+      }
+
+      let form: FormData;
+      try {
+        form = await c.req.formData();
+      } catch {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.badRequest,
+          status: 400,
+          title: 'Bad Request',
+          detail: 'Request body must be multipart/form-data with a "file" field.',
+        });
+      }
+
+      const file = form.get('file');
+      if (!(file instanceof File)) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.badRequest,
+          status: 400,
+          title: 'Bad Request',
+          detail: 'Expected an uploaded file in the "file" field.',
+        });
+      }
+
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (bytes.length > MAX_IMAGE_BYTES) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.payloadTooLarge,
+          status: 413,
+          title: 'Payload Too Large',
+          detail: `Image is ${String(bytes.length)} bytes; the limit is ${String(MAX_IMAGE_BYTES)}.`,
+        });
+      }
+
+      // Authenticate the type from the bytes, not the declared Content-Type.
+      const mime = detectImageMime(bytes);
+      if (mime === null) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.unsupportedMediaType,
+          status: 415,
+          title: 'Unsupported Media Type',
+          detail: 'File is not an accepted image (JPEG, PNG, WebP, or GIF).',
+        });
+      }
+
+      const info = readImageInfo(bytes, mime);
+      if (info === null) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.validationFailed,
+          status: 422,
+          title: 'Validation Failed',
+          detail: 'Image header could not be parsed.',
+        });
+      }
+      if (info.width > MAX_IMAGE_DIMENSION || info.height > MAX_IMAGE_DIMENSION) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.validationFailed,
+          status: 422,
+          title: 'Validation Failed',
+          detail: `Image is ${String(info.width)}×${String(info.height)}px; the limit is ${String(MAX_IMAGE_DIMENSION)}×${String(MAX_IMAGE_DIMENSION)}px.`,
+        });
+      }
+      if (info.frames > MAX_IMAGE_FRAMES) {
+        return problemResponse(c, {
+          slug: ERROR_SLUGS.validationFailed,
+          status: 422,
+          title: 'Validation Failed',
+          detail: `Image has ${String(info.frames)} frames; the limit is ${String(MAX_IMAGE_FRAMES)}.`,
+        });
+      }
+
+      // Strip metadata (EXIF/IPTC/XMP/color profile) before handing the bytes
+      // to the adapter, which persists them verbatim.
+      const stripped = stripImageMetadata(bytes, mime);
+      // `Uint8Array.from` yields an ArrayBuffer-backed array (not the
+      // SharedArrayBuffer-possible `ArrayBufferLike`), so it is a valid BlobPart.
+      const record = await assetStorage.putAsset(
+        new Blob([Uint8Array.from(stripped)], { type: mime }),
+        {
+          filename: file.name,
+          contentType: mime,
+        },
+      );
+
+      const tokenHash = await getActorTokenHash(c);
+      deps.auditLogger({
+        type: 'admin.asset.upload',
+        timestamp: new Date().toISOString(),
+        actor: { tokenHash },
+        request: {
+          method: 'POST',
+          path: new URL(c.req.url).pathname,
+          ip: c.req.header('cf-connecting-ip'),
+        },
+        result: { status: 201 },
+        asset: { key: record.id, mimeType: mime, size: stripped.length },
+      });
+
+      return c.json(record, 201);
+    });
+  }
 
   app.on(['POST', 'PATCH'], '/profile', (c) =>
     problemResponse(c, {
