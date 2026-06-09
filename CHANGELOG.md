@@ -6,6 +6,10 @@ This is a monorepo. Seven publishable artifacts release in lockstep at the same 
 
 ## [Unreleased]
 
+### Added — `@takuhon/core`
+
+- Image-asset helpers for the upcoming upload feature: `detectImageMime` (magic-byte type detection, independent of the declared `Content-Type`), `readImageInfo` (header-only width / height / animation-frame reading, no pixel decode), and `stripImageMetadata` (removes EXIF / IPTC / XMP / embedded color profile / comments by editing the container structure only), plus the `ACCEPTED_IMAGE_MIME_TYPES`, `MAX_IMAGE_BYTES`, `MAX_IMAGE_DIMENSION`, `MAX_IMAGE_FRAMES`, and `IMAGE_EXTENSIONS` constants and the `AcceptedImageMime` / `ImageInfo` types. The helpers cover JPEG, PNG, WebP, and GIF (AVIF is not handled yet); they decode no pixel data, so they are dependency-free and run identically on Workers, Node, and the browser. This is foundational only — no endpoint consumes them yet.
+
 ### Added — `@takuhon/cli`
 
 - `takuhon admin update [path]` refreshes a scaffolded project's `admin-dist/` with the admin form-UI bundle shipped in the installed `@takuhon/cli`, so upgrading the CLI can update the form UI without re-scaffolding (which would clobber the rest of the project). It replaces the bundle atomically — staged in a temporary directory, then swapped in with a rename, which also drops any stale files the previous bundle had — and refuses to run outside a takuhon project or where there is no `admin-dist/` to refresh (creating one remains `create-takuhon`'s job). Exit codes: `0` refreshed, `2` bad arguments / not a takuhon project / no `admin-dist/` / copy failure.

@@ -56,6 +56,18 @@ export type {
   TakuhonStorage,
 } from './storage-interface.js';
 
+export {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  detectImageMime,
+  IMAGE_EXTENSIONS,
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_DIMENSION,
+  MAX_IMAGE_FRAMES,
+  readImageInfo,
+  stripImageMetadata,
+} from './image.js';
+export type { AcceptedImageMime, ImageInfo } from './image.js';
+
 export type {
   Address,
   Avatar,
