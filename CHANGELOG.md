@@ -6,6 +6,10 @@ This is a monorepo. Seven publishable artifacts release in lockstep at the same 
 
 ## [Unreleased]
 
+### Added — `@takuhon/cli`
+
+- `takuhon admin update [path]` refreshes a scaffolded project's `admin-dist/` with the admin form-UI bundle shipped in the installed `@takuhon/cli`, so upgrading the CLI can update the form UI without re-scaffolding (which would clobber the rest of the project). It replaces the bundle atomically — staged in a temporary directory, then swapped in with a rename, which also drops any stale files the previous bundle had — and refuses to run outside a takuhon project or where there is no `admin-dist/` to refresh (creating one remains `create-takuhon`'s job). Exit codes: `0` refreshed, `2` bad arguments / not a takuhon project / no `admin-dist/` / copy failure. `takuhon admin` (the local server) is unchanged.
+
 ## [0.11.0] - 2026-06-09
 
 Minor release. Ships `takuhon admin`, a local admin **form** server that brings the Cloudflare admin form UI (added in 0.10.0) to the local lifecycle: `takuhon admin` serves the React admin form at `/admin`, the canonical admin API at `/api/admin/*` backed by the project's `takuhon.json`, and the static HTML preview at `/`, all bound to a loopback port — so editing in the form writes `takuhon.json` and reloading the preview shows the change, with no deployed instance required. It reuses `@takuhon/api`'s admin app and the admin bundle already shipped in `@takuhon/cli`. There is no `@takuhon/core` change: the bundled `schemaVersion` stays `0.4.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all seven publishable artifacts bump to 0.11.0.

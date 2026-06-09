@@ -84,7 +84,7 @@ The full route map (public + admin) is documented in the [\`@takuhon/cloudflare\
 
 The admin form UI is served at \`/admin\` under a strict Content-Security-Policy. Its compiled bundle is committed in \`admin-dist/\` and bound as Workers Assets in \`wrangler.toml\`. Sign in with the admin token you set as the \`TAKUHON_ADMIN_TOKEN\` Wrangler secret.
 
-The bundle is a snapshot taken when this project was created. To pick up a newer admin UI, re-run \`create-takuhon\` into a fresh directory and copy its \`admin-dist/\` over. To deploy without the form UI, remove the \`[assets]\` block from \`wrangler.toml\`; the Worker then falls back to a minimal inline editor.
+The bundle is a snapshot taken when this project was created. To pick up a newer admin UI, upgrade your \`takuhon\` CLI and run \`takuhon admin update\` in this project — it replaces \`admin-dist/\` with the bundle shipped in your installed \`@takuhon/cli\` (keep your \`@takuhon/*\` dependencies on a matching version). To deploy without the form UI, remove the \`[assets]\` block from \`wrangler.toml\`; the Worker then falls back to a minimal inline editor.
 
 ## Deploy
 

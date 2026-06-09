@@ -26,6 +26,7 @@ import { runDev } from './dev-command.js';
 import { runExport } from './export-command.js';
 import { runImport } from './import-command.js';
 import { runMigrate } from './migrate-command.js';
+import { runRefreshAdmin } from './refresh-admin-command.js';
 import { runRestore } from './restore-command.js';
 import { runSync } from './sync-command.js';
 import { runValidate } from './validate-command.js';
@@ -66,6 +67,9 @@ Commands:
                                        the form UI at /admin (writes takuhon.json, backs up
                                        first) with a preview at / (default port: 4322). Binds
                                        127.0.0.1; prints a per-run token to paste into the form.
+  takuhon admin update [path]          Refresh a project's admin-dist/ with the admin form UI
+                                       bundled in this @takuhon/cli (use after upgrading the
+                                       CLI). Updates an existing admin-dist/ only.
   takuhon sync [path] --url <url>      Push a takuhon.json to a deployment's admin API
                                        (PUT <url>/api/admin/profile). Reads the admin token
                                        from TAKUHON_ADMIN_TOKEN. --if-match <etag> opts into
@@ -113,6 +117,10 @@ async function main(argv: readonly string[]): Promise<number> {
   }
 
   if (first === 'admin') {
+    if (argv[1] === 'update') {
+      // One-shot bundle refresh, not the long-lived server: goes through `emit`.
+      return emit(await runRefreshAdmin(argv.slice(2)));
+    }
     // Long-lived server, like `dev`: returns the exit code directly.
     return runAdmin(argv.slice(1));
   }
