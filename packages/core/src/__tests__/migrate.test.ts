@@ -249,7 +249,29 @@ describe('migrateTakuhon', () => {
     expect(out.recommendations[0]?.id).toBe('pre');
   });
 
-  it('chains 0.1.0 → 0.4.0 through all three registered migrations', () => {
+  it('migrates a 0.4.0 input forward to 0.5.0 (version stamp; settings.activity is optional)', () => {
+    const v040 = {
+      schemaVersion: '0.4.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      recommendations: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v040, '0.5.0');
+    expect(out.schemaVersion).toBe('0.5.0');
+    // Additive, version-only: no settings.activity is invented.
+    expect(out.settings.activity).toBeUndefined();
+    expect(out.profile.displayName).toEqual({ en: 'Test' });
+    expect(validate(out).ok).toBe(true);
+  });
+
+  it('chains 0.1.0 → 0.5.0 through all four registered migrations', () => {
     const v010 = {
       schemaVersion: '0.1.0',
       profile: { displayName: { en: 'Test' } },
@@ -262,9 +284,9 @@ describe('migrateTakuhon', () => {
       meta: { contentLicense: { spdxId: 'CC0-1.0' } },
     } as unknown as Takuhon;
 
-    const out = migrateTakuhon(v010, '0.4.0');
-    expect(out.schemaVersion).toBe('0.4.0');
-    // All three hops applied: nine 0.2.0 arrays + 0.3.0 testScores + 0.4.0 recommendations.
+    const out = migrateTakuhon(v010, '0.5.0');
+    expect(out.schemaVersion).toBe('0.5.0');
+    // All four hops applied: nine 0.2.0 arrays + 0.3.0 testScores + 0.4.0 recommendations.
     expect(out.certifications).toEqual([]);
     expect(out.testScores).toEqual([]);
     expect(out.recommendations).toEqual([]);
@@ -287,10 +309,11 @@ describe('migrateTakuhon', () => {
 });
 
 describe('migrations registry', () => {
-  it('contains the v0.1.0 → v0.2.0, v0.2.0 → v0.3.0, and v0.3.0 → v0.4.0 entries in chain order', () => {
-    expect(migrations).toHaveLength(3);
+  it('contains the v0.1.0 → … → v0.5.0 entries in chain order', () => {
+    expect(migrations).toHaveLength(4);
     expect(migrations[0]).toMatchObject({ from: '0.1.0', to: '0.2.0' });
     expect(migrations[1]).toMatchObject({ from: '0.2.0', to: '0.3.0' });
     expect(migrations[2]).toMatchObject({ from: '0.3.0', to: '0.4.0' });
+    expect(migrations[3]).toMatchObject({ from: '0.4.0', to: '0.5.0' });
   });
 });

@@ -38,7 +38,7 @@ import type { Takuhon } from './types.js';
  * versions whose JSON Schema this package literally bundles, not the full
  * support window seen by end users.
  */
-export const SUPPORTED_SCHEMA_VERSIONS = ['0.1.0', '0.2.0', '0.3.0', '0.4.0'] as const;
+export const SUPPORTED_SCHEMA_VERSIONS = ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0'] as const;
 
 /**
  * A single validation failure.

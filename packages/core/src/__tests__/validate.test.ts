@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.4.0');
+      expect(result.data.schemaVersion).toBe('0.5.0');
     }
   });
 
@@ -485,5 +485,65 @@ describe('validate() 0.4.0 additions (recommendations)', () => {
       (e) => e.keyword === 'required' && e.pointer === '/recommendations/0/author/name',
     );
     expect(missingName).toBeDefined();
+  });
+});
+
+describe('validate() 0.5.0 additions (settings.activity)', () => {
+  const base = {
+    schemaVersion: '0.5.0',
+    profile: { displayName: { en: 'Test' } },
+    links: [],
+    careers: [],
+    projects: [],
+    skills: [],
+    contact: {},
+    meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+  };
+
+  it('accepts a document carrying a full settings.activity block', () => {
+    const result = validate({
+      ...base,
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        activity: {
+          enabled: true,
+          github: { username: 'octocat', showLanguages: true, showContributions: true },
+          wakatime: { username: 'octocat', showCodingTime: true },
+          showRank: true,
+          refreshHintHours: 24,
+        },
+      },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.settings.activity?.github?.username).toBe('octocat');
+  });
+
+  it('accepts a document with no settings.activity (the field is optional)', () => {
+    const result = validate({
+      ...base,
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.settings.activity).toBeUndefined();
+  });
+
+  it('rejects a github activity entry missing its required username', () => {
+    const result = validate({
+      ...base,
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        activity: { enabled: true, github: { showLanguages: true } },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const missing = result.errors.find(
+      (e) => e.keyword === 'required' && e.pointer === '/settings/activity/github/username',
+    );
+    expect(missing).toBeDefined();
   });
 });
