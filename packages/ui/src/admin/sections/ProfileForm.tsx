@@ -2,6 +2,7 @@ import type { Address, Avatar, LocaleTag, Profile } from '@takuhon/core';
 
 import { getAdminLabel } from '../admin-labels.js';
 import { errorsAt, NO_FIELD_ERRORS, type FieldErrorIndex } from '../errors.js';
+import { ImageField, type UploadAsset } from '../primitives/ImageField.js';
 import { LocaleTabs } from '../primitives/LocaleTabs.js';
 import { TextField } from '../primitives/TextField.js';
 
@@ -13,6 +14,11 @@ export interface ProfileFormProps {
   locales: readonly LocaleTag[];
   errors?: FieldErrorIndex;
   formatLocale?: (locale: LocaleTag) => string;
+  /**
+   * Upload an avatar image file. When provided, the avatar field offers a file
+   * picker; when omitted, it stays URL-only.
+   */
+  uploadAsset?: UploadAsset;
 }
 
 const POINTER = '/profile';
@@ -22,9 +28,9 @@ function isEmptyRecord(record: Record<string, string> | undefined): boolean {
 }
 
 /**
- * Basic profile + About: display name, tagline, bio, avatar URL, and a
- * structured location (spec §6.5 / §14.2). Image upload is not wired yet, so
- * the avatar is a URL field only.
+ * Basic profile + About: display name, tagline, bio, avatar, and a structured
+ * location (spec §6.5 / §14.2). The avatar accepts a URL and, when
+ * `uploadAsset` is supplied by the host, an uploaded image file.
  */
 export function ProfileForm({
   value,
@@ -32,6 +38,7 @@ export function ProfileForm({
   locales,
   errors = NO_FIELD_ERRORS,
   formatLocale,
+  uploadAsset,
 }: ProfileFormProps): React.JSX.Element {
   const updateAvatar = (patch: Partial<Avatar>): void => {
     const merged: Avatar = { url: '', ...value.avatar, ...patch };
@@ -96,15 +103,15 @@ export function ProfileForm({
         formatLocale={formatLocale}
       />
 
-      <TextField
+      <ImageField
         label={getAdminLabel('field.avatarUrl')}
-        type="url"
         value={value.avatar?.url ?? ''}
         onChange={(url) => {
           updateAvatar({ url });
         }}
-        hint={getAdminLabel('hint.avatarNoUpload')}
+        hint={getAdminLabel(uploadAsset ? 'hint.avatarUpload' : 'hint.avatarNoUpload')}
         errors={errorsAt(errors, `${POINTER}/avatar/url`)}
+        uploadAsset={uploadAsset}
       />
       <LocaleTabs
         label={getAdminLabel('field.avatarAlt')}

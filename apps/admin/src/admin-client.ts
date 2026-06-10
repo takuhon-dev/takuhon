@@ -1,5 +1,5 @@
 import type { Takuhon } from '@takuhon/core';
-import type { AdminSaveOutcome } from '@takuhon/ui/admin';
+import type { AdminSaveOutcome, AssetUploadResult } from '@takuhon/ui/admin';
 
 /** Outcome of loading the stored document. */
 export type LoadResult =
@@ -13,6 +13,8 @@ export interface AdminClient {
   load: () => Promise<LoadResult>;
   /** PUT the document with `If-Match`, mapping the response to an editor outcome. */
   save: (doc: Takuhon) => Promise<AdminSaveOutcome>;
+  /** POST an image to `/api/admin/assets`, mapping the response to an upload outcome. */
+  uploadAsset: (file: File) => Promise<AssetUploadResult>;
 }
 
 interface ProblemBody {
@@ -86,5 +88,45 @@ export function createAdminClient(opts: { token: string; baseUrl?: string }): Ad
     return { status: 'saved', version };
   };
 
-  return { load, save };
+  const uploadAsset = async (file: File): Promise<AssetUploadResult> => {
+    const form = new FormData();
+    form.set('file', file);
+
+    let res: Response;
+    try {
+      // Do not set Content-Type: the browser adds the multipart boundary.
+      res = await fetch(`${base}/api/admin/assets`, {
+        method: 'POST',
+        headers: { authorization: authHeader },
+        body: form,
+      });
+    } catch {
+      return { status: 'error', message: 'Network request failed.' };
+    }
+
+    if (res.status === 401 || res.status === 403) {
+      return { status: 'error', message: 'Not authorized. Check the admin token.' };
+    }
+    if (res.status === 404 || res.status === 405) {
+      return { status: 'error', message: 'Image uploads are not enabled on this server.' };
+    }
+    if (res.status === 413) {
+      return { status: 'error', message: 'Image is too large (the limit is 5 MB).' };
+    }
+    if (res.status === 415) {
+      return { status: 'error', message: 'Unsupported image type (use JPEG, PNG, WebP, or GIF).' };
+    }
+    if (res.status === 422) {
+      return { status: 'error', message: 'Image could not be processed (check its dimensions).' };
+    }
+    if (!res.ok) return { status: 'error', message: `Unexpected status ${String(res.status)}.` };
+
+    const body = (await res.json()) as { url?: string; publicUrl?: string };
+    if (!body.url || !body.publicUrl) {
+      return { status: 'error', message: 'Unexpected response from the server.' };
+    }
+    return { status: 'uploaded', url: body.url, publicUrl: body.publicUrl };
+  };
+
+  return { load, save, uploadAsset };
 }

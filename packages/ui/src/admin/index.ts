@@ -31,6 +31,12 @@ export { TextField, type TextFieldProps } from './primitives/TextField.js';
 export { TextAreaField, type TextAreaFieldProps } from './primitives/TextAreaField.js';
 export { SelectField, type SelectFieldProps, type SelectOption } from './primitives/SelectField.js';
 export { CheckboxField, type CheckboxFieldProps } from './primitives/CheckboxField.js';
+export {
+  ImageField,
+  type ImageFieldProps,
+  type AssetUploadResult,
+  type UploadAsset,
+} from './primitives/ImageField.js';
 export { LocaleTabs, type LocaleTabsProps } from './primitives/LocaleTabs.js';
 export { Repeater, type RepeaterProps } from './primitives/Repeater.js';
 

@@ -1,5 +1,5 @@
 import type { Link, Project, Settings, Skill } from '@takuhon/core';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { indexErrors } from '../errors.js';
@@ -36,6 +36,32 @@ describe('ProfileForm', () => {
     );
     fireEvent.change(screen.getByLabelText('Avatar URL'), { target: { value: '' } });
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ avatar: undefined }));
+  });
+
+  it('offers an avatar upload control and stores the returned url when uploadAsset is given', async () => {
+    const onChange = vi.fn();
+    const uploadAsset = vi.fn().mockResolvedValue({
+      status: 'uploaded',
+      url: '/assets/1-ab.png',
+      publicUrl: 'http://x/assets/1-ab.png',
+    });
+    render(
+      <ProfileForm
+        value={{ displayName: { en: 'Pat' } }}
+        onChange={onChange}
+        locales={LOCALES}
+        uploadAsset={uploadAsset}
+      />,
+    );
+
+    const file = new File([new Uint8Array([0x89, 0x50])], 'a.png', { type: 'image/png' });
+    fireEvent.change(screen.getByLabelText('Upload image'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ avatar: { url: '/assets/1-ab.png' } }),
+      );
+    });
   });
 });
 
