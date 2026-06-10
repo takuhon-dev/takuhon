@@ -10,6 +10,11 @@
  * `create-takuhon` copies into scaffolded projects). Editing in the form writes
  * `takuhon.json`; reloading `/` re-renders it, closing the edit → preview loop.
  *
+ * Image uploads work locally too: `POST /api/admin/assets` stores into an
+ * `assets/` directory beside `takuhon.json` via {@link FileTakuhonAssetStorage},
+ * and `GET /assets/*` serves them back (with `nosniff`), so the local pipeline
+ * matches the Cloudflare adapter's R2 + delivery proxy.
+ *
  * Authentication reuses the Bearer-token path: a fresh random token is minted
  * per run, the server binds `127.0.0.1`, and the token is printed for the
  * operator to paste into the SPA's sign-in form. Nothing is persisted.
@@ -37,6 +42,7 @@ import {
 import { Hono } from 'hono';
 
 import { handleRequest, loadSiteState } from './dev-command.js';
+import { FileTakuhonAssetStorage } from './file-asset-storage.js';
 import { FileStorage } from './file-storage.js';
 import { resolveAdminBundleDir } from './scaffold/index.js';
 
@@ -186,6 +192,34 @@ function serveAdminBundle(
   return new Response(method === 'HEAD' ? null : body, { status: 200, headers });
 }
 
+/**
+ * Serve an uploaded asset from the project's `assets/` directory for a
+ * `GET`/`HEAD /assets/*` request — the local counterpart of the Cloudflare
+ * adapter's R2 delivery proxy. Forces `X-Content-Type-Options: nosniff`
+ * (`security.md` §4.7) and a long-lived immutable cache (keys are unique). The
+ * traversal guard lives in {@link FileTakuhonAssetStorage.readForServing}.
+ */
+function serveLocalAsset(
+  assetStorage: FileTakuhonAssetStorage,
+  method: string,
+  pathname: string,
+): Response {
+  if (method !== 'GET' && method !== 'HEAD') return plain(405, 'Method Not Allowed\n');
+  let key: string;
+  try {
+    key = decodeURIComponent(pathname.slice(1)); // drop the leading '/', → 'assets/...'
+  } catch {
+    return plain(400, 'Bad Request\n');
+  }
+  const asset = assetStorage.readForServing(key);
+  if (asset === null) return plain(404, 'Not Found\n');
+  const headers = new Headers();
+  headers.set('content-type', asset.contentType);
+  headers.set('x-content-type-options', 'nosniff');
+  headers.set('cache-control', 'public, max-age=31536000, immutable');
+  return new Response(method === 'HEAD' ? null : asset.bytes, { status: 200, headers });
+}
+
 export interface CreateAdminAppOptions {
   /** Path to the project's takuhon.json. */
   readonly path: string;
@@ -195,6 +229,12 @@ export interface CreateAdminAppOptions {
   readonly baseUrl?: string;
   /** Admin bundle directory; defaults to the bundle shipped in this package. */
   readonly bundleDir?: string;
+  /**
+   * Origin used to build absolute asset `publicUrl`s (the loopback origin,
+   * passed by {@link runAdmin}). When omitted, `publicUrl` is the relative
+   * `/assets/...` path, which the same-origin SPA / preview can still fetch.
+   */
+  readonly assetBaseUrl?: string;
 }
 
 /**
@@ -204,12 +244,16 @@ export interface CreateAdminAppOptions {
 export function createAdminApp(opts: CreateAdminAppOptions): Hono {
   const bundleDir = opts.bundleDir ?? resolveAdminBundleDir();
   const storage = new FileStorage(opts.path);
+  // Uploads land in `assets/` beside takuhon.json and are served below at
+  // /assets/*, mirroring the Cloudflare adapter's R2 + GET /assets/* pairing.
+  const assetStorage = new FileTakuhonAssetStorage(opts.path, { publicBaseUrl: opts.assetBaseUrl });
   const app = new Hono();
 
   app.route(
     '/api/admin',
     createAdminApiApp({
       storage,
+      assetStorage,
       getAdminToken: () => opts.token,
       // Loopback, same-origin SPA: no Origin allowlist needed (empty = skip).
       getAdminOrigins: () => [],
@@ -225,6 +269,9 @@ export function createAdminApp(opts: CreateAdminAppOptions): Hono {
     const { method, path } = c.req;
     if (path === '/admin' || path.startsWith('/admin/')) {
       return serveAdminBundle(bundleDir, method, path, opts.token);
+    }
+    if (path.startsWith('/assets/')) {
+      return serveLocalAsset(assetStorage, method, path);
     }
     const state = loadSiteState(opts.path, opts.baseUrl);
     const res = handleRequest(method, path, state);
@@ -340,7 +387,12 @@ export async function runAdmin(
   }
 
   const token = deps.token ?? randomBytes(32).toString('base64url');
-  const app = createAdminApp({ path: parsed.path, token, baseUrl: parsed.baseUrl });
+  const app = createAdminApp({
+    path: parsed.path,
+    token,
+    baseUrl: parsed.baseUrl,
+    assetBaseUrl: `http://127.0.0.1:${String(parsed.port)}`,
+  });
 
   return await new Promise<number>((resolvePromise) => {
     let closing = false;
