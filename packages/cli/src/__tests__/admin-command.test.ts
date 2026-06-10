@@ -12,6 +12,45 @@ import { renderTakuhonJson } from '../scaffold/takuhon-json.js';
 
 const TOKEN = 'test-admin-token';
 
+// A minimal valid PNG (built by hand) for the asset-upload tests.
+const asciiBytes = (s: string): number[] => Array.from(s, (c) => c.charCodeAt(0));
+const u32 = (n: number): number[] => [
+  (n >>> 24) & 0xff,
+  (n >>> 16) & 0xff,
+  (n >>> 8) & 0xff,
+  n & 0xff,
+];
+function png(width: number, height: number): Uint8Array {
+  return Uint8Array.from([
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a,
+    ...u32(13),
+    ...asciiBytes('IHDR'),
+    ...u32(width),
+    ...u32(height),
+    0x08,
+    0x02,
+    0x00,
+    0x00,
+    0x00,
+    ...u32(0),
+    ...u32(2),
+    ...asciiBytes('IDAT'),
+    0x78,
+    0x01,
+    ...u32(0),
+    ...u32(0),
+    ...asciiBytes('IEND'),
+    ...u32(0),
+  ]);
+}
+
 function capture(): {
   out: string[];
   err: string[];
@@ -150,6 +189,40 @@ describe('createAdminApp() request handling', () => {
     const res = await req('/');
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain('text/html');
+  });
+
+  const upload = (bytes: Uint8Array, headers: Record<string, string> = auth): Promise<Response> => {
+    const form = new FormData();
+    form.set('file', new File([Uint8Array.from(bytes)], 'avatar.png', { type: 'image/png' }));
+    return req('/api/admin/assets', { method: 'POST', headers, body: form });
+  };
+
+  it('POST /api/admin/assets stores the image under assets/ and returns 201', async () => {
+    const res = await upload(png(48, 24));
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { id: string; url: string; mimeType: string };
+    expect(body.id).toMatch(/^assets\/\d+-[0-9a-f]{4}\.png$/);
+    expect(body.mimeType).toBe('image/png');
+    // The bytes are written beside takuhon.json under assets/.
+    expect((await readFile(join(dir, body.id))).length).toBeGreaterThan(0);
+  });
+
+  it('serves an uploaded asset at GET /assets/* with nosniff', async () => {
+    const { id } = (await (await upload(png(48, 24))).json()) as { id: string };
+    const res = await req(`/${id}`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('image/png');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect((await res.arrayBuffer()).byteLength).toBeGreaterThan(0);
+  });
+
+  it('404s a missing asset', async () => {
+    expect((await req('/assets/1700000000-dead.png')).status).toBe(404);
+  });
+
+  it('POST /api/admin/assets → 401 without a token', async () => {
+    const res = await upload(png(8, 8), {});
+    expect(res.status).toBe(401);
   });
 });
 
