@@ -24,6 +24,7 @@ import type { Takuhon } from '../types.js';
 import { v0_1_0_to_v0_2_0 } from './v0.1.0-to-v0.2.0.js';
 import { v0_2_0_to_v0_3_0 } from './v0.2.0-to-v0.3.0.js';
 import { v0_3_0_to_v0_4_0 } from './v0.3.0-to-v0.4.0.js';
+import { v0_4_0_to_v0_5_0 } from './v0.4.0-to-v0.5.0.js';
 
 /**
  * A forward migration entry. `from` and `to` are semver strings matching
@@ -47,4 +48,5 @@ export const migrations: readonly Migration<Takuhon, Takuhon>[] = [
   v0_1_0_to_v0_2_0,
   v0_2_0_to_v0_3_0,
   v0_3_0_to_v0_4_0,
+  v0_4_0_to_v0_5_0,
 ];

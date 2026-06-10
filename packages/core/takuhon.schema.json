@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.4.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/0.5.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -359,6 +359,59 @@
           "type": "boolean",
           "default": false,
           "description": "Opt-in flag for first-party analytics. Default is false to keep takuhon privacy-respecting by default."
+        },
+        "activity": { "$ref": "#/$defs/ActivitySettings" }
+      }
+    },
+    "ActivitySettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opt-in developer-activity dashboard configuration (GitHub / WakaTime). Only the owner-curated settings live here; secrets are provisioned out of band and the synced metrics are stored in a separate document, never in takuhon.json.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Master switch. When false (the default), the activity section is not rendered even if a snapshot exists."
+        },
+        "github": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["username"],
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 39,
+              "description": "GitHub login whose public activity is summarized."
+            },
+            "showLanguages": { "type": "boolean", "default": true },
+            "showContributions": { "type": "boolean", "default": true }
+          }
+        },
+        "wakatime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["username"],
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "WakaTime username whose coding-time stats are summarized."
+            },
+            "showCodingTime": { "type": "boolean", "default": true }
+          }
+        },
+        "showRank": {
+          "type": "boolean",
+          "default": true,
+          "description": "Display the derived activity rank / badge."
+        },
+        "refreshHintHours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168,
+          "description": "Advisory refresh cadence in hours. The real cadence is how often the sync step (CLI command or scheduled job) runs."
         }
       }
     },

@@ -354,6 +354,33 @@ export interface Settings {
   enableApi?: boolean;
   /** Opt-in flag for first-party analytics. Default is false. */
   enableAnalytics?: boolean;
+  /** Opt-in developer-activity dashboard configuration (added in 0.5.0). */
+  activity?: ActivitySettings;
+}
+
+/**
+ * Owner-curated configuration for the developer-activity dashboard (GitHub /
+ * WakaTime). Secrets (API tokens) are provisioned out of band and never stored
+ * here; the synced metrics live in a separate document, not in `takuhon.json`.
+ */
+export interface ActivitySettings {
+  /** Master switch; the section is hidden when false (the default). */
+  enabled?: boolean;
+  github?: {
+    /** GitHub login whose public activity is summarized. */
+    username: string;
+    showLanguages?: boolean;
+    showContributions?: boolean;
+  };
+  wakatime?: {
+    /** WakaTime username whose coding-time stats are summarized. */
+    username: string;
+    showCodingTime?: boolean;
+  };
+  /** Display the derived activity rank / badge. */
+  showRank?: boolean;
+  /** Advisory refresh cadence in hours (the real cadence is the sync schedule). */
+  refreshHintHours?: number;
 }
 
 export interface ContentLicenseAttribution {
