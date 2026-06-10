@@ -11,6 +11,7 @@ import {
   type FieldErrorIndex,
   type FieldErrorLike,
 } from './errors.js';
+import { type UploadAsset } from './primitives/ImageField.js';
 import { CareersForm } from './sections/CareersForm.js';
 import { LinksForm } from './sections/LinksForm.js';
 import { ProfileForm } from './sections/ProfileForm.js';
@@ -41,6 +42,12 @@ export interface AdminEditorProps {
    */
   onImport?: () => Promise<unknown>;
   formatLocale?: (locale: LocaleTag) => string;
+  /**
+   * Upload an avatar image file (host-supplied; carries the admin token). When
+   * provided, the profile form's avatar field offers a file picker; otherwise
+   * the avatar stays URL-only.
+   */
+  uploadAsset?: UploadAsset;
 }
 
 type Mode = 'form' | 'advanced';
@@ -63,6 +70,7 @@ export function AdminEditor({
   onExport,
   onImport,
   formatLocale,
+  uploadAsset,
 }: AdminEditorProps): React.JSX.Element {
   const [draft, setDraft] = useState<Takuhon>(initialDocument);
   const [mode, setMode] = useState<Mode>('form');
@@ -281,6 +289,7 @@ export function AdminEditor({
             locales={locales}
             errors={errors}
             formatLocale={formatLocale}
+            uploadAsset={uploadAsset}
           />
           <LinksForm
             value={draft.links}

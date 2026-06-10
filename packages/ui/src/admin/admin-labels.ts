@@ -34,6 +34,8 @@ const EN = {
   'status.error': 'Something went wrong. Please try again.',
   'status.imported': 'Imported. Review the fields, then save to apply.',
   'status.importInvalid': 'The imported file is not a valid takuhon document.',
+  'status.uploading': 'Uploading…',
+  'status.uploadError': 'Upload failed. Please try again.',
 
   'section.profile': 'Profile',
   'section.about': 'About',
@@ -47,6 +49,7 @@ const EN = {
   'field.tagline': 'Tagline',
   'field.bio': 'Bio',
   'field.avatarUrl': 'Avatar URL',
+  'field.avatarUpload': 'Upload image',
   'field.avatarAlt': 'Avatar alternative text',
   'field.location.country': 'Country',
   'field.location.region': 'Region',
@@ -98,6 +101,7 @@ const EN = {
   'empty.skills': 'No skills yet.',
 
   'hint.avatarNoUpload': 'Paste an image URL. Uploading image files is not available yet.',
+  'hint.avatarUpload': 'Paste an image URL, or upload a JPEG, PNG, WebP, or GIF.',
   'hint.month': 'Format: YYYY-MM (e.g. 2024-03).',
   'hint.country': 'ISO 3166-1 alpha-2 code, e.g. US.',
   'hint.tags': 'Comma-separated.',

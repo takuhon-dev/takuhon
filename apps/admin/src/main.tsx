@@ -234,6 +234,7 @@ function App(): React.JSX.Element {
       }}
       onExport={downloadJson}
       onImport={pickJsonFile}
+      uploadAsset={(file) => client!.uploadAsset(file)}
     />
   );
 }

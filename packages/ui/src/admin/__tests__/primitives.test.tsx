@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import axe from 'axe-core';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CheckboxField } from '../primitives/CheckboxField.js';
+import { ImageField } from '../primitives/ImageField.js';
 import { SelectField } from '../primitives/SelectField.js';
 import { TextAreaField as TextArea } from '../primitives/TextAreaField.js';
 import { TextField } from '../primitives/TextField.js';
@@ -77,6 +78,55 @@ describe('CheckboxField', () => {
     expect(box).not.toBeChecked();
     fireEvent.click(box);
     expect(onChange).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('ImageField', () => {
+  const pngFile = (): File =>
+    new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], 'a.png', { type: 'image/png' });
+
+  it('is URL-only (no file input) when no uploadAsset is given', () => {
+    render(<ImageField label="Avatar" value="https://x/a.png" onChange={vi.fn()} />);
+    expect(screen.getByLabelText('Avatar')).toHaveValue('https://x/a.png');
+    expect(screen.queryByLabelText('Upload image')).toBeNull();
+  });
+
+  it('calls onChange when the URL is typed', () => {
+    const onChange = vi.fn();
+    render(<ImageField label="Avatar" value="" onChange={onChange} uploadAsset={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText('Avatar'), { target: { value: 'https://x/b.png' } });
+    expect(onChange).toHaveBeenCalledWith('https://x/b.png');
+  });
+
+  it('uploads a file and writes the returned url back into the field', async () => {
+    const onChange = vi.fn();
+    const uploadAsset = vi.fn().mockResolvedValue({
+      status: 'uploaded',
+      url: '/assets/1-ab.png',
+      publicUrl: 'http://x/assets/1-ab.png',
+    });
+    render(<ImageField label="Avatar" value="" onChange={onChange} uploadAsset={uploadAsset} />);
+
+    const file = pngFile();
+    fireEvent.change(screen.getByLabelText('Upload image'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith('/assets/1-ab.png');
+    });
+    expect(uploadAsset).toHaveBeenCalledWith(file);
+  });
+
+  it('shows an error and leaves the value when the upload fails', async () => {
+    const onChange = vi.fn();
+    const uploadAsset = vi
+      .fn()
+      .mockResolvedValue({ status: 'error', message: 'Image is too large (the limit is 5 MB).' });
+    render(<ImageField label="Avatar" value="" onChange={onChange} uploadAsset={uploadAsset} />);
+
+    fireEvent.change(screen.getByLabelText('Upload image'), { target: { files: [pngFile()] } });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Image is too large');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 
