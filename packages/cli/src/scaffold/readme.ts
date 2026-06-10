@@ -86,6 +86,16 @@ The admin form UI is served at \`/admin\` under a strict Content-Security-Policy
 
 The bundle is a snapshot taken when this project was created. To pick up a newer admin UI, upgrade your \`takuhon\` CLI and run \`takuhon admin update\` in this project — it replaces \`admin-dist/\` with the bundle shipped in your installed \`@takuhon/cli\` (keep your \`@takuhon/*\` dependencies on a matching version). To deploy without the form UI, remove the \`[assets]\` block from \`wrangler.toml\`; the Worker then falls back to a minimal inline editor.
 
+### Image uploads (optional)
+
+Image uploads are off until you bind an R2 bucket. Create one and uncomment the \`[[r2_buckets]]\` block in \`wrangler.toml\`:
+
+\`\`\`sh
+npx wrangler r2 bucket create ${projectName}-assets
+\`\`\`
+
+The Worker then accepts uploads at \`POST /api/admin/assets\` (magic-byte check, 5 MB / 4096px limits, EXIF/metadata stripping) and serves them at \`GET /assets/*\` with \`X-Content-Type-Options: nosniff\`. Without the binding, avatars stay URL-only.
+
 ## Deploy
 
 \`\`\`sh

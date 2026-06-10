@@ -83,5 +83,14 @@ preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID"
 # Use 32+ bytes of entropy, e.g. \`openssl rand -base64 32\`.
 [vars]
 TAKUHON_ADMIN_ORIGIN = ""
+
+# Image uploads (optional). Bind an R2 bucket to enable \`POST /api/admin/assets\`
+# and \`GET /assets/*\` delivery; without it the upload endpoint stays
+# unregistered (404) and avatars remain URL-only. Create the bucket, then
+# uncomment:
+#   wrangler r2 bucket create ${projectName}-assets
+# [[r2_buckets]]
+# binding = "TAKUHON_R2"
+# bucket_name = "${projectName}-assets"
 `;
 }

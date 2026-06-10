@@ -17,6 +17,10 @@ local edge cache, and `console.log`-based audit logging.
 | `GET`    | `/admin`                    | `@takuhon/api` `createAdminUiApp` (HTML)     |
 | `PUT`    | `/api/admin/profile`        | `@takuhon/api` `createAdminApiApp`           |
 | `DELETE` | `/api/admin/profile`        | `@takuhon/api` `createAdminApiApp`           |
+| `POST`   | `/api/admin/assets`         | `@takuhon/api` `createAdminApiApp` (R2)\*    |
+| `GET`    | `/assets/*`                 | R2 delivery proxy (this package)\*           |
+
+\* Registered only when an R2 bucket is bound (see [Image uploads](#image-uploads-r2)).
 
 `POST` / `PATCH` on admin paths returns `405 Method Not Allowed`. Schema
 validation failures return `422 Unprocessable Entity` with an `errors[]`
@@ -154,12 +158,47 @@ Leave `TAKUHON_ADMIN_TOKEN` unset. Every admin write returns `401`. The
 `/admin` UI is still served but its Save / Delete actions will fail
 identically; treat that as a feature-flag for read-only deployments.
 
+### Image uploads (R2)
+
+Image uploads are **optional** and off until an R2 bucket is bound as
+`TAKUHON_R2`. Without it, `POST /api/admin/assets` is unregistered (404) and
+avatars stay URL-only.
+
+Create a bucket and uncomment the `[[r2_buckets]]` block in `wrangler.toml`:
+
+```sh
+wrangler r2 bucket create takuhon-assets
+```
+
+```toml
+[[r2_buckets]]
+binding = "TAKUHON_R2"
+bucket_name = "takuhon-assets"
+```
+
+Once bound:
+
+- `POST /api/admin/assets` (admin-authenticated, `multipart/form-data`, field
+  `file`) accepts JPEG / PNG / WebP / GIF up to 5 MB and 4096×4096px. The type
+  is authenticated from the magic bytes (not the declared `Content-Type`), and
+  EXIF / IPTC / XMP / color-profile metadata is stripped before storage
+  (`security.md` §4). It returns `201` with the asset record (`publicUrl`).
+- Objects are stored under `assets/{timestamp}-{shortHash}.{ext}` and **served
+  by the Worker**, not a public R2 bucket: `GET /assets/*` proxies the bytes
+  with `X-Content-Type-Options: nosniff` and a long-lived immutable cache. The
+  bucket stays private, which keeps the door open for signed-URL delivery in a
+  later phase.
+
+Asset delivery is intentionally locale-agnostic: only the literal `/assets/*`
+prefix is served, so `/{locale}/assets/...` 404s.
+
 ## Limitations & deferred work
 
 | Concern                            | Status                                | Tracked phase |
 | ---------------------------------- | ------------------------------------- | ------------- |
 | `PATCH /api/admin/profile`         | 405 (intentionally not implemented)   | Phase 5+      |
-| `POST /api/admin/assets` (R2)      | Not yet wired                         | Phase 3.5     |
+| AVIF uploads                       | Rejected (415); other formats only    | Phase 5+      |
+| Signed-URL / private asset reads   | Public proxy via `GET /assets/*`      | Phase 5+      |
 | Global cache purge (REST API)      | Colo-local only via `Cache.delete`    | Phase 5+      |
 | CORS preflight for cross-origin    | Not handled (admin UI is same-origin) | Phase 5+      |
 | CLI scaffolding (`create-takuhon`) | Minimal Wrangler bootstrap            | Phase 3.6     |

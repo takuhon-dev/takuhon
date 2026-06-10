@@ -220,6 +220,26 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     expect(toml).toContain('not_found_handling = "single-page-application"');
   });
 
+  it('includes an opt-in R2 image-upload binding (commented out by default)', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const toml = await readFile(join(targetDir, 'wrangler.toml'), 'utf8');
+    // Image uploads are optional: the [[r2_buckets]] block ships commented out
+    // so the default `wrangler deploy` works without a pre-created bucket. The
+    // binding name and a project-derived bucket name are present for the user
+    // to uncomment.
+    expect(toml).toContain('# [[r2_buckets]]');
+    expect(toml).toContain('# binding = "TAKUHON_R2"');
+    expect(toml).toContain('# bucket_name = "my-profile-assets"');
+    // It must NOT be active by default (an active binding to a missing bucket
+    // would break the first deploy).
+    expect(toml).not.toMatch(/^\[\[r2_buckets\]\]/m);
+  });
+
   it('writes a package.json with takuhon-monorepo dependencies and the project name', async () => {
     await writeProject({
       targetDir,
