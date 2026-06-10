@@ -1,0 +1,53 @@
+{
+  "name": "@takuhon/activity",
+  "version": "0.11.0",
+  "description": "Developer-activity fetchers (GitHub, WakaTime) that build a takuhon activity snapshot",
+  "license": "Apache-2.0",
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/activity#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "packages/activity"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "profile",
+    "github",
+    "wakatime",
+    "activity"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@takuhon/core": "workspace:*"
+  }
+}
