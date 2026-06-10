@@ -50,11 +50,32 @@ export type { Migration } from './migrations/index.js';
 
 export { ConflictError, NotFoundError, StorageError } from './storage-interface.js';
 export type {
+  ActivityStorage,
   AssetOptions,
   AssetRecord,
   TakuhonAssetStorage,
   TakuhonStorage,
 } from './storage-interface.js';
+
+export {
+  computeLanguagePercentages,
+  deriveRankTier,
+  formatCodingTime,
+  isActivitySnapshot,
+  RANK_FULL_CODING_HOURS,
+  RANK_FULL_CONTRIBUTIONS,
+  RANK_TIER_THRESHOLDS,
+} from './activity.js';
+export type {
+  ActivitySnapshot,
+  CodingTime,
+  ContributionCalendar,
+  ContributionDay,
+  LanguageBreakdown,
+  RankInput,
+  RankTier,
+  RankTierLabel,
+} from './activity.js';
 
 export {
   ACCEPTED_IMAGE_MIME_TYPES,

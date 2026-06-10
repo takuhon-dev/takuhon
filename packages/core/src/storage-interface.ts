@@ -25,6 +25,7 @@
  *   where upstream documents write "Takuhon".
  */
 
+import type { ActivitySnapshot } from './activity.js';
 import type { Takuhon } from './types.js';
 
 /**
@@ -111,6 +112,28 @@ export interface TakuhonAssetStorage {
   /** Idempotent: no error when the asset is already absent. */
   deleteAsset(assetId: string): Promise<void>;
   listAssets(): Promise<AssetRecord[]>;
+}
+
+/**
+ * Persistence contract for the developer-activity snapshot (see
+ * {@link ActivitySnapshot}). Like {@link TakuhonAssetStorage}, this is a
+ * separate, optional interface so deployments that don't enable the activity
+ * feature can omit it entirely.
+ *
+ * Unlike {@link TakuhonStorage}, there is no optimistic-locking `version`: the
+ * snapshot is machine-written by a sync step (a CLI command or a scheduled job)
+ * with last-writer-wins semantics and is never concurrently hand-edited.
+ */
+export interface ActivityStorage {
+  /**
+   * Read the current activity snapshot, or `null` when none has been synced
+   * yet. Returns `null` rather than throwing {@link NotFoundError}: an absent
+   * snapshot is the normal opt-out / pre-sync state, and the renderer omits the
+   * activity section gracefully when it is `null`.
+   */
+  getActivitySnapshot(): Promise<ActivitySnapshot | null>;
+  /** Replace the stored snapshot (last-writer-wins; no precondition). */
+  saveActivitySnapshot(snapshot: ActivitySnapshot): Promise<void>;
 }
 
 /**
