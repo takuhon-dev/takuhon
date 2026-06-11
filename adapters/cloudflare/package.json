@@ -50,6 +50,7 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
+    "@takuhon/activity": "workspace:*",
     "@takuhon/api": "workspace:*",
     "@takuhon/core": "workspace:*",
     "hono": "^4.12.19"

@@ -14,8 +14,10 @@ import { Hono } from 'hono';
 
 import exampleJson from '../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 
+import { syncActivity } from './activity-sync.js';
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
+import { KvActivityStorage } from './kv-activity-storage.js';
 import { KvTakuhonStorage } from './kv-storage.js';
 import { ASSET_CACHE_CONTROL, R2TakuhonAssetStorage } from './r2-storage.js';
 
@@ -46,6 +48,20 @@ export interface Env {
    * avatars remain URL-only.
    */
   TAKUHON_R2?: R2Bucket;
+  /**
+   * GitHub token for the scheduled activity sync. Optional: languages are
+   * fetched unauthenticated without it; the contribution calendar (GraphQL,
+   * token-only) is simply skipped. Provision via
+   * `wrangler secret put TAKUHON_GITHUB_TOKEN` — never in `wrangler.toml`.
+   */
+  TAKUHON_GITHUB_TOKEN?: string;
+  /**
+   * WakaTime API key for the scheduled activity sync; required to read coding
+   * time (WakaTime has no unauthenticated mode). Provision via
+   * `wrangler secret put TAKUHON_WAKATIME_KEY` — never in `wrangler.toml`.
+   * Only flows through the sync step; never persisted.
+   */
+  TAKUHON_WAKATIME_KEY?: string;
 }
 
 /** Options accepted by {@link createTakuhonWorker}. */
@@ -158,6 +174,7 @@ async function serveAdminSpa(request: Request, assets: Fetcher, url: URL): Promi
  */
 export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
   fetch: (request: Request, env: Env) => Response | Promise<Response>;
+  scheduled: (controller: ScheduledController, env: Env, ctx: ExecutionContext) => Promise<void>;
 } {
   return {
     fetch(request: Request, env: Env): Response | Promise<Response> {
@@ -218,9 +235,58 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
         }),
       );
       router.route('/admin', createAdminUiApp());
-      router.route('/', createPublicApp({ storage, fallback: opts.fallback }));
+      router.route(
+        '/',
+        createPublicApp({
+          storage,
+          fallback: opts.fallback,
+          // Serves `GET /api/activity` from the synced snapshot; the route
+          // 404s while no snapshot is stored or activity is not enabled.
+          activityStorage: new KvActivityStorage(env.TAKUHON_KV),
+        }),
+      );
 
       return router.fetch(request, env);
+    },
+
+    /**
+     * Cron-driven activity sync (enable with a `[triggers] crons` entry in
+     * `wrangler.toml`; daily is the recommended cadence). MUST NOT throw: a
+     * failed sync keeps the last-known snapshot and surfaces through the
+     * structured log line below (captured by Workers Tail / Logpush), never by
+     * failing the cron run.
+     */
+    async scheduled(_controller: ScheduledController, env: Env, _ctx: ExecutionContext) {
+      const timestamp = new Date().toISOString();
+      try {
+        const result = await syncActivity({
+          profileStorage: new KvTakuhonStorage(env.TAKUHON_KV),
+          activityStorage: new KvActivityStorage(env.TAKUHON_KV),
+          secrets: {
+            githubToken: env.TAKUHON_GITHUB_TOKEN,
+            wakatimeKey: env.TAKUHON_WAKATIME_KEY,
+          },
+          fallback: opts.fallback,
+        });
+        const type =
+          result.status === 'synced'
+            ? 'activity.sync.success'
+            : result.status === 'empty'
+              ? 'activity.sync.failure'
+              : 'activity.sync.skipped';
+        console.log(
+          JSON.stringify({ type, timestamp, reason: result.reason, failures: result.failures }),
+        );
+      } catch (err) {
+        console.error(
+          JSON.stringify({
+            type: 'activity.sync.failure',
+            timestamp,
+            reason: err instanceof Error ? err.message : String(err),
+            failures: [],
+          }),
+        );
+      }
     },
   };
 }

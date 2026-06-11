@@ -6,6 +6,7 @@ import {
   normalize,
   resolveLocale,
   schema,
+  type ActivityStorage,
   type Takuhon,
   type TakuhonStorage,
 } from '@takuhon/core';
@@ -24,6 +25,15 @@ export interface PublicAppDeps {
    * succeed before the first admin write.
    */
   fallback?: () => Takuhon;
+  /**
+   * Source of the synced developer-activity snapshot, exposed at
+   * `GET /api/activity`. Optional, like the admin app's `assetStorage`:
+   * deployments that don't sync activity leave it unset and the route
+   * answers 404. The route also answers 404 while `settings.activity` is
+   * not enabled in the profile, so disabling the feature stops serving a
+   * previously synced snapshot immediately.
+   */
+  activityStorage?: ActivityStorage;
 }
 
 const FALLBACK_VERSION = 'bundled-fixture';
@@ -128,6 +138,31 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
   });
 
   app.get('/api/schema', (c) => c.json(schema));
+
+  // Public read of the synced developer-activity snapshot (design decision
+  // §9-5: public, like /api/profile). The snapshot is already owner-derived
+  // public metrics — no privacy filter applies — but the owner's opt-in is
+  // re-checked on every read so disabling `settings.activity` takes effect
+  // immediately, even while a stale snapshot is still stored. All three
+  // unavailable states answer the same 404 problem.
+  app.get('/api/activity', async (c) => {
+    const unavailable = (): Response =>
+      problemResponse(c, {
+        slug: ERROR_SLUGS.notFound,
+        status: 404,
+        title: 'Not Found',
+        detail: 'No activity snapshot is available.',
+      });
+
+    if (!deps.activityStorage) return unavailable();
+    const { data } = await loadProfile(deps);
+    if (data.settings.activity?.enabled !== true) return unavailable();
+    const snapshot = await deps.activityStorage.getActivitySnapshot();
+    if (snapshot === null) return unavailable();
+
+    c.header('cache-control', 'public, max-age=300');
+    return c.json(snapshot);
+  });
 
   app.get('/api/jsonld', async (c) => {
     const { data, version } = await loadProfile(deps);

@@ -28,6 +28,20 @@ TAKUHON_ADMIN_TOKEN=
 #   TAKUHON_ADMIN_ORIGIN=https://admin.example.com,https://localhost:8787
 TAKUHON_ADMIN_ORIGIN=
 
+# Developer-activity sync secrets (only needed when settings.activity is
+# enabled in takuhon.json). Used by \`takuhon activity sync\` locally; for a
+# deployed Worker provision them as Wrangler secrets instead:
+#   wrangler secret put TAKUHON_GITHUB_TOKEN
+#   wrangler secret put TAKUHON_WAKATIME_KEY
+# Never commit the real values.
+#
+# Optional GitHub token: languages work without it; the contribution calendar
+# requires it (minimal read-only scope is enough).
+TAKUHON_GITHUB_TOKEN=
+# WakaTime API key (https://wakatime.com/settings/api-key); required to read
+# coding time.
+TAKUHON_WAKATIME_KEY=
+
 # Cloudflare account id (look up via \`wrangler whoami\`). Only needed if you
 # script Cloudflare API calls outside Wrangler itself.
 CLOUDFLARE_ACCOUNT_ID=

@@ -65,6 +65,9 @@ importers:
 
   adapters/cloudflare:
     dependencies:
+      '@takuhon/activity':
+        specifier: workspace:*
+        version: link:../../packages/activity
       '@takuhon/api':
         specifier: workspace:*
         version: link:../../packages/api
