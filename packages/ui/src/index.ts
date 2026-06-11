@@ -8,6 +8,7 @@
  */
 
 export { TakuhonProfile, type TakuhonProfileProps } from './components/TakuhonProfile.js';
+export { ActivitySection, type ActivitySectionProps } from './components/ActivitySection.js';
 export { ProfileHeader, type ProfileHeaderProps } from './components/ProfileHeader.js';
 export { LinksList, type LinksListProps } from './components/LinksList.js';
 export { CareerTimeline, type CareerTimelineProps } from './components/CareerTimeline.js';

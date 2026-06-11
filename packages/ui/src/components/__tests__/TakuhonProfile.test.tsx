@@ -1,4 +1,4 @@
-import { resolveLocale, validate } from '@takuhon/core';
+import { resolveLocale, validate, type ActivitySnapshot } from '@takuhon/core';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
@@ -65,5 +65,29 @@ describe('TakuhonProfile', () => {
     expect(container.textContent).toMatch(/現在/);
     expect(screen.getByRole('region', { name: '職歴' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: /^Career$/ })).toBeNull();
+  });
+
+  it('renders the Activity section only while settings.activity is enabled', () => {
+    const snapshot: ActivitySnapshot = {
+      lastSyncedAt: '2026-06-11T00:00:00.000Z',
+      rank: { tier: 'A', score: 62 },
+    };
+    // A supplied snapshot alone is not enough: the fixture does not opt in.
+    const { rerender } = render(<TakuhonProfile data={example} activitySnapshot={snapshot} />);
+    expect(screen.queryByRole('region', { name: 'Activity' })).not.toBeInTheDocument();
+
+    rerender(
+      <TakuhonProfile
+        data={{
+          ...example,
+          settings: {
+            ...example.settings,
+            activity: { enabled: true, github: { username: 'octocat' } },
+          },
+        }}
+        activitySnapshot={snapshot}
+      />,
+    );
+    expect(screen.getByRole('region', { name: 'Activity' })).toBeInTheDocument();
   });
 });

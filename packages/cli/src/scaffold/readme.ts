@@ -96,6 +96,33 @@ npx wrangler r2 bucket create ${projectName}-assets
 
 The Worker then accepts uploads at \`POST /api/admin/assets\` (magic-byte check, 5 MB / 4096px limits, EXIF/metadata stripping) and serves them at \`GET /assets/*\` with \`X-Content-Type-Options: nosniff\`. Without the binding, avatars stay URL-only.
 
+### Developer-activity dashboard (optional)
+
+Show your GitHub language mix / contribution calendar and WakaTime coding time on the profile. The data is synced into a snapshot ahead of time — rendering never calls GitHub or WakaTime, and the API keys never leave the sync step.
+
+1. Opt in by adding \`settings.activity\` to \`takuhon.json\`:
+
+   \`\`\`jsonc
+   "settings": {
+     "activity": {
+       "enabled": true,
+       "github": { "username": "your-github-login" },
+       "wakatime": { "username": "your-wakatime-username" }
+     }
+   }
+   \`\`\`
+
+2. Provision the sync secrets (see \`.env.example\`): \`TAKUHON_WAKATIME_KEY\` is required for coding time; \`TAKUHON_GITHUB_TOKEN\` is optional — languages work without it, the contribution calendar needs it.
+
+   \`\`\`sh
+   npx wrangler secret put TAKUHON_GITHUB_TOKEN
+   npx wrangler secret put TAKUHON_WAKATIME_KEY
+   \`\`\`
+
+3. Uncomment the \`[triggers]\` cron block in \`wrangler.toml\` so the Worker refreshes the snapshot daily, or run \`takuhon activity sync\` locally to write an \`activity.json\` next to your profile for \`takuhon build\` / \`dev\`.
+
+The snapshot is served at \`GET /api/activity\` while enabled; a failed sync keeps the last-known data.
+
 ## Deploy
 
 \`\`\`sh

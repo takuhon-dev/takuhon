@@ -12,6 +12,7 @@ import type { LanguageProficiency, LocaleTag, PatentStatus } from '@takuhon/core
  */
 /** Section heading identifiers — the `<h2>` of each profile section. */
 type SectionKey =
+  | 'activity'
   | 'career'
   | 'education'
   | 'certifications'
@@ -75,6 +76,7 @@ const EN: LabelDictionary = {
   'patentStatus.issued': 'Issued',
   'patentStatus.expired': 'Expired',
   'patentStatus.abandoned': 'Abandoned',
+  'section.activity': 'Activity',
   'section.career': 'Career',
   'section.education': 'Education',
   'section.certifications': 'Certifications',
@@ -124,6 +126,7 @@ const JA: LabelDictionary = {
   'patentStatus.issued': '登録済',
   'patentStatus.expired': '失効',
   'patentStatus.abandoned': '放棄',
+  'section.activity': 'アクティビティ',
   'section.career': '職歴',
   'section.education': '学歴',
   'section.certifications': '資格・認定',

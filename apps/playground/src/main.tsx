@@ -1,5 +1,11 @@
 import { applyPublicPrivacyFilter } from '@takuhon/api';
-import { resolveLocale, validate, type LocaleTag, type Takuhon } from '@takuhon/core';
+import {
+  resolveLocale,
+  validate,
+  type ActivitySnapshot,
+  type LocaleTag,
+  type Takuhon,
+} from '@takuhon/core';
 import { LocaleSwitcher, TakuhonHead, TakuhonProfile } from '@takuhon/ui';
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -10,6 +16,33 @@ import './index.css';
 const COOKIE_NAME = 'takuhon_locale';
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const QUERY_PARAM = 'lang';
+
+/**
+ * Demo activity snapshot. In a real deployment this is the sibling document a
+ * sync step maintains (`GET /api/activity` / `activity.json`); the playground
+ * inlines a static sample so the section renders without any sync having run.
+ */
+const DEMO_ACTIVITY: ActivitySnapshot = {
+  lastSyncedAt: '2026-06-11T03:00:00.000Z',
+  languages: [
+    { name: 'TypeScript', bytes: 1520000, percent: 58.4 },
+    { name: 'Rust', bytes: 410000, percent: 15.7 },
+    { name: 'Python', bytes: 280000, percent: 10.8 },
+    { name: 'CSS', bytes: 180000, percent: 6.9 },
+    { name: 'Go', bytes: 120000, percent: 4.6 },
+    { name: 'Shell', bytes: 90000, percent: 3.6 },
+  ],
+  contributions: {
+    total: 1834,
+    // A deterministic 53-week wave pattern, so the heatmap has visible texture.
+    days: Array.from({ length: 371 }, (_, i) => ({
+      date: `2025-W${String(Math.floor(i / 7))}-${String(i % 7)}`,
+      count: (i * 7) % 11 === 0 ? 0 : (i * 13) % 9,
+    })),
+  },
+  codingTime: { totalSeconds: 451800, hours: 125, minutes: 30, seconds: 0 },
+  rank: { tier: 'A', score: 68 },
+};
 
 function readCookie(name: string): string | null {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -94,7 +127,7 @@ function App({ takuhon }: { takuhon: Takuhon }): React.JSX.Element {
         onSelect={handleSelect}
       />
       <main id="main-content">
-        <TakuhonProfile data={localized} />
+        <TakuhonProfile data={localized} activitySnapshot={DEMO_ACTIVITY} />
       </main>
     </>
   );
@@ -112,7 +145,17 @@ if (!result.ok) {
 // The playground stands in for the public surface (`/`, `/api/profile`,
 // `/api/jsonld`), so strip privacy-marked fields before render to match
 // what real public readers would see. Admin paths would skip this filter.
-const publicTakuhon = applyPublicPrivacyFilter(result.data);
+const filteredTakuhon = applyPublicPrivacyFilter(result.data);
+
+// The example profile does not opt into the activity dashboard; enable it
+// here so the demo snapshot passes TakuhonProfile's opt-in gate.
+const publicTakuhon: Takuhon = {
+  ...filteredTakuhon,
+  settings: {
+    ...filteredTakuhon.settings,
+    activity: { enabled: true, github: { username: 'octocat' } },
+  },
+};
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root container not found');
