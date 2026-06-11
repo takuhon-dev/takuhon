@@ -76,6 +76,7 @@ export type {
   RankTier,
   RankTierLabel,
 } from './activity.js';
+export { renderActivitySvg } from './activity-svg.js';
 
 export {
   ACCEPTED_IMAGE_MIME_TYPES,

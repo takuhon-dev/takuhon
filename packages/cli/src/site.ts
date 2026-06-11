@@ -14,7 +14,7 @@
  * and unit-testable as a pure function.
  */
 
-import type { NormalizedTakuhon } from '@takuhon/core';
+import type { ActivitySnapshot, NormalizedTakuhon } from '@takuhon/core';
 import { resolveLocale } from '@takuhon/core';
 
 import { renderProfileHtml, type Alternate, type LocaleLink } from './build-html.js';
@@ -36,6 +36,15 @@ export interface GenerateOptions {
    * switcher is always relative either way).
    */
   readonly baseUrl?: string;
+  /**
+   * Synced developer-activity snapshot (the `activity.json` beside the
+   * profile). Rendered as an inline-SVG section only while
+   * `settings.activity.enabled` is true — the same opt-in gate the public
+   * `GET /api/activity` applies — so disabling the feature drops the section
+   * even if a stale snapshot remains on disk. The snapshot is locale-agnostic
+   * and shared by every page.
+   */
+  readonly activitySnapshot?: ActivitySnapshot | null;
 }
 
 /**
@@ -52,6 +61,10 @@ export function generateSite(
   // Default locale first, then the rest, de-duplicated.
   const locales = [...new Set([defaultLocale, ...profile.settings.availableLocales])];
   const jsonLd = profile.settings.enableJsonLd !== false;
+  const activitySnapshot =
+    profile.settings.activity?.enabled === true
+      ? (options.activitySnapshot ?? undefined)
+      : undefined;
 
   return locales.map((locale) => {
     const localized = resolveLocale(profile, locale);
@@ -65,7 +78,14 @@ export function generateSite(
     const canonicalUrl = baseUrl ? absoluteUrl(baseUrl, locale, defaultLocale) : undefined;
     const alternates: Alternate[] = baseUrl ? buildAlternates(baseUrl, locales, defaultLocale) : [];
 
-    const html = renderProfileHtml({ localized, canonicalUrl, alternates, localeNav, jsonLd });
+    const html = renderProfileHtml({
+      localized,
+      canonicalUrl,
+      alternates,
+      localeNav,
+      jsonLd,
+      activitySnapshot,
+    });
     return {
       route: isDefault ? '/' : `/${locale}/`,
       file: isDefault ? 'index.html' : `${locale}/index.html`,

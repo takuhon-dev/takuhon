@@ -28,6 +28,7 @@ import { createServer, type Server } from 'node:http';
 import { applyPublicPrivacyFilter, normalize, validate } from '@takuhon/core';
 
 import { escapeHtml } from './build-html.js';
+import { readActivitySnapshotSync } from './file-activity-storage.js';
 import { generateSite } from './site.js';
 
 const DEFAULT_PATH = 'takuhon.json';
@@ -113,7 +114,14 @@ export function loadSiteState(path: string, baseUrl?: string): SiteState {
   }
 
   const filtered = applyPublicPrivacyFilter(normalize(result.data));
-  const pages = new Map(generateSite(filtered, { baseUrl }).map((p) => [p.route, p.html]));
+  // Re-read the synced activity snapshot alongside the profile on every load,
+  // so a fresh `takuhon activity sync` shows up on the next request. Only read
+  // when the owner opted in; generateSite re-checks the gate.
+  const activitySnapshot =
+    filtered.settings.activity?.enabled === true ? readActivitySnapshotSync(path) : null;
+  const pages = new Map(
+    generateSite(filtered, { baseUrl, activitySnapshot }).map((p) => [p.route, p.html]),
+  );
   return { ok: true, pages };
 }
 

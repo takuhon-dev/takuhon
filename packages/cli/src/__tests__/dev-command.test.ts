@@ -130,6 +130,37 @@ describe('loadSiteState()', () => {
     }
   });
 
+  it('serves the activity section when enabled and activity.json is present', () => {
+    writeFileSync(
+      src,
+      JSON.stringify(
+        fixture({
+          settings: {
+            defaultLocale: 'en',
+            availableLocales: ['en'],
+            activity: { enabled: true, github: { username: 'octocat' } },
+          },
+        }),
+      ),
+      'utf8',
+    );
+    writeFileSync(
+      join(dir, 'activity.json'),
+      JSON.stringify({
+        lastSyncedAt: '2026-06-11T00:00:00.000Z',
+        languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+      }),
+      'utf8',
+    );
+
+    const state = loadSiteState(src);
+    expect(state.ok).toBe(true);
+    if (state.ok) {
+      expect(state.pages.get('/')).toContain('<section class="activity">');
+      expect(state.pages.get('/')).toContain('TypeScript 80%');
+    }
+  });
+
   it('reports invalid JSON as a 500 state', () => {
     writeFileSync(src, '{not json', 'utf8');
     const state = loadSiteState(src);

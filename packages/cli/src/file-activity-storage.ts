@@ -26,12 +26,45 @@ function isNotFound(err: unknown): boolean {
   return typeof err === 'object' && err !== null && (err as { code?: unknown }).code === 'ENOENT';
 }
 
+/** Absolute path of the `activity.json` beside the given profile path. */
+export function activityPathFor(profilePath: string): string {
+  return join(dirname(resolve(profilePath)), ACTIVITY_FILENAME);
+}
+
+function readSnapshotFile(path: string): ActivitySnapshot | null {
+  let raw: string;
+  try {
+    raw = readFileSync(path, 'utf8');
+  } catch (err) {
+    if (isNotFound(err)) return null;
+    throw err;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    // A truncated or corrupt snapshot is treated as absent, not fatal: the
+    // next sync rewrites it whole, and the renderer omits the section.
+    return null;
+  }
+  return isActivitySnapshot(parsed) ? parsed : null;
+}
+
+/**
+ * Synchronous read of the snapshot beside `profilePath` (or `null`), for the
+ * synchronous render pipelines (`takuhon build` / `dev`) that cannot await the
+ * {@link ActivityStorage} contract.
+ */
+export function readActivitySnapshotSync(profilePath: string): ActivitySnapshot | null {
+  return readSnapshotFile(activityPathFor(profilePath));
+}
+
 export class FileActivityStorage implements ActivityStorage {
   /** Absolute path of the `activity.json` this storage reads and writes. */
   readonly path: string;
 
   constructor(profilePath: string) {
-    this.path = join(dirname(resolve(profilePath)), ACTIVITY_FILENAME);
+    this.path = activityPathFor(profilePath);
   }
 
   // The filesystem work is synchronous, but the ActivityStorage contract is
@@ -40,24 +73,7 @@ export class FileActivityStorage implements ActivityStorage {
   // caller must catch outside `await` (same pattern as FileStorage).
 
   getActivitySnapshot(): Promise<ActivitySnapshot | null> {
-    return Promise.resolve().then(() => {
-      let raw: string;
-      try {
-        raw = readFileSync(this.path, 'utf8');
-      } catch (err) {
-        if (isNotFound(err)) return null;
-        throw err;
-      }
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        // A truncated or corrupt snapshot is treated as absent, not fatal: the
-        // next sync rewrites it whole, and the renderer omits the section.
-        return null;
-      }
-      return isActivitySnapshot(parsed) ? parsed : null;
-    });
+    return Promise.resolve().then(() => readSnapshotFile(this.path));
   }
 
   saveActivitySnapshot(snapshot: ActivitySnapshot): Promise<void> {
