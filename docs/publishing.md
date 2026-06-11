@@ -10,6 +10,7 @@ This is a per-package step on npmjs.com. Run it once per package, before the fir
    - https://www.npmjs.com/package/@takuhon/core/access
    - https://www.npmjs.com/package/@takuhon/api/access
    - https://www.npmjs.com/package/@takuhon/ui/access
+   - https://www.npmjs.com/package/@takuhon/activity/access
    - https://www.npmjs.com/package/@takuhon/cli/access
    - https://www.npmjs.com/package/@takuhon/cloudflare/access
    - https://www.npmjs.com/package/takuhon/access (bare-name)
@@ -29,11 +30,15 @@ This is a per-package step on npmjs.com. Run it once per package, before the fir
 
 3. **Click `Save changes`** at the bottom of the form. The web UI does not always autosave; the most common cause of a 404 from `npm publish` post-setup is a trusted publisher form that was filled out but never persisted.
 
-Once all seven packages are configured, the workflow can authenticate via the GitHub Actions OIDC token without any classic `NPM_TOKEN` secret.
+Once all eight packages are configured, the workflow can authenticate via the GitHub Actions OIDC token without any classic `NPM_TOKEN` secret.
+
+### First publish of a new package
+
+A brand-new package (e.g. `@takuhon/activity`, first released at 0.12.0) has no `/access` page until it first exists on the registry, so its trusted publisher may not be configurable up front. Resolve the bootstrap before tagging the first release that includes it: try configuring the Trusted Publisher for the not-yet-published name; if npm refuses, the operator publishes the first version locally with a granular token (`pnpm publish --access public --provenance=false` from the package directory after `pnpm build`) and then configures the Trusted Publisher for subsequent releases. Note that a new _scoped_ package sits inside the `publish-scoped` fail-fast matrix: if its OIDC publish fails, the whole scoped set stops (no partial release), the operator deletes the tag, bootstraps the package, and re-tags.
 
 ### First publish of `create-takuhon`
 
-`create-takuhon` is the newest of the seven and unscoped, so its first publish needs special care. A brand-new package has no `/access` page until it first exists, so the org owner resolves the bootstrap before the first tagged release that includes it (confirm the unscoped name `create-takuhon` is claimable — an `npm view create-takuhon` 404 is a positive sign — then either configure its Trusted Publisher up front if npm allows a not-yet-published name, or bootstrap with an initial reserve/publish and then configure it). The `publish-create-takuhon` job is deliberately isolated (no other job depends on it), so if its first publish fails — most likely because the trusted publisher is not yet configured — the scoped release, the GitHub Release, and the docs bump still complete; just re-run the `publish-create-takuhon` job once the trusted publisher is in place.
+`create-takuhon` is unscoped, so its first publish needed the same care. A brand-new package has no `/access` page until it first exists, so the org owner resolves the bootstrap before the first tagged release that includes it (confirm the unscoped name `create-takuhon` is claimable — an `npm view create-takuhon` 404 is a positive sign — then either configure its Trusted Publisher up front if npm allows a not-yet-published name, or bootstrap with an initial reserve/publish and then configure it). The `publish-create-takuhon` job is deliberately isolated (no other job depends on it), so if its first publish fails — most likely because the trusted publisher is not yet configured — the scoped release, the GitHub Release, and the docs bump still complete; just re-run the `publish-create-takuhon` job once the trusted publisher is in place.
 
 ### Removing the legacy NPM_TOKEN secret
 
@@ -57,7 +62,7 @@ For each release:
    pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build
    ```
 
-   `npm version` bumps every workspace package, including the non-published `apps/playground` and `adapters/static`; restore those two to their prior version if you keep them off the lockstep trail (only the seven publishable artifacts are released). For a **minor** bump, also advance the `@takuhon/*` caret ranges in `packages/cli/src/scaffold/package-json.ts` to the new minor — a caret does not span minors under 0.x, so a scaffolded project would otherwise pin the previous generation. A guard test enforces this, so a missed bump fails the `verify` job.
+   `npm version` bumps every workspace package, including the non-published `apps/playground`, `apps/admin`, and `adapters/static`; restore those to their prior version if you keep them off the lockstep trail (only the eight publishable artifacts are released). For a **minor** bump, also advance the `@takuhon/*` caret ranges in `packages/cli/src/scaffold/package-json.ts` to the new minor — a caret does not span minors under 0.x, so a scaffolded project would otherwise pin the previous generation. A guard test enforces this, so a missed bump fails the `verify` job.
 
 2. Commit the version bump on a topic branch, open a PR, get CI green, and merge to `main`. Direct push to `main` is not allowed.
 
@@ -72,10 +77,10 @@ For each release:
 
 4. The `Release` workflow runs automatically on the tag push and proceeds in these jobs:
    - **`verify`** — re-runs `pnpm typecheck / lint / format:check / test / build` on the tagged tree. Catches a tag pushed at a commit that turned out broken since the last CI run.
-   - **`publish-scoped`** (matrix) — publishes `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/cli`, and `@takuhon/cloudflare` to npm via OIDC trusted publishing with provenance attestation. `fail-fast: true` so a dep-graph mismatch never leaks a partial release set.
+   - **`publish-scoped`** (matrix) — publishes `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/cli`, and `@takuhon/cloudflare` to npm via OIDC trusted publishing with provenance attestation. `fail-fast: true` so a dep-graph mismatch never leaks a partial release set.
    - **`publish-bare`** — publishes the bare-name `takuhon` redirect package after the scoped packages, so consumers running `npm i -g takuhon` always find `@takuhon/cli@<same-version>` already on the registry.
    - **`publish-create-takuhon`** — publishes the `create-takuhon` initializer after the scoped packages, so `npm create takuhon` finds `@takuhon/cli@<same-version>` already on the registry. Isolated: no other job depends on it (see "First publish of `create-takuhon`" above).
-   - **`github-release`** — creates a GitHub Release with auto-generated release notes, seven tarballs, and seven cosign sign-blob bundles attached as assets.
+   - **`github-release`** — creates a GitHub Release with auto-generated release notes, eight tarballs, and eight cosign sign-blob bundles attached as assets.
 
 5. **Optional dry-run**: trigger the workflow manually via the Actions tab with `Run workflow` and `dry_run: true`. The dry-run packs the tarballs and runs `pnpm publish --dry-run` for each package but **does not** exercise the OIDC auth handshake, does not produce provenance attestation, and does not create a GitHub Release. Use it as a packaging smoke test only; the full OIDC trusted-publishing path is validated solely by an actual `vX.Y.Z` tag push.
 
@@ -85,7 +90,7 @@ For each release:
 VER=0.6.1
 
 # 1. Confirm version + provenance attestation for every package
-for PKG in @takuhon/core @takuhon/api @takuhon/ui @takuhon/cli @takuhon/cloudflare takuhon create-takuhon; do
+for PKG in @takuhon/core @takuhon/api @takuhon/ui @takuhon/activity @takuhon/cli @takuhon/cloudflare takuhon create-takuhon; do
   echo "=== $PKG@$VER ==="
   npm view "${PKG}@${VER}" version
   npm view "${PKG}@${VER}" --json | jq '{
@@ -95,7 +100,7 @@ for PKG in @takuhon/core @takuhon/api @takuhon/ui @takuhon/cli @takuhon/cloudfla
   }'
 done
 
-# 2. Confirm the GitHub Release exists with 14 assets (7 tarballs + 7 bundles)
+# 2. Confirm the GitHub Release exists with 16 assets (8 tarballs + 8 bundles)
 gh release view "v${VER}" -R takuhon-dev/takuhon \
   --json name,tagName,publishedAt,url,assets \
   | jq '{name, tagName, publishedAt, url, assetCount: (.assets | length), assets: [.assets[].name]}'
