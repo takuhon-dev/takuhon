@@ -53,7 +53,7 @@
     "@takuhon/activity": "workspace:*",
     "@takuhon/api": "workspace:*",
     "@takuhon/core": "workspace:*",
-    "hono": "^4.12.19"
+    "hono": "^4.12.21"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260518.1",
