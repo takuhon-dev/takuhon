@@ -1,0 +1,143 @@
+/* A4 single-column résumé. On screen the article is a centered "sheet" on a
+   neutral backdrop; @media print drops the backdrop and margins so the page
+   fills the sheet, and break-inside:avoid keeps entries from splitting across
+   pages. Mirrors the CLI's renderCvHtml so the two surfaces match. */
+
+.cv {
+  display: block;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 1.5rem auto;
+  padding: 18mm 16mm;
+  background: #fff;
+  color: var(--takuhon-color-text, #1a1a1a);
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  border-bottom: 2px solid var(--takuhon-color-text, #1a1a1a);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.name {
+  font-size: 1.7rem;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 1.05rem;
+  color: var(--takuhon-color-text-muted, #555);
+  margin: 0.15rem 0 0;
+}
+
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  color: var(--takuhon-color-text-muted, #555);
+  font-size: 0.85rem;
+  margin: 0.4rem 0 0;
+}
+
+.contact a {
+  color: var(--takuhon-color-accent, #0b5fff);
+}
+
+.bio {
+  margin: 0.75rem 0 0;
+}
+
+.section {
+  margin-top: 1.1rem;
+}
+
+.heading {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--takuhon-color-accent, #0b5fff);
+  border-bottom: 1px solid var(--takuhon-color-border, #d9d9d9);
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.15rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entry {
+  margin: 0 0 0.7rem;
+  break-inside: avoid;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.entryHeading {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.entryHeading a {
+  color: var(--takuhon-color-accent, #0b5fff);
+}
+
+.dates {
+  color: var(--takuhon-color-text-muted, #555);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.sub {
+  color: var(--takuhon-color-text-muted, #555);
+  margin: 0.05rem 0;
+}
+
+.body {
+  margin: 0.2rem 0 0;
+}
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.chip {
+  border: 1px solid var(--takuhon-color-border, #d9d9d9);
+  border-radius: 1rem;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.8rem;
+}
+
+@media print {
+  .cv {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .entryHeading a,
+  .contact a {
+    color: var(--takuhon-color-text, #1a1a1a);
+  }
+}
+
+@page {
+  size: A4;
+  margin: 14mm;
+}

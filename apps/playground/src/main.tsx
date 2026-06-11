@@ -1,12 +1,13 @@
 import { applyPublicPrivacyFilter } from '@takuhon/api';
 import {
+  deriveCv,
   resolveLocale,
   validate,
   type ActivitySnapshot,
   type LocaleTag,
   type Takuhon,
 } from '@takuhon/core';
-import { LocaleSwitcher, TakuhonHead, TakuhonProfile } from '@takuhon/ui';
+import { CvView, LocaleSwitcher, TakuhonHead, TakuhonProfile } from '@takuhon/ui';
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -103,7 +104,9 @@ function resolveInitialLocale(takuhon: Takuhon): LocaleTag {
 
 function App({ takuhon }: { takuhon: Takuhon }): React.JSX.Element {
   const [locale, setLocale] = useState<LocaleTag>(() => resolveInitialLocale(takuhon));
+  const [view, setView] = useState<'profile' | 'cv'>('profile');
   const localized = useMemo(() => resolveLocale(takuhon, locale), [takuhon, locale]);
+  const cv = useMemo(() => deriveCv(localized), [localized]);
 
   useEffect(() => {
     document.documentElement.lang = localized.resolvedLocale;
@@ -126,8 +129,21 @@ function App({ takuhon }: { takuhon: Takuhon }): React.JSX.Element {
         currentLocale={locale}
         onSelect={handleSelect}
       />
+      {/* Demo-only toggle between the profile page and the print-ready CV view. */}
+      <div className="view-toggle" role="group" aria-label="View">
+        <button type="button" aria-pressed={view === 'profile'} onClick={() => setView('profile')}>
+          Profile
+        </button>
+        <button type="button" aria-pressed={view === 'cv'} onClick={() => setView('cv')}>
+          CV
+        </button>
+      </div>
       <main id="main-content">
-        <TakuhonProfile data={localized} activitySnapshot={DEMO_ACTIVITY} />
+        {view === 'profile' ? (
+          <TakuhonProfile data={localized} activitySnapshot={DEMO_ACTIVITY} />
+        ) : (
+          <CvView cv={cv} locale={localized.resolvedLocale} />
+        )}
       </main>
     </>
   );
