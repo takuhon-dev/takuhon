@@ -1,6 +1,8 @@
 import {
   ConflictError,
   NotFoundError,
+  type ActivitySnapshot,
+  type ActivityStorage,
   type AssetOptions,
   type AssetRecord,
   type Takuhon,
@@ -38,6 +40,20 @@ export class FakeStorage implements TakuhonStorage {
 
   deleteProfile(): Promise<void> {
     this.state = null;
+    return Promise.resolve();
+  }
+}
+
+/** In-memory ActivityStorage for tests; seed `snapshot` directly. */
+export class FakeActivityStorage implements ActivityStorage {
+  snapshot: ActivitySnapshot | null = null;
+
+  getActivitySnapshot(): Promise<ActivitySnapshot | null> {
+    return Promise.resolve(this.snapshot);
+  }
+
+  saveActivitySnapshot(snapshot: ActivitySnapshot): Promise<void> {
+    this.snapshot = snapshot;
     return Promise.resolve();
   }
 }

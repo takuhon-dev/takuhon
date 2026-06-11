@@ -9,6 +9,7 @@ import {
   type TakuhonStorage,
 } from '@takuhon/core';
 
+import { atomicWriteFile, isENOENT } from './fs-utils.js';
 import { resolveStoragePaths } from './paths.js';
 
 export interface StaticStorageOptions {
@@ -123,17 +124,6 @@ export function createStaticStorage(opts: StaticStorageOptions): StaticTakuhonSt
   return new StaticTakuhonStorage(opts);
 }
 
-async function atomicWriteFile(target: string, content: string): Promise<void> {
-  const tmp = `${target}.tmp-${process.pid}-${randomUUID()}`;
-  try {
-    await fs.writeFile(tmp, content, { encoding: 'utf8', flag: 'wx' });
-    await fs.rename(tmp, target);
-  } catch (e) {
-    await fs.unlink(tmp).catch(() => undefined);
-    throw new StorageError(`Failed to atomically write "${target}".`, { cause: e });
-  }
-}
-
 async function unlinkIfExists(p: string): Promise<void> {
   try {
     await fs.unlink(p);
@@ -142,8 +132,4 @@ async function unlinkIfExists(p: string): Promise<void> {
       throw new StorageError(`Failed to delete "${p}".`, { cause: e });
     }
   }
-}
-
-function isENOENT(e: unknown): boolean {
-  return typeof e === 'object' && e !== null && 'code' in e && e.code === 'ENOENT';
 }

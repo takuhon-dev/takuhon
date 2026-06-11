@@ -1,3 +1,4 @@
+export { StaticActivityStorage } from './fs-activity-storage.js';
 export {
   StaticTakuhonStorage,
   createStaticStorage,
