@@ -184,6 +184,17 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "${{ inputs.dry_run || 'false' }}" != "true" ]; then
+            # Idempotency guard: a re-tagged release (the documented recovery
+            # after a fail-fast stop) or an operator bootstrap publish of a
+            # brand-new package may have put this exact version on the
+            # registry already. Skipping instead of failing keeps the
+            # fail-fast matrix from cancelling the remaining packages over a
+            # version that is, in fact, released.
+            VERSION="$(node -p "require('./package.json').version")"
+            if [ "$(npm view "${{ matrix.pkg }}@$VERSION" version 2>/dev/null || true)" = "$VERSION" ]; then
+              echo "${{ matrix.pkg }}@$VERSION is already on the registry — skipping publish (idempotent re-run)"
+              exit 0
+            fi
             echo "Real publish: pnpm pack + npm publish (OIDC + provenance)"
             pnpm pack
             TGZ="$(ls *.tgz | head -1)"
@@ -272,6 +283,12 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "${{ inputs.dry_run || 'false' }}" != "true" ]; then
+            # Idempotency guard — see publish-scoped for the rationale.
+            VERSION="$(node -p "require('./package.json').version")"
+            if [ "$(npm view "takuhon@$VERSION" version 2>/dev/null || true)" = "$VERSION" ]; then
+              echo "takuhon@$VERSION is already on the registry — skipping publish (idempotent re-run)"
+              exit 0
+            fi
             echo "Real publish: pnpm pack + npm publish (OIDC + provenance)"
             pnpm pack
             TGZ="$(ls *.tgz | head -1)"
@@ -357,6 +374,12 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "${{ inputs.dry_run || 'false' }}" != "true" ]; then
+            # Idempotency guard — see publish-scoped for the rationale.
+            VERSION="$(node -p "require('./package.json').version")"
+            if [ "$(npm view "create-takuhon@$VERSION" version 2>/dev/null || true)" = "$VERSION" ]; then
+              echo "create-takuhon@$VERSION is already on the registry — skipping publish (idempotent re-run)"
+              exit 0
+            fi
             echo "Real publish: pnpm pack + npm publish (OIDC + provenance)"
             pnpm pack
             TGZ="$(ls *.tgz | head -1)"
