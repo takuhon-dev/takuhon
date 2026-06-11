@@ -92,5 +92,15 @@ TAKUHON_ADMIN_ORIGIN = ""
 # [[r2_buckets]]
 # binding = "TAKUHON_R2"
 # bucket_name = "${projectName}-assets"
+
+# Developer-activity dashboard (optional). Enable settings.activity in your
+# takuhon.json, then uncomment the cron below to refresh the snapshot daily:
+# the Worker's scheduled handler fetches GitHub / WakaTime and stores the
+# result in the TAKUHON_KV namespace (a failed run keeps the last-known
+# snapshot). Secrets MUST be Wrangler secrets, never this file:
+#   wrangler secret put TAKUHON_GITHUB_TOKEN   # optional (contribution calendar)
+#   wrangler secret put TAKUHON_WAKATIME_KEY   # required for WakaTime
+# [triggers]
+# crons = ["17 3 * * *"]
 `;
 }

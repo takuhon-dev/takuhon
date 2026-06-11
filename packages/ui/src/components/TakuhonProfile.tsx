@@ -1,7 +1,8 @@
-import type { LocalizedTakuhon } from '@takuhon/core';
+import type { ActivitySnapshot, LocalizedTakuhon } from '@takuhon/core';
 
 import '../styles/tokens.css';
 
+import { ActivitySection } from './ActivitySection.js';
 import { CareerTimeline } from './CareerTimeline.js';
 import { Certifications } from './Certifications.js';
 import { ContactInfo } from './ContactInfo.js';
@@ -24,11 +25,20 @@ import { Volunteering } from './Volunteering.js';
 
 export interface TakuhonProfileProps {
   data: LocalizedTakuhon;
+  /**
+   * Synced developer-activity snapshot (a sibling document, fetched by the
+   * host — e.g. `GET /api/activity`). Rendered only while
+   * `settings.activity.enabled` is true, the same opt-in gate the API and the
+   * static export apply, so disabling the feature drops the section even if a
+   * stale snapshot is still supplied.
+   */
+  activitySnapshot?: ActivitySnapshot | null;
 }
 
-export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element {
+export function TakuhonProfile({ data, activitySnapshot }: TakuhonProfileProps): React.JSX.Element {
   const showFooter = data.settings.showPoweredBy !== false;
   const locale = data.resolvedLocale;
+  const activity = data.settings.activity?.enabled === true ? activitySnapshot : undefined;
 
   return (
     <article className={styles.root}>
@@ -46,6 +56,7 @@ export function TakuhonProfile({ data }: TakuhonProfileProps): React.JSX.Element
       <Recommendations recommendations={data.recommendations} locale={locale} />
       <Volunteering volunteering={data.volunteering} locale={locale} />
       <SkillsList skills={data.skills} locale={locale} />
+      <ActivitySection snapshot={activity} locale={locale} />
       <Languages languages={data.languages} locale={locale} />
       <TestScores testScores={data.testScores} locale={locale} />
       <ContactInfo contact={data.contact} locale={locale} />

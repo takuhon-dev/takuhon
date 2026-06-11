@@ -1,0 +1,18 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--takuhon-space-3);
+  margin-top: var(--takuhon-space-5);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--takuhon-font-size-xl);
+  color: var(--takuhon-color-text);
+}
+
+/* The card is a fixed-width SVG; scale it down on narrow viewports. */
+.card svg {
+  max-width: 100%;
+  height: auto;
+}
