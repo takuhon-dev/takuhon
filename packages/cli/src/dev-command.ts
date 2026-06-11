@@ -36,10 +36,10 @@ const DEFAULT_PORT = 4321;
 
 const USAGE = `Usage: takuhon dev [path] [--port <n>] [--base-url <url>]
 
-Serve a takuhon.json as a local static preview (one page per locale) — the same
-surface \`takuhon build\` produces. With no path, serves ./takuhon.json. The file
-is re-read and re-rendered on every request, so edit it and reload the browser
-to see changes. Stop with Ctrl-C.
+Serve a takuhon.json as a local static preview (one page per locale, plus a
+print-ready CV page at /cv) — the same surface \`takuhon build\` produces. With
+no path, serves ./takuhon.json. The file is re-read and re-rendered on every
+request, so edit it and reload the browser to see changes. Stop with Ctrl-C.
 
 Options:
   --port <n>       Port to listen on (default: ${DEFAULT_PORT}).
@@ -119,8 +119,10 @@ export function loadSiteState(path: string, baseUrl?: string): SiteState {
   // when the owner opted in; generateSite re-checks the gate.
   const activitySnapshot =
     filtered.settings.activity?.enabled === true ? readActivitySnapshotSync(path) : null;
+  // `dev` always renders the CV page too (at /cv), so it is previewable without
+  // a flag; `takuhon build` gates the same output behind `--cv`.
   const pages = new Map(
-    generateSite(filtered, { baseUrl, activitySnapshot }).map((p) => [p.route, p.html]),
+    generateSite(filtered, { baseUrl, activitySnapshot, cv: true }).map((p) => [p.route, p.html]),
   );
   return { ok: true, pages };
 }

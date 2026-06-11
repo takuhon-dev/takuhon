@@ -15,9 +15,10 @@
  */
 
 import type { ActivitySnapshot, NormalizedTakuhon } from '@takuhon/core';
-import { resolveLocale } from '@takuhon/core';
+import { deriveCv, resolveLocale } from '@takuhon/core';
 
 import { renderProfileHtml, type Alternate, type LocaleLink } from './build-html.js';
+import { renderCvHtml } from './cv-html.js';
 
 /** One generated page: a serve route, a relative output file, and its HTML. */
 export interface SitePage {
@@ -45,6 +46,13 @@ export interface GenerateOptions {
    * and shared by every page.
    */
   readonly activitySnapshot?: ActivitySnapshot | null;
+  /**
+   * Also emit a print-ready CV/résumé page per locale (the default locale at
+   * `cv.html` / route `/cv/`, others at `<locale>/cv.html` / `/<locale>/cv/`).
+   * `takuhon build` gates this behind `--cv`; `takuhon dev` always enables it so
+   * the page is previewable. Off by default, so a plain build is unchanged.
+   */
+  readonly cv?: boolean;
 }
 
 /**
@@ -66,7 +74,8 @@ export function generateSite(
       ? (options.activitySnapshot ?? undefined)
       : undefined;
 
-  return locales.map((locale) => {
+  const pages: SitePage[] = [];
+  for (const locale of locales) {
     const localized = resolveLocale(profile, locale);
     const isDefault = locale === defaultLocale;
 
@@ -86,12 +95,21 @@ export function generateSite(
       jsonLd,
       activitySnapshot,
     });
-    return {
+    pages.push({
       route: isDefault ? '/' : `/${locale}/`,
       file: isDefault ? 'index.html' : `${locale}/index.html`,
       html,
-    };
-  });
+    });
+
+    if (options.cv === true) {
+      pages.push({
+        route: isDefault ? '/cv/' : `/${locale}/cv/`,
+        file: isDefault ? 'cv.html' : `${locale}/cv.html`,
+        html: renderCvHtml(deriveCv(localized)),
+      });
+    }
+  }
+  return pages;
 }
 
 /** Absolute URL for a locale's page (default locale lives at the site root). */

@@ -75,6 +75,27 @@ describe('runBuild()', () => {
     expect(jaHtml).toContain('パット・リベラ');
   });
 
+  it('does not emit CV pages by default', () => {
+    write(fixture());
+    runBuild([src, '--output', out]);
+    expect(existsSync(join(out, 'cv.html'))).toBe(false);
+    expect(existsSync(join(out, 'ja', 'cv.html'))).toBe(false);
+  });
+
+  it('emits a print-ready CV page per locale with --cv', () => {
+    write(fixture());
+    const res = runBuild([src, '--output', out, '--cv']);
+    expect(res.code).toBe(0);
+
+    const rootCv = readFileSync(join(out, 'cv.html'), 'utf8');
+    const jaCv = readFileSync(join(out, 'ja', 'cv.html'), 'utf8');
+    expect(rootCv).toContain('<title>Pat Rivera — CV</title>');
+    expect(rootCv).toContain('@page{size:A4');
+    expect(jaCv).toContain('<html lang="ja">');
+    // The profile pages are still emitted alongside the CV.
+    expect(existsSync(join(out, 'index.html'))).toBe(true);
+  });
+
   it('emits JSON-LD by default and omits it when settings.enableJsonLd is false', () => {
     write(fixture());
     runBuild([src, '--output', out]);
