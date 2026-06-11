@@ -123,6 +123,16 @@ Show your GitHub language mix / contribution calendar and WakaTime coding time o
 
 The snapshot is served at \`GET /api/activity\` while enabled; a failed sync keeps the last-known data.
 
+## Résumé / CV (optional)
+
+Generate a print-ready CV from the same \`takuhon.json\` — no re-entry:
+
+\`\`\`sh
+npx takuhon build --cv
+\`\`\`
+
+This writes \`dist/cv.html\` (and \`dist/<locale>/cv.html\` for each locale) alongside the profile pages. Open it in a browser and use **Print → Save as PDF** to produce a résumé PDF. \`npx takuhon dev\` also serves it at \`/cv\` for previewing.
+
 ## Deploy
 
 \`\`\`sh
