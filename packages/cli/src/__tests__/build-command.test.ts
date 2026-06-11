@@ -120,6 +120,48 @@ describe('runBuild()', () => {
     expect(readFileSync(join(out, 'index.html'), 'utf8')).toContain('secret@example.com');
   });
 
+  it('renders the activity section from activity.json when settings.activity is enabled', () => {
+    write(
+      fixture({
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          activity: { enabled: true, github: { username: 'octocat' } },
+        },
+      }),
+    );
+    writeFileSync(
+      join(dir, 'activity.json'),
+      JSON.stringify({
+        lastSyncedAt: '2026-06-11T00:00:00.000Z',
+        languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+      }),
+      'utf8',
+    );
+
+    runBuild([src, '--output', out]);
+
+    const html = readFileSync(join(out, 'index.html'), 'utf8');
+    expect(html).toContain('<section class="activity">');
+    expect(html).toContain('TypeScript 80%');
+  });
+
+  it('ignores activity.json while settings.activity is not enabled', () => {
+    write(fixture());
+    writeFileSync(
+      join(dir, 'activity.json'),
+      JSON.stringify({
+        lastSyncedAt: '2026-06-11T00:00:00.000Z',
+        languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+      }),
+      'utf8',
+    );
+
+    runBuild([src, '--output', out]);
+
+    expect(readFileSync(join(out, 'index.html'), 'utf8')).not.toContain('class="activity"');
+  });
+
   it('rejects an invalid source with exit code 1', () => {
     write({ schemaVersion: '0.4.0' }); // missing required fields
     const res = runBuild([src, '--output', out]);

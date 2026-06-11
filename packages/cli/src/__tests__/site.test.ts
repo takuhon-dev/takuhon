@@ -2,6 +2,7 @@ import {
   applyPublicPrivacyFilter,
   normalize,
   validate,
+  type ActivitySnapshot,
   type NormalizedTakuhon,
 } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
@@ -100,5 +101,36 @@ describe('generateSite()', () => {
       prepared({ contact: { email: 'secret@example.com', showEmail: true } }),
     )[0]!.html;
     expect(shown).toContain('secret@example.com');
+  });
+
+  it('renders the activity snapshot on every page while settings.activity is enabled', () => {
+    const snapshot: ActivitySnapshot = {
+      lastSyncedAt: '2026-06-11T00:00:00.000Z',
+      languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+    };
+    const pages = generateSite(
+      prepared({
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en', 'ja'],
+          activity: { enabled: true, github: { username: 'octocat' } },
+        },
+      }),
+      { activitySnapshot: snapshot },
+    );
+    expect(pages).toHaveLength(2);
+    for (const page of pages) {
+      expect(page.html).toContain('<section class="activity">');
+      expect(page.html).toContain('TypeScript 80%');
+    }
+  });
+
+  it('drops the activity section when activity is not enabled, even with a snapshot', () => {
+    const snapshot: ActivitySnapshot = {
+      lastSyncedAt: '2026-06-11T00:00:00.000Z',
+      languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+    };
+    const html = generateSite(prepared(), { activitySnapshot: snapshot })[0]!.html;
+    expect(html).not.toContain('class="activity"');
   });
 });

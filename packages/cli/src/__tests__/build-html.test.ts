@@ -1,5 +1,5 @@
 import { normalize, resolveLocale } from '@takuhon/core';
-import type { LocalizedTakuhon, Takuhon } from '@takuhon/core';
+import type { ActivitySnapshot, LocalizedTakuhon, Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import { escapeHtml, renderProfileHtml, type RenderInput } from '../build-html.js';
@@ -112,5 +112,23 @@ describe('renderProfileHtml()', () => {
     });
     expect(html).toContain('<link rel="canonical" href="https://me.example/">');
     expect(html).toContain('hreflang="x-default"');
+  });
+
+  it('renders the inline-SVG activity section when a snapshot is supplied', () => {
+    const snapshot: ActivitySnapshot = {
+      lastSyncedAt: '2026-06-11T00:00:00.000Z',
+      languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+    };
+    const html = render(localized(), { activitySnapshot: snapshot });
+    expect(html).toContain('<section class="activity"><h2>Activity</h2><svg');
+    expect(html).toContain('TypeScript 80%');
+  });
+
+  it('omits the activity section without a snapshot or when it has no metrics', () => {
+    expect(render(localized())).not.toContain('class="activity"');
+    const empty = render(localized(), {
+      activitySnapshot: { lastSyncedAt: '2026-06-11T00:00:00.000Z' },
+    });
+    expect(empty).not.toContain('class="activity"');
   });
 });

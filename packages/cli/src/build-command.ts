@@ -29,6 +29,7 @@ import { dirname, join } from 'node:path';
 import { applyPublicPrivacyFilter, normalize, validate } from '@takuhon/core';
 
 import { writeFileAtomic } from './backup.js';
+import { readActivitySnapshotSync } from './file-activity-storage.js';
 import { generateSite } from './site.js';
 
 const DEFAULT_PATH = 'takuhon.json';
@@ -180,10 +181,14 @@ function buildSite(parsed: ParsedArgs): BuildOutcome {
   }
 
   const filtered = applyPublicPrivacyFilter(normalize(result.data));
+  // The synced developer-activity snapshot (activity.json beside the profile)
+  // is read only when the owner opted in; generateSite re-checks the gate.
+  const activitySnapshot =
+    filtered.settings.activity?.enabled === true ? readActivitySnapshotSync(path) : null;
 
   const written: string[] = [];
   try {
-    for (const page of generateSite(filtered, { baseUrl })) {
+    for (const page of generateSite(filtered, { baseUrl, activitySnapshot })) {
       const outFile = join(output, page.file);
       mkdirSync(dirname(outFile), { recursive: true });
       writeFileAtomic(outFile, page.html);
