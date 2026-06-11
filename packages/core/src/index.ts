@@ -81,6 +81,23 @@ export { deriveCv } from './cv.js';
 export type { CvDocument, CvHeader, CvSection, CvSectionKind } from './cv.js';
 
 export {
+  executeMcpTool,
+  MCP_PROFILE_SECTIONS,
+  MCP_RESOURCES,
+  MCP_TOOLS,
+  McpRequestError,
+  readMcpResource,
+} from './mcp.js';
+export type {
+  McpInputSchema,
+  McpProfileSection,
+  McpResourceDefinition,
+  McpResourceResult,
+  McpToolDefinition,
+  McpToolResult,
+} from './mcp.js';
+
+export {
   ACCEPTED_IMAGE_MIME_TYPES,
   detectImageMime,
   IMAGE_EXTENSIONS,
