@@ -31,9 +31,9 @@ export function buildPackageJson(opts: PackageJsonOptions): Record<string, unkno
       deploy: 'wrangler deploy',
     },
     dependencies: {
-      '@takuhon/api': '^0.12.0',
-      '@takuhon/cloudflare': '^0.12.0',
-      '@takuhon/core': '^0.12.0',
+      '@takuhon/api': '^0.13.0',
+      '@takuhon/cloudflare': '^0.13.0',
+      '@takuhon/core': '^0.13.0',
       hono: '^4.0.0',
     },
     devDependencies: {
