@@ -120,13 +120,15 @@ describe('loadSiteState()', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it('renders a valid profile into routes "/" and "/ja/"', () => {
+  it('renders a valid profile into routes "/" and "/ja/", plus CV routes', () => {
     writeFileSync(src, JSON.stringify(fixture()), 'utf8');
     const state = loadSiteState(src);
     expect(state.ok).toBe(true);
     if (state.ok) {
-      expect([...state.pages.keys()].sort()).toEqual(['/', '/ja/']);
+      expect([...state.pages.keys()].sort()).toEqual(['/', '/cv/', '/ja/', '/ja/cv/']);
       expect(state.pages.get('/')).toContain('Pat Rivera');
+      expect(state.pages.get('/cv/')).toContain('— CV');
+      expect(state.pages.get('/ja/cv/')).toContain('<html lang="ja">');
     }
   });
 

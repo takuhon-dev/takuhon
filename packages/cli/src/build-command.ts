@@ -35,7 +35,7 @@ import { generateSite } from './site.js';
 const DEFAULT_PATH = 'takuhon.json';
 const DEFAULT_OUTPUT = 'dist';
 
-const USAGE = `Usage: takuhon build [path] [--output <dir>] [--base-url <url>]
+const USAGE = `Usage: takuhon build [path] [--output <dir>] [--base-url <url>] [--cv]
 
 Render a takuhon.json into a static site (one HTML page per locale, with
 build-time Schema.org JSON-LD). With no path, builds ./takuhon.json.
@@ -46,6 +46,9 @@ Options:
                    to <dir>/<locale>/index.html.
   --base-url <url> Site origin (e.g. https://me.example). Enables absolute
                    canonical and hreflang links; without it those are omitted.
+  --cv             Also emit a print-ready CV/résumé page per locale
+                   (<dir>/cv.html and <dir>/<locale>/cv.html). Open it and use
+                   the browser's "Save as PDF" to produce a résumé PDF.
 
 The public privacy filter is applied (meta.privacy is honoured). Asset URLs are
 referenced as-is and are not copied. The output directory is written into, not
@@ -65,6 +68,7 @@ interface ParsedArgs {
   path: string;
   output: string;
   baseUrl?: string;
+  cv: boolean;
 }
 
 /**
@@ -92,10 +96,15 @@ function parseArgs(args: readonly string[]): ParsedArgs | { error: string } {
   let path: string | undefined;
   let output: string | undefined;
   let baseUrl: string | undefined;
+  let cv = false;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!;
 
+    if (arg === '--cv') {
+      cv = true;
+      continue;
+    }
     if (arg === '--output' || arg === '--base-url') {
       const value = args[i + 1];
       if (value === undefined || value === '' || value.startsWith('-')) {
@@ -136,6 +145,7 @@ function parseArgs(args: readonly string[]): ParsedArgs | { error: string } {
     output: output ?? DEFAULT_OUTPUT,
     // Drop any trailing slash so URL joins are predictable.
     baseUrl: baseUrl?.replace(/\/+$/, ''),
+    cv,
   };
 }
 
@@ -149,7 +159,7 @@ function isHttpUrl(value: string): boolean {
 }
 
 function buildSite(parsed: ParsedArgs): BuildOutcome {
-  const { path, output, baseUrl } = parsed;
+  const { path, output, baseUrl, cv } = parsed;
 
   let raw: string;
   try {
@@ -188,7 +198,7 @@ function buildSite(parsed: ParsedArgs): BuildOutcome {
 
   const written: string[] = [];
   try {
-    for (const page of generateSite(filtered, { baseUrl, activitySnapshot })) {
+    for (const page of generateSite(filtered, { baseUrl, activitySnapshot, cv })) {
       const outFile = join(output, page.file);
       mkdirSync(dirname(outFile), { recursive: true });
       writeFileAtomic(outFile, page.html);

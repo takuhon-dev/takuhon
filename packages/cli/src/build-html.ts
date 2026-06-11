@@ -20,6 +20,12 @@
 import { generateJsonLd, renderActivitySvg } from '@takuhon/core';
 import type { ActivitySnapshot, LocalizedTakuhon } from '@takuhon/core';
 
+import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
+
+// Re-exported for existing importers (e.g. dev-command, tests) that pull
+// `escapeHtml` from this module; the implementation now lives in html-helpers.
+export { escapeHtml } from './html-helpers.js';
+
 type LocalizedProfile = LocalizedTakuhon['profile'];
 
 /** One entry in the human-facing locale switcher. */
@@ -54,34 +60,9 @@ export interface RenderInput {
   activitySnapshot?: ActivitySnapshot;
 }
 
-/** Escape text for use in HTML element content or double/single-quoted attributes. */
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 /** Unicode-escape `<`, `>`, `&` so a JSON-LD payload cannot break out of `<script>`. */
 function escapeJsonLd(json: string): string {
   return json.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
-}
-
-/**
- * Return `url` only when its scheme is safe to place in an `href`/`src`, else
- * `undefined`. Relative, protocol-relative, fragment, and query URLs (no
- * scheme) are allowed; among absolute URLs only `http:`, `https:`, and
- * `mailto:` are. This blocks `javascript:`, `data:`, `vbscript:`, etc. — the
- * schema validates only a generic URI, so a hostile document could otherwise
- * smuggle an executable scheme into the generated page.
- */
-function safeUrl(url: string): string | undefined {
-  const trimmed = url.trim();
-  const scheme = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(trimmed)?.[1]?.toLowerCase();
-  if (scheme === undefined) return trimmed; // relative / protocol-relative / fragment
-  return scheme === 'http' || scheme === 'https' || scheme === 'mailto' ? trimmed : undefined;
 }
 
 const CSS = `:root{--fg:#1a1a1a;--muted:#666;--accent:#0b5fff;--line:#e5e5e5}
@@ -117,21 +98,6 @@ interface EntryView {
   body?: string;
   url?: string;
   tags?: readonly string[];
-}
-
-/** Format a YearMonth range; `null` end or `isCurrent` renders as "Present". */
-function dateRange(start?: string, end?: string | null, isCurrent?: boolean): string {
-  const left = start ?? '';
-  const right = isCurrent === true || end === null ? 'Present' : (end ?? '');
-  if (left && right) return `${left} – ${right}`;
-  return left || right;
-}
-
-function nonEmpty(values: readonly (string | undefined)[], separator: string): string | undefined {
-  const joined = values
-    .filter((v): v is string => typeof v === 'string' && v.length > 0)
-    .join(separator);
-  return joined.length > 0 ? joined : undefined;
 }
 
 function renderEntry(entry: EntryView): string {
