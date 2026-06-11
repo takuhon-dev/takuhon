@@ -77,6 +77,8 @@ export type {
   RankTierLabel,
 } from './activity.js';
 export { renderActivitySvg } from './activity-svg.js';
+export { deriveCv } from './cv.js';
+export type { CvDocument, CvHeader, CvSection, CvSectionKind } from './cv.js';
 
 export {
   ACCEPTED_IMAGE_MIME_TYPES,
