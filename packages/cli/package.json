@@ -61,7 +61,7 @@
     "@takuhon/activity": "workspace:*",
     "@takuhon/api": "workspace:*",
     "@takuhon/core": "workspace:*",
-    "hono": "^4.12.0"
+    "hono": "^4.12.21"
   },
   "devDependencies": {
     "@takuhon/admin": "workspace:*"
