@@ -6,6 +6,30 @@ This is a monorepo. Eight publishable artifacts release in lockstep at the same 
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-06-12
+
+Minor release. Ships **résumé / CV export**: a print-ready CV is generated from the same `takuhon.json`, with no re-entry. `@takuhon/core` gains a pure `deriveCv` projection (a header plus the CV-relevant sections in a fixed résumé order, web-page-only sections excluded); `takuhon build --cv` writes a self-contained, A4-sized `cv.html` per locale that the browser's "Save as PDF" turns into a résumé PDF (no headless browser or extra dependency — the page is plain HTML + a print stylesheet); and `@takuhon/ui` adds a matching `CvView` React component. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`, `SUPPORTED_SCHEMA_VERSIONS` is unchanged, and no migration is required. Per the lockstep release policy all eight publishable artifacts release at 0.13.0.
+
+### Added — `@takuhon/core`
+
+- `deriveCv(localized)` projects a locale-resolved profile into a `CvDocument` (a `CvHeader` plus an ordered list of `CvSection`, discriminated by `kind`, reusing the existing `Localized*` entry types). Sections appear in a fixed résumé order — experience, education, skills, certifications, publications, honors, courses, patents, languages, volunteering, memberships — with empty ones dropped and the web-page-only sections (links, recommendations, the activity dashboard, test scores) excluded. Entry order within a section is preserved (the owner's `order` controls it; `deriveCv` never re-sorts). It is pure and deterministic, so the static export and the React view render identical output, and it projects only what it is given — the caller privacy-filters upstream, exactly like the public render path. Exports `CvDocument`, `CvHeader`, `CvSection`, `CvSectionKind`.
+
+### Added — `@takuhon/ui`
+
+- `CvView` renders a `CvDocument` as an A4 single-column résumé — the React counterpart of the CLI's `renderCvHtml`, generated from the same `deriveCv` output so the two surfaces cannot drift. Its CSS module carries an `@media print` block and an `@page { size: A4 }` rule, so on screen it is a centered "sheet" and the browser's "Save as PDF" yields a clean résumé. Section headings reuse the existing localized `section.*` labels, dates go through `formatYearMonth`, and ongoing roles show the localized "Present" marker. It is presentational (privacy filtering is the host's job) and renders nothing for an empty CV.
+
+### Added — `@takuhon/cli`
+
+- `takuhon build --cv` also emits a print-ready CV page per locale (`<dir>/cv.html` and `<dir>/<locale>/cv.html`) alongside the profile pages; a plain `takuhon build` is unchanged. `takuhon dev` always serves the CV at `/cv` for previewing. The page is a self-contained, A4-sized HTML résumé with a print stylesheet — `renderCvHtml(cv)` from the core `deriveCv` output — referencing no external resources, so it works under a strict `img-src 'self'` policy; every CV-derived string is escaped and URLs are scheme-checked. The scaffolded project README documents the workflow.
+
+### Changed — `@takuhon/cli` / `@takuhon/cloudflare`
+
+- `hono` updated from 4.12.19 to 4.12.21.
+
+### Lockstep version bump
+
+- All eight publishable artifacts bump from `0.12.0` to `0.13.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/core`, `@takuhon/ui`, and `@takuhon/cli` changed functionally (plus the `hono` bump in `@takuhon/cli` and `@takuhon/cloudflare`); the rest bump for lockstep alignment. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
+
 ## [0.12.0] - 2026-06-11
 
 Minor release with two feature tracks. **Image uploads land end-to-end**: the core byte-level helpers and the `POST /api/admin/assets` endpoint added below are now wired to real storage (Cloudflare R2 and the local filesystem) and to an avatar upload control in the admin form UI, so a profile owner can upload an avatar from `/admin` on either a deployed Worker or `takuhon admin`. **The developer-activity dashboard ships**: an opt-in `settings.activity` (GitHub language mix / contribution calendar, WakaTime coding time, and a derived rank) is synced ahead of time into a sibling snapshot document — by the new `takuhon activity sync` command locally or a Worker cron on Cloudflare — and rendered as a self-owned inline SVG on both the static export and the React profile, plus served at a public `GET /api/activity`; rendering never calls GitHub or WakaTime and the API keys never leave the sync step. The bundled schema moves from `0.4.0` to `0.5.0` (one additive, optional field — `settings.activity`; the migration stamps the version only). `@takuhon/activity` joins the lockstep set as the **eighth publishable artifact**, first published at this version. Per the lockstep release policy all eight publishable artifacts release at 0.12.0.
@@ -493,7 +517,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/takuhon-dev/takuhon/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/takuhon-dev/takuhon/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/takuhon-dev/takuhon/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/takuhon-dev/takuhon/compare/v0.9.0...v0.10.0
