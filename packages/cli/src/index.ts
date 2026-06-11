@@ -5,8 +5,9 @@
  *
  * Exposes `--version` / `--help`, the local profile commands (`validate`,
  * `migrate`, `restore`, `export`, `import`, `build`, `dev`, `admin`), `sync`
- * (push a local profile to a deployment), and a pointer to `create-takuhon`
- * for scaffolding.
+ * (push a local profile to a deployment), `activity` (sync / show the
+ * developer-activity snapshot), and a pointer to `create-takuhon` for
+ * scaffolding.
  *
  * `main` is pure (returns an exit code, never calls `process.exit`); the only
  * place that exits the process is {@link run}, invoked either when this module
@@ -20,6 +21,7 @@ import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
+import { runActivityShow, runActivitySync } from './activity-command.js';
 import { runAdmin } from './admin-command.js';
 import { runBuild } from './build-command.js';
 import { runDev } from './dev-command.js';
@@ -74,6 +76,11 @@ Commands:
                                        (PUT <url>/api/admin/profile). Reads the admin token
                                        from TAKUHON_ADMIN_TOKEN. --if-match <etag> opts into
                                        optimistic locking; --dry-run previews without sending.
+  takuhon activity sync [path]         Fetch the GitHub / WakaTime activity configured in
+                                       settings.activity and store it as activity.json beside
+                                       the profile. Secrets come from the environment only:
+                                       TAKUHON_GITHUB_TOKEN (optional) / TAKUHON_WAKATIME_KEY.
+  takuhon activity show [path]         Print the stored activity snapshot (activity.json).
 
 Scaffolding a new profile project:
   npx create-takuhon my-profile
@@ -139,6 +146,31 @@ async function main(argv: readonly string[]): Promise<number> {
 
   if (first === 'sync') {
     return emit(await runSync(argv.slice(1)));
+  }
+
+  if (first === 'activity') {
+    const sub = argv[1];
+    if (sub === 'sync') {
+      return emit(await runActivitySync(argv.slice(2)));
+    }
+    if (sub === 'show') {
+      return emit(await runActivityShow(argv.slice(2)));
+    }
+    const usage =
+      'Subcommands:\n' +
+      '  takuhon activity sync [path]   Fetch and store the activity snapshot\n' +
+      '  takuhon activity show [path]   Print the stored activity snapshot\n' +
+      'Run `takuhon activity sync --help` for details.\n';
+    if (sub === '--help' || sub === '-h') {
+      process.stdout.write(usage);
+      return 0;
+    }
+    process.stderr.write(
+      sub === undefined
+        ? `takuhon: \`activity\` requires a subcommand.\n${usage}`
+        : `takuhon: unknown subcommand \`${sub}\` for \`activity\`.\n${usage}`,
+    );
+    return 2;
   }
 
   process.stderr.write(
