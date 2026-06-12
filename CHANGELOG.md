@@ -6,9 +6,17 @@ This is a monorepo. Nine publishable artifacts release in lockstep at the same v
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-06-13
+
+Patch release. Fixes a `@takuhon/activity` bug that broke the developer-activity sync on Cloudflare Workers — the daily cron never populated the snapshot, so `GET /activity.svg` stayed 404 and the in-page activity section never appeared. No `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.15.1.
+
 ### Fixed — `@takuhon/activity`
 
 - The scheduled and CLI activity sync no longer fail on Cloudflare Workers with `Illegal invocation: function called with incorrect this reference`. `fetchActivitySnapshot` and the `GitHubClient` / `WakaTimeClient` constructors defaulted their `fetch` to the bare runtime global, which `workerd` rejects when it is subsequently invoked as an instance field (`this.fetchImpl(url)`) because its `this` is then the client instance rather than the global scope. They now default to a small wrapper that calls the global `fetch` as a free function, keeping its `this` bound to the global scope on every runtime. Node tolerated the detached call, so the bug only ever surfaced on Workers (the scheduled sync behind `GET /activity.svg` and the activity section). No API or behavioural change otherwise.
+
+### Lockstep version bump
+
+- All nine publishable artifacts bump from `0.15.0` to `0.15.1`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/activity` changed functionally; the rest bump for lockstep alignment. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
 
 ## [0.15.0] - 2026-06-12
 
@@ -565,7 +573,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/takuhon-dev/takuhon/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/takuhon-dev/takuhon/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/takuhon-dev/takuhon/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/takuhon-dev/takuhon/compare/v0.12.0...v0.13.0
