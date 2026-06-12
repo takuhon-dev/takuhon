@@ -34,6 +34,14 @@ export interface PublicAppDeps {
    * previously synced snapshot immediately.
    */
   activityStorage?: ActivityStorage;
+  /**
+   * Path of the read-only MCP endpoint, advertised in
+   * `/.well-known/takuhon.json` as `mcp`. Only set it on adapters that actually
+   * serve MCP (e.g. @takuhon/cloudflare's `/mcp`); left unset, the discovery
+   * document omits `mcp` so static / Vercel deployments don't point at an
+   * endpoint they don't host.
+   */
+  mcpPath?: string;
 }
 
 const FALLBACK_VERSION = 'bundled-fixture';
@@ -199,6 +207,8 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       jsonld: '/api/jsonld',
       export: '/api/admin/export',
       canonical: '/takuhon.json',
+      // Only advertised when the adapter serves MCP (see PublicAppDeps.mcpPath).
+      ...(deps.mcpPath !== undefined ? { mcp: deps.mcpPath } : {}),
     });
   });
 

@@ -65,6 +65,9 @@ importers:
 
   adapters/cloudflare:
     dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.29.0
+        version: 1.29.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
       '@takuhon/activity':
         specifier: workspace:*
         version: link:../../packages/activity
@@ -74,6 +77,9 @@ importers:
       '@takuhon/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@takuhon/mcp':
+        specifier: workspace:*
+        version: link:../../packages/mcp
       hono:
         specifier: ^4.12.21
         version: 4.12.21
