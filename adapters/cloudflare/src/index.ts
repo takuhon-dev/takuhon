@@ -14,6 +14,7 @@ import { Hono } from 'hono';
 
 import exampleJson from '../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 
+import { serveActivitySvg } from './activity-svg.js';
 import { syncActivity } from './activity-sync.js';
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
@@ -107,6 +108,16 @@ function isAssetPath(pathname: string): boolean {
  */
 function isMcpPath(pathname: string): boolean {
   return pathname === '/mcp';
+}
+
+/**
+ * The read-only activity-badge endpoint. Matches only the literal
+ * `/activity.svg`, so a locale-prefixed `/{locale}/activity.svg` is left to the
+ * router (which 404s it) — the endpoint is intentionally locale-agnostic, like
+ * `/health`, `/assets/*`, and `/mcp`.
+ */
+function isActivitySvgPath(pathname: string): boolean {
+  return pathname === '/activity.svg';
 }
 
 /**
@@ -208,6 +219,14 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
       // the profile from the same KV the public API uses.
       if (isMcpPath(url.pathname)) {
         return serveMcp(request, env.TAKUHON_KV, opts.fallback);
+      }
+
+      // Read-only activity badge. Renders the synced snapshot as a
+      // self-contained SVG image (?theme=dark for the dark variant), re-checking
+      // the settings.activity opt-in on every request — parity with
+      // GET /api/activity.
+      if (isActivitySvgPath(url.pathname)) {
+        return serveActivitySvg(request, env.TAKUHON_KV, opts.fallback);
       }
 
       const storage = new KvTakuhonStorage(env.TAKUHON_KV);
