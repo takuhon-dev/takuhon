@@ -123,6 +123,30 @@ Show your GitHub language mix / contribution calendar and WakaTime coding time o
 
 The snapshot is served at \`GET /api/activity\` while enabled; a failed sync keeps the last-known data.
 
+### GitHub profile badge
+
+The activity card is also available as a standalone SVG you can embed as an image — e.g. in your GitHub profile \`README.md\`:
+
+\`\`\`md
+![My developer activity](https://your-worker.example/activity.svg)
+\`\`\`
+
+Two ways to host it (both require \`settings.activity.enabled\`):
+
+- **Dynamic (Worker):** \`GET /activity.svg\` renders the latest snapshot on every request. Add \`?theme=dark\` for the dark card.
+- **Static (\`takuhon build\`):** writes \`dist/activity.svg\` and \`dist/activity-dark.svg\` beside the pages, so a static deploy can serve the badge too.
+
+The card carries an opaque background, so it stays readable on either GitHub theme. To follow the viewer's OS colour scheme automatically, use \`<picture>\`:
+
+\`\`\`html
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://your-worker.example/activity.svg?theme=dark">
+  <img alt="My developer activity" src="https://your-worker.example/activity.svg">
+</picture>
+\`\`\`
+
+GitHub proxies the image through Camo and caches it for a few hours, so a fresh sync can take a little while to appear in your README.
+
 ## Résumé / CV (optional)
 
 Generate a print-ready CV from the same \`takuhon.json\` — no re-entry:

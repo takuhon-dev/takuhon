@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { DARK_PALETTE, LIGHT_PALETTE } from '@takuhon/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { runBuild } from '../build-command.js';
@@ -181,6 +182,92 @@ describe('runBuild()', () => {
     runBuild([src, '--output', out]);
 
     expect(readFileSync(join(out, 'index.html'), 'utf8')).not.toContain('class="activity"');
+  });
+
+  it('emits light + dark activity badge SVGs when activity is enabled', () => {
+    write(
+      fixture({
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          activity: { enabled: true, github: { username: 'octocat' } },
+        },
+      }),
+    );
+    writeFileSync(
+      join(dir, 'activity.json'),
+      JSON.stringify({
+        lastSyncedAt: '2026-06-11T00:00:00.000Z',
+        languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+      }),
+      'utf8',
+    );
+
+    const res = runBuild([src, '--output', out]);
+    expect(res.code).toBe(0);
+    expect(res.stdout).toContain('asset');
+
+    const light = readFileSync(join(out, 'activity.svg'), 'utf8');
+    const dark = readFileSync(join(out, 'activity-dark.svg'), 'utf8');
+    expect(light.startsWith('<svg')).toBe(true);
+    expect(light).toContain(`fill="${LIGHT_PALETTE.background}"`);
+    expect(light).not.toContain(DARK_PALETTE.background);
+    expect(dark.startsWith('<svg')).toBe(true);
+    expect(dark).toContain(`fill="${DARK_PALETTE.background}"`);
+  });
+
+  it('emits no badge SVGs when activity is not enabled (even with activity.json present)', () => {
+    write(fixture());
+    writeFileSync(
+      join(dir, 'activity.json'),
+      JSON.stringify({
+        lastSyncedAt: '2026-06-11T00:00:00.000Z',
+        languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
+      }),
+      'utf8',
+    );
+
+    const res = runBuild([src, '--output', out]);
+    expect(res.stdout).not.toContain('asset');
+    expect(existsSync(join(out, 'activity.svg'))).toBe(false);
+    expect(existsSync(join(out, 'activity-dark.svg'))).toBe(false);
+  });
+
+  it('emits no badge SVGs when enabled but no activity.json sits beside the profile', () => {
+    write(
+      fixture({
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          activity: { enabled: true },
+        },
+      }),
+    );
+
+    runBuild([src, '--output', out]);
+    expect(existsSync(join(out, 'activity.svg'))).toBe(false);
+    expect(existsSync(join(out, 'activity-dark.svg'))).toBe(false);
+  });
+
+  it('writes no badge SVG for an opted-in but metric-less snapshot (empty render)', () => {
+    write(
+      fixture({
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          activity: { enabled: true },
+        },
+      }),
+    );
+    writeFileSync(
+      join(dir, 'activity.json'),
+      JSON.stringify({ lastSyncedAt: '2026-06-11T00:00:00.000Z' }),
+      'utf8',
+    );
+
+    runBuild([src, '--output', out]);
+    expect(existsSync(join(out, 'activity.svg'))).toBe(false);
+    expect(existsSync(join(out, 'activity-dark.svg'))).toBe(false);
   });
 
   it('rejects an invalid source with exit code 1', () => {
