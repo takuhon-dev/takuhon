@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { renderActivitySvg } from '../activity-svg.js';
+import { DARK_PALETTE, LIGHT_PALETTE, renderActivitySvg } from '../activity-svg.js';
 import type { ActivitySnapshot } from '../activity.js';
 
 const FULL: ActivitySnapshot = {
@@ -50,8 +50,8 @@ describe('renderActivitySvg()', () => {
   });
 
   it('draws one bar segment and one legend chip per language, one cell per day', () => {
-    // 2 bar segments + 2 legend chips + 3 calendar cells.
-    expect(rectCount(renderActivitySvg(FULL))).toBe(7);
+    // 1 opaque background + 2 bar segments + 2 legend chips + 3 calendar cells.
+    expect(rectCount(renderActivitySvg(FULL))).toBe(8);
   });
 
   it('renders sections independently when fields are absent', () => {
@@ -64,7 +64,8 @@ describe('renderActivitySvg()', () => {
     expect(svg).not.toContain('Languages');
     expect(svg).not.toContain('Contributions');
     expect(svg).not.toContain('Rank');
-    expect(rectCount(svg)).toBe(0);
+    // Only the opaque background rect; coding time and the footer use <text>.
+    expect(rectCount(svg)).toBe(1);
   });
 
   it('XML-escapes externally-sourced language names', () => {
@@ -97,11 +98,40 @@ describe('renderActivitySvg()', () => {
       lastSyncedAt: '2026-06-11T00:00:00.000Z',
       contributions: { total: 1234567, days },
     });
-    expect(rectCount(svg)).toBe(371);
+    // 371 calendar cells + 1 opaque background.
+    expect(rectCount(svg)).toBe(372);
     expect(svg).toContain('Contributions · 1,234,567');
   });
 
   it('is deterministic: the same snapshot renders the same markup', () => {
     expect(renderActivitySvg(FULL)).toBe(renderActivitySvg(FULL));
+  });
+
+  it('paints an opaque background as the first shape, full card width', () => {
+    const svg = renderActivitySvg(FULL);
+    const firstRect = /<rect[^>]*\/>/.exec(svg)?.[0] ?? '';
+    expect(firstRect).toContain('x="0" y="0"');
+    expect(firstRect).toContain('width="520"');
+    expect(firstRect).toContain(`fill="${LIGHT_PALETTE.background}"`);
+    // The background precedes the title-following content, so content sits on top.
+    expect(svg.indexOf(firstRect)).toBeLessThan(svg.indexOf('Languages'));
+  });
+
+  it('defaults to the light palette and is equivalent to passing it explicitly', () => {
+    expect(renderActivitySvg(FULL)).toBe(renderActivitySvg(FULL, { palette: LIGHT_PALETTE }));
+    expect(renderActivitySvg(FULL)).toContain(`fill="${LIGHT_PALETTE.text}"`);
+  });
+
+  it('renders a dark variant when given the dark palette', () => {
+    const dark = renderActivitySvg(FULL, { palette: DARK_PALETTE });
+    expect(dark).toContain(`fill="${DARK_PALETTE.background}"`);
+    expect(dark).toContain(`fill="${DARK_PALETTE.text}"`);
+    // The light card's near-black text colour must not leak into the dark card.
+    // (The rank-tier glyph is white on the accent disc in both palettes, so the
+    // light background colour is not a safe negative assertion here.)
+    expect(dark).not.toContain(`fill="${LIGHT_PALETTE.text}"`);
+    // Still deterministic and self-contained.
+    expect(dark).toBe(renderActivitySvg(FULL, { palette: DARK_PALETTE }));
+    expect(dark).not.toMatch(/href|xlink|http:\/\/(?!www\.w3\.org)/);
   });
 });
