@@ -6,6 +6,26 @@ This is a monorepo. Nine publishable artifacts release in lockstep at the same v
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-06-12
+
+Minor release. Ships **activity badge export**: the developer-activity card can be embedded as a standalone image — e.g. a badge in a GitHub profile README, served through GitHub's Camo image proxy. `@takuhon/core`'s `renderActivitySvg` now paints an opaque, palette-driven background so the card stays legible as an image on any theme; the Cloudflare adapter serves it dynamically at `GET /activity.svg` (with a `?theme=light|dark` toggle); and `takuhon build` writes it statically as `activity.svg` / `activity-dark.svg`. Both reuse the same renderer as the in-page dashboard, so the badge never drifts. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.15.0.
+
+### Changed — `@takuhon/core`
+
+- `renderActivitySvg(snapshot, options?)` now paints an opaque background rectangle and draws every colour from a `Palette`, so the activity card stays legible when embedded as a standalone image (e.g. a GitHub README badge through the Camo proxy), where a transparent card would vanish on a dark theme. It defaults to the new `LIGHT_PALETTE` — the previous colours on an opaque white card — so existing HTML/React embeddings are unchanged apart from the now-opaque background; pass `DARK_PALETTE` for a dark variant. Palettes are plain data, so the render stays deterministic and self-contained (no external references; the `img-src 'self'` CSP is unchanged). Exports `Palette`, `RenderActivitySvgOptions`, `LIGHT_PALETTE`, `DARK_PALETTE`.
+
+### Added — `@takuhon/cloudflare`
+
+- A read-only activity-badge endpoint at `GET`/`HEAD /activity.svg`, rendering the synced snapshot as a self-contained SVG image. `?theme=dark` selects the dark palette (anything else renders light). It is stateless and unauthenticated at parity with `GET /api/activity`: it reads the same KV (bundled fallback before the first write) and re-checks the owner's `settings.activity.enabled` opt-in on every request, so disabling the feature 404s the badge immediately even with a stale snapshot still stored. A missing, disabled, or metric-less snapshot all answer 404. The response is `image/svg+xml` with `X-Content-Type-Options: nosniff` and `Cache-Control: public, max-age=14400`. The route is locale-agnostic (literal `/activity.svg`, like `/mcp` and `/assets/*`); no new binding or `wrangler.toml` change.
+
+### Added — `@takuhon/cli`
+
+- `takuhon build` writes the activity card as standalone `activity.svg` (light) and `activity-dark.svg` (dark) beside the generated pages when `settings.activity.enabled` is true and an `activity.json` sits beside the profile — the static counterpart of the Cloudflare adapter's `GET /activity.svg`. Two files (rather than one query-aware route) let a `<picture>` + `prefers-color-scheme` snippet work on a static host. A metric-less snapshot writes nothing. The build summary now reports the extra assets (`built N pages and M assets …`). The scaffolded project README gains a **GitHub profile badge** section documenting the `<img>` and `<picture>` embeds and the Camo cache caveat.
+
+### Lockstep version bump
+
+- All nine publishable artifacts bump from `0.14.0` to `0.15.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/core`, `@takuhon/cloudflare`, and `@takuhon/cli` changed functionally; the rest bump for lockstep alignment. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
+
 ## [0.14.0] - 2026-06-12
 
 Minor release. Ships **MCP (Model Context Protocol) support**: the public profile becomes readable by AI agents over MCP, read-only, exposing exactly what the public HTTP API already does (with the privacy filter applied) — no write access. `@takuhon/core` gains a pure tool/resource catalog and projection (the same kind of pure transform as `generateJsonLd`); a new `@takuhon/mcp` package wires that catalog to the official `@modelcontextprotocol/sdk` as a transport-agnostic server; `takuhon mcp` serves it locally over stdio (e.g. for Claude Desktop); and the Cloudflare adapter serves it remotely at a stateless `POST /mcp` (no Durable Object, no new binding) advertised in `/.well-known/takuhon.json`. `@takuhon/mcp` joins the lockstep set as the **ninth publishable artifact**, first published at this version. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.14.0.
@@ -541,7 +561,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/takuhon-dev/takuhon/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/takuhon-dev/takuhon/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/takuhon-dev/takuhon/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/takuhon-dev/takuhon/compare/v0.11.0...v0.12.0
