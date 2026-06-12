@@ -26,7 +26,13 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { applyPublicPrivacyFilter, normalize, validate } from '@takuhon/core';
+import {
+  DARK_PALETTE,
+  applyPublicPrivacyFilter,
+  normalize,
+  renderActivitySvg,
+  validate,
+} from '@takuhon/core';
 
 import { writeFileAtomic } from './backup.js';
 import { readActivitySnapshotSync } from './file-activity-storage.js';
@@ -53,6 +59,10 @@ Options:
 The public privacy filter is applied (meta.privacy is honoured). Asset URLs are
 referenced as-is and are not copied. The output directory is written into, not
 cleaned — use a dedicated/empty directory so stale pages do not linger.
+
+When settings.activity.enabled is true and an activity.json sits beside the
+profile, the activity card is also written as activity.svg and
+activity-dark.svg for embedding as a GitHub README badge.
 
 Exit codes: 0 = built, 1 = source is not a valid profile,
 2 = bad arguments / file missing / unreadable / not JSON / write failed.
@@ -197,6 +207,7 @@ function buildSite(parsed: ParsedArgs): BuildOutcome {
     filtered.settings.activity?.enabled === true ? readActivitySnapshotSync(path) : null;
 
   const written: string[] = [];
+  const assets: string[] = [];
   try {
     for (const page of generateSite(filtered, { baseUrl, activitySnapshot, cv })) {
       const outFile = join(output, page.file);
@@ -204,15 +215,35 @@ function buildSite(parsed: ParsedArgs): BuildOutcome {
       writeFileAtomic(outFile, page.html);
       written.push(outFile);
     }
+    // Activity badges (hosting mode B): when the owner opted in and the synced
+    // snapshot carries metrics, emit standalone light + dark SVG cards beside
+    // the pages so they can be embedded as a README badge (the dynamic
+    // counterpart is the Cloudflare adapter's GET /activity.svg). A metric-less
+    // snapshot renders to '' and writes nothing.
+    if (activitySnapshot) {
+      const variants: readonly (readonly [string, string])[] = [
+        ['activity.svg', renderActivitySvg(activitySnapshot)],
+        ['activity-dark.svg', renderActivitySvg(activitySnapshot, { palette: DARK_PALETTE })],
+      ];
+      for (const [file, svg] of variants) {
+        if (svg === '') continue;
+        const outFile = join(output, file);
+        mkdirSync(dirname(outFile), { recursive: true });
+        writeFileAtomic(outFile, svg);
+        assets.push(outFile);
+      }
+    }
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     return { code: 2, stdout: '', stderr: `takuhon: failed to write the site: ${detail}\n` };
   }
 
-  const summary = written.map((w) => `  ${w}`).join('\n');
+  const summary = [...written, ...assets].map((w) => `  ${w}`).join('\n');
+  const assetNote =
+    assets.length > 0 ? ` and ${assets.length} asset${assets.length === 1 ? '' : 's'}` : '';
   return {
     code: 0,
-    stdout: `built ${written.length} page${written.length === 1 ? '' : 's'} from ${path}:\n${summary}\n`,
+    stdout: `built ${written.length} page${written.length === 1 ? '' : 's'}${assetNote} from ${path}:\n${summary}\n`,
     stderr: '',
   };
 }
