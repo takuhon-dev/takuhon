@@ -54,6 +54,13 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       'import/no-named-as-default-member': 'off',
+      // eslint-import-resolver-typescript (4.4.x) cannot follow
+      // @modelcontextprotocol/sdk's `exports` wildcard subpaths (e.g.
+      // `/server/mcp.js`, `/server/stdio.js`, `/types.js`). TypeScript's
+      // Bundler resolution, the build, and Node's runtime resolution all
+      // resolve them, and `tsc` still validates these imports, so skip only
+      // this dependency's subpaths here.
+      'import/no-unresolved': ['error', { ignore: ['^@modelcontextprotocol/sdk/'] }],
       'import/order': [
         'warn',
         {
