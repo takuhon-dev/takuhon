@@ -76,7 +76,8 @@ export type {
   RankTier,
   RankTierLabel,
 } from './activity.js';
-export { renderActivitySvg } from './activity-svg.js';
+export { DARK_PALETTE, LIGHT_PALETTE, renderActivitySvg } from './activity-svg.js';
+export type { Palette, RenderActivitySvgOptions } from './activity-svg.js';
 export { deriveCv } from './cv.js';
 export type { CvDocument, CvHeader, CvSection, CvSectionKind } from './cv.js';
 
