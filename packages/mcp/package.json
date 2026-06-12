@@ -1,0 +1,56 @@
+{
+  "name": "@takuhon/mcp",
+  "version": "0.13.0",
+  "description": "Transport-agnostic Model Context Protocol server exposing a takuhon profile read-only",
+  "license": "Apache-2.0",
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "profile",
+    "mcp",
+    "model-context-protocol",
+    "ai"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@takuhon/core": "workspace:*",
+    "zod": "^3.25.76"
+  }
+}
