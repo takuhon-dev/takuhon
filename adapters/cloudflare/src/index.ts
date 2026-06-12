@@ -19,6 +19,7 @@ import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
 import { KvActivityStorage } from './kv-activity-storage.js';
 import { KvTakuhonStorage } from './kv-storage.js';
+import { serveMcp } from './mcp.js';
 import { ASSET_CACHE_CONTROL, R2TakuhonAssetStorage } from './r2-storage.js';
 
 export interface Env {
@@ -97,6 +98,15 @@ function isAdminUiPath(pathname: string): boolean {
  */
 function isAssetPath(pathname: string): boolean {
   return pathname.startsWith('/assets/');
+}
+
+/**
+ * The read-only MCP endpoint. Matches only the literal `/mcp`, so a
+ * locale-prefixed `/{locale}/mcp` is left to the router (which 404s it) — the
+ * endpoint is intentionally locale-agnostic, like `/health` and `/assets/*`.
+ */
+function isMcpPath(pathname: string): boolean {
+  return pathname === '/mcp';
 }
 
 /**
@@ -194,6 +204,12 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
         return serveAsset(request, env.TAKUHON_R2, url);
       }
 
+      // Read-only MCP endpoint. Stateless (no Durable Object / session); reads
+      // the profile from the same KV the public API uses.
+      if (isMcpPath(url.pathname)) {
+        return serveMcp(request, env.TAKUHON_KV, opts.fallback);
+      }
+
       const storage = new KvTakuhonStorage(env.TAKUHON_KV);
       // Enable image uploads only when an R2 bucket is bound; otherwise the
       // admin API leaves `POST /assets` unregistered, so uploads are disabled
@@ -243,6 +259,8 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
           // Serves `GET /api/activity` from the synced snapshot; the route
           // 404s while no snapshot is stored or activity is not enabled.
           activityStorage: new KvActivityStorage(env.TAKUHON_KV),
+          // Advertise the read-only MCP endpoint in `/.well-known/takuhon.json`.
+          mcpPath: '/mcp',
         }),
       );
 
