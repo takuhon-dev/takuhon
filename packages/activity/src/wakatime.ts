@@ -10,6 +10,8 @@
  * runtime global.
  */
 
+import { defaultFetch } from './fetch-impl.js';
+
 const WAKATIME_API = 'https://wakatime.com/api/v1';
 
 /** Default stats range — recent activity rather than all-time. */
@@ -28,7 +30,7 @@ export class WakaTimeFetchError extends Error {
 }
 
 export class WakaTimeClient {
-  constructor(private readonly fetchImpl: typeof fetch = fetch) {}
+  constructor(private readonly fetchImpl: typeof fetch = defaultFetch) {}
 
   /** Total coding seconds for `username` over `range` (default last year). */
   async fetchCodingSeconds(

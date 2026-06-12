@@ -15,6 +15,8 @@
 
 import type { ContributionCalendar } from '@takuhon/core';
 
+import { defaultFetch } from './fetch-impl.js';
+
 const GITHUB_API = 'https://api.github.com';
 
 /** GitHub requires a User-Agent on every request. */
@@ -51,7 +53,7 @@ export class GitHubFetchError extends Error {
 }
 
 export class GitHubClient {
-  constructor(private readonly fetchImpl: typeof fetch = fetch) {}
+  constructor(private readonly fetchImpl: typeof fetch = defaultFetch) {}
 
   /**
    * Aggregate language byte counts across the user's owned, non-fork repos
