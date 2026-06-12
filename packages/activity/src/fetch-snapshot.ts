@@ -20,6 +20,7 @@ import {
   type ActivitySnapshot,
 } from '@takuhon/core';
 
+import { defaultFetch } from './fetch-impl.js';
 import { GitHubClient } from './github.js';
 import { WakaTimeClient } from './wakatime.js';
 
@@ -53,7 +54,7 @@ export async function fetchActivitySnapshot(
   secrets: ActivitySecrets = {},
   deps: ActivityFetchDeps = {},
 ): Promise<ActivitySnapshot> {
-  const fetchImpl = deps.fetch ?? fetch;
+  const fetchImpl = deps.fetch ?? defaultFetch;
   const now = deps.now ?? ((): Date => new Date());
   const onError = deps.onError ?? ((): void => undefined);
   const github = new GitHubClient(fetchImpl);

@@ -6,6 +6,10 @@ This is a monorepo. Nine publishable artifacts release in lockstep at the same v
 
 ## [Unreleased]
 
+### Fixed — `@takuhon/activity`
+
+- The scheduled and CLI activity sync no longer fail on Cloudflare Workers with `Illegal invocation: function called with incorrect this reference`. `fetchActivitySnapshot` and the `GitHubClient` / `WakaTimeClient` constructors defaulted their `fetch` to the bare runtime global, which `workerd` rejects when it is subsequently invoked as an instance field (`this.fetchImpl(url)`) because its `this` is then the client instance rather than the global scope. They now default to a small wrapper that calls the global `fetch` as a free function, keeping its `this` bound to the global scope on every runtime. Node tolerated the detached call, so the bug only ever surfaced on Workers (the scheduled sync behind `GET /activity.svg` and the activity section). No API or behavioural change otherwise.
+
 ## [0.15.0] - 2026-06-12
 
 Minor release. Ships **activity badge export**: the developer-activity card can be embedded as a standalone image — e.g. a badge in a GitHub profile README, served through GitHub's Camo image proxy. `@takuhon/core`'s `renderActivitySvg` now paints an opaque, palette-driven background so the card stays legible as an image on any theme; the Cloudflare adapter serves it dynamically at `GET /activity.svg` (with a `?theme=light|dark` toggle); and `takuhon build` writes it statically as `activity.svg` / `activity-dark.svg`. Both reuse the same renderer as the in-page dashboard, so the badge never drifts. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.15.0.
