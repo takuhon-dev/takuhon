@@ -133,6 +133,24 @@ npx takuhon build --cv
 
 This writes \`dist/cv.html\` (and \`dist/<locale>/cv.html\` for each locale) alongside the profile pages. Open it in a browser and use **Print → Save as PDF** to produce a résumé PDF. \`npx takuhon dev\` also serves it at \`/cv\` for previewing.
 
+## AI agents (MCP)
+
+Your profile is readable over the [Model Context Protocol](https://modelcontextprotocol.io) — read-only, the same data the public API exposes (with the privacy filter applied), no write access.
+
+- **Deployed:** the Worker serves a stateless MCP endpoint at \`POST /mcp\` (no extra binding or setup). Point an MCP client at \`https://your-worker.example/mcp\`. It is also advertised as \`mcp\` in \`/.well-known/takuhon.json\`.
+- **Local:** run an MCP server over stdio against your \`takuhon.json\`, e.g. for Claude Desktop:
+
+  \`\`\`jsonc
+  // claude_desktop_config.json
+  {
+    "mcpServers": {
+      "my-profile": { "command": "npx", "args": ["takuhon", "mcp", "/path/to/takuhon.json"] }
+    }
+  }
+  \`\`\`
+
+Both expose the tools \`get_profile\`, \`get_section\`, \`get_jsonld\`, \`list_locales\` and the resources \`takuhon://profile\`, \`takuhon://schema\`.
+
 ## Deploy
 
 \`\`\`sh

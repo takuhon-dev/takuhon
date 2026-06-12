@@ -14,6 +14,7 @@ local edge cache, and `console.log`-based audit logging.
 | `GET`    | `/api/jsonld`               | `@takuhon/api` `createPublicApp`             |
 | `GET`    | `/takuhon.json`             | `@takuhon/api` `createPublicApp`             |
 | `GET`    | `/.well-known/takuhon.json` | `@takuhon/api` `createPublicApp`             |
+| `POST`   | `/mcp`                      | `@takuhon/mcp` (read-only, stateless)        |
 | `GET`    | `/admin`                    | `@takuhon/api` `createAdminUiApp` (HTML)     |
 | `PUT`    | `/api/admin/profile`        | `@takuhon/api` `createAdminApiApp`           |
 | `DELETE` | `/api/admin/profile`        | `@takuhon/api` `createAdminApiApp`           |
@@ -191,6 +192,16 @@ Once bound:
 
 Asset delivery is intentionally locale-agnostic: only the literal `/assets/*`
 prefix is served, so `/{locale}/assets/...` 404s.
+
+### MCP endpoint (`/mcp`)
+
+The deployed profile is readable over the [Model Context Protocol](https://modelcontextprotocol.io) at `POST /mcp` — the remote counterpart of the CLI's `takuhon mcp`. It reuses `@takuhon/mcp`'s server (the same core catalog) over the SDK's Web Standard Streamable HTTP transport.
+
+- **Stateless**: no Durable Object, no session, no extra binding. Each request builds a fresh server + transport, reads the profile from the same KV (bundled fallback before the first write), and returns a single JSON response (`enableJsonResponse`). It is enabled automatically — nothing to configure.
+- **Read-only and unauthenticated**, at parity with `GET /api/profile`: every answer is privacy-filtered and no admin/write surface is exposed. Responses carry `X-Content-Type-Options: nosniff` and `Cache-Control: no-store`.
+- Exposes the tools `get_profile`, `get_section`, `get_jsonld`, `list_locales` and the resources `takuhon://profile`, `takuhon://schema`. The endpoint is advertised as `mcp` in `/.well-known/takuhon.json`.
+
+Like `/assets/*` and `/health`, `/mcp` is locale-agnostic — `/{locale}/mcp` 404s.
 
 ## Limitations & deferred work
 
