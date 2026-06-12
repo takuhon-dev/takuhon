@@ -27,6 +27,7 @@ import { runBuild } from './build-command.js';
 import { runDev } from './dev-command.js';
 import { runExport } from './export-command.js';
 import { runImport } from './import-command.js';
+import { runMcp } from './mcp-command.js';
 import { runMigrate } from './migrate-command.js';
 import { runRefreshAdmin } from './refresh-admin-command.js';
 import { runRestore } from './restore-command.js';
@@ -72,6 +73,9 @@ Commands:
   takuhon admin update [path]          Refresh a project's admin-dist/ with the admin form UI
                                        bundled in this @takuhon/cli (use after upgrading the
                                        CLI). Updates an existing admin-dist/ only.
+  takuhon mcp [path]                   Serve a takuhon.json over the Model Context Protocol on
+                                       stdio (read-only), so an MCP client such as Claude Desktop
+                                       can read the profile. Re-reads the file per request.
   takuhon sync [path] --url <url>      Push a takuhon.json to a deployment's admin API
                                        (PUT <url>/api/admin/profile). Reads the admin token
                                        from TAKUHON_ADMIN_TOKEN. --if-match <etag> opts into
@@ -130,6 +134,13 @@ async function main(argv: readonly string[]): Promise<number> {
     }
     // Long-lived server, like `dev`: returns the exit code directly.
     return runAdmin(argv.slice(1));
+  }
+
+  if (first === 'mcp') {
+    // Long-lived stdio server, like `dev`: returns the exit code directly and
+    // resolves on client disconnect / Ctrl-C. stdout is the MCP channel, so it
+    // does not go through `emit`.
+    return runMcp(argv.slice(1));
   }
 
   if (first === 'import') {

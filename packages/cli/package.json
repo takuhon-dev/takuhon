@@ -58,9 +58,11 @@
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@hono/node-server": "^2.0.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@takuhon/activity": "workspace:*",
     "@takuhon/api": "workspace:*",
     "@takuhon/core": "workspace:*",
+    "@takuhon/mcp": "workspace:*",
     "hono": "^4.12.21"
   },
   "devDependencies": {
