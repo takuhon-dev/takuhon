@@ -2,9 +2,33 @@
 
 All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redirect package, the `create-takuhon` initializer, and the PyPI `takuhon` placeholder published from this repository are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This is a monorepo. Eight publishable artifacts release in lockstep at the same version: the six scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/cli`, `@takuhon/cloudflare`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
+This is a monorepo. Nine publishable artifacts release in lockstep at the same version: the seven scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
 ## [Unreleased]
+
+## [0.14.0] - 2026-06-12
+
+Minor release. Ships **MCP (Model Context Protocol) support**: the public profile becomes readable by AI agents over MCP, read-only, exposing exactly what the public HTTP API already does (with the privacy filter applied) — no write access. `@takuhon/core` gains a pure tool/resource catalog and projection (the same kind of pure transform as `generateJsonLd`); a new `@takuhon/mcp` package wires that catalog to the official `@modelcontextprotocol/sdk` as a transport-agnostic server; `takuhon mcp` serves it locally over stdio (e.g. for Claude Desktop); and the Cloudflare adapter serves it remotely at a stateless `POST /mcp` (no Durable Object, no new binding) advertised in `/.well-known/takuhon.json`. `@takuhon/mcp` joins the lockstep set as the **ninth publishable artifact**, first published at this version. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.14.0.
+
+### Added — `@takuhon/core`
+
+- A read-only Model Context Protocol projection of a profile: the `MCP_TOOLS` / `MCP_RESOURCES` catalog (plain data with no SDK dependency) and the pure, deterministic executors `executeMcpTool(name, args, profile)` and `readMcpResource(uri, profile)`. The tools are `get_profile`, `get_section`, `get_jsonld`, and `list_locales`; the resources are `takuhon://profile` and `takuhon://schema`. Locale-aware tools run the same `normalize` → `resolveLocale` → `applyPublicPrivacyFilter` pipeline as `GET /api/profile`, so an MCP client sees exactly what the public API exposes and no admin surface. Invalid input throws a typed `McpRequestError`. Exports `MCP_PROFILE_SECTIONS`, `McpProfileSection`, `McpToolDefinition`, `McpResourceDefinition`, `McpToolResult`, `McpResourceResult`, `McpInputSchema`.
+
+### Added — `@takuhon/mcp` (new)
+
+- `createTakuhonMcpServer({ loadProfile, name?, version? })` builds a transport-agnostic MCP server on the official `@modelcontextprotocol/sdk`, registering the `@takuhon/core` catalog and wiring every handler to a caller-supplied profile loader. It attaches no transport — the caller connects stdio (the CLI) or stateless HTTP (the Cloudflare adapter) — so the SDK dependency is contained to this package while core's catalog stays SDK-free. Bad arguments and profile-load failures surface as `isError` tool results.
+
+### Added — `@takuhon/cli`
+
+- `takuhon mcp [path]` serves a local `takuhon.json` over MCP on stdio (read-only), so an MCP client such as Claude Desktop can read the profile. It re-reads and re-validates the file on every request so edits are reflected without a restart, and fails fast (exit 2) if the file is missing / unreadable / invalid. stdin/stdout carry the protocol stream, so the command writes nothing to stdout — diagnostics go to stderr.
+
+### Added — `@takuhon/cloudflare`
+
+- A read-only MCP endpoint at `POST /mcp`, the remote counterpart of `takuhon mcp`. It reuses `@takuhon/mcp`'s server over the SDK's Web Standard Streamable HTTP transport and is **stateless** — no Durable Object, no session, no new binding: each request builds a fresh server + transport, reads the profile from the existing KV (bundled fallback before the first write), and returns a single JSON response. It is unauthenticated public read at parity with `GET /api/profile`, with `X-Content-Type-Options: nosniff` and `Cache-Control: no-store`, and is advertised as `mcp` in `/.well-known/takuhon.json` (a new optional `PublicAppDeps.mcpPath` on `@takuhon/api`, so adapters that don't serve MCP omit it).
+
+### Lockstep version bump
+
+- All nine publishable artifacts bump from `0.13.0` to `0.14.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/core`, `@takuhon/mcp` (new), `@takuhon/cli`, and `@takuhon/cloudflare` (plus the `mcpPath` addition in `@takuhon/api`) changed functionally; the rest bump for lockstep alignment. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
 
 ## [0.13.0] - 2026-06-12
 
@@ -517,7 +541,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/takuhon-dev/takuhon/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/takuhon-dev/takuhon/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/takuhon-dev/takuhon/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/takuhon-dev/takuhon/compare/v0.10.0...v0.11.0
