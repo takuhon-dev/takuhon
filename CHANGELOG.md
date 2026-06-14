@@ -6,6 +6,23 @@ This is a monorepo. Nine publishable artifacts release in lockstep at the same v
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-06-15
+
+Minor release. Adds **section-level public/private visibility**: `settings.publicVisibility` lets a profile owner hide whole content sections from every public surface. This is the first `@takuhon/core` schema change since 0.5.0, so the bundled `schemaVersion` advances to **`0.6.0`** (additive and fully backwards-compatible — an absent `publicVisibility` keeps the prior all-public behavior). Per the lockstep release policy all nine publishable artifacts release at 0.18.0.
+
+### Added — `@takuhon/core`
+
+- **`settings.publicVisibility`** (schema 0.6.0): an optional boolean map over the 16 content sections (`links`, `careers`, `projects`, `skills`, `certifications`, `memberships`, `volunteering`, `honors`, `education`, `publications`, `languages`, `courses`, `patents`, `testScores`, `recommendations`, `contact`). Setting a section to `false` hides it from public output; an absent key — or an absent block — means the section is public (default `true`). The `profile` identity is always public and is intentionally not a key. New `PublicVisibility` type and a `0.5.0 → 0.6.0` registry migration (a version stamp — the all-visible default needs no defaulting).
+- `applyPublicPrivacyFilter` now applies section visibility in addition to the existing field-level controls. Visibility is the AND of three layers — surface feature toggles (`enable*`), this section flag, and the field flags (`contact.showEmail`, `meta.privacy.*`) — with existing semantics unchanged: hiding a section short-circuits its field checks, and a visible section still honors its field flags. Because every public surface (`GET /`, `/api/profile`, `/api/jsonld`, `/takuhon.json`, MCP, and the derived CV) runs the same filter, they all project identically. Hidden array sections become `[]` and a hidden `contact` becomes `{}`; the identity-return contract is preserved when nothing needs stripping.
+
+### Added — `@takuhon/ui`
+
+- The admin `SettingsForm` gains a **"Public sections"** group: one toggle per content section, defaulting to visible. Hidden sections are stored sparsely (only `false` entries are kept) and the `publicVisibility` block is dropped entirely once every section is visible again, so the default stays absent from the document.
+
+### Lockstep version bump
+
+- All nine publishable artifacts bump from `0.17.0` to `0.18.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/core` and `@takuhon/ui` changed functionally; `@takuhon/api`, `@takuhon/cloudflare`, `@takuhon/cli`, and MCP carry the new filter behavior through unchanged code. The scaffold's pinned `@takuhon/*` caret ranges advance to `^0.18.0`. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
+
 ## [0.17.0] - 2026-06-14
 
 Minor release. The deployed profile is now **served as a page from the root**: `GET /` (and `GET /<locale>/`) returns the mobile-first profile HTML with Schema.org JSON-LD embedded in the page, instead of a plain-text hint. This makes the flagship Cloudflare Worker deployment serve what a visitor and a search-engine / AI crawler each need — a human-facing page and machine-readable structured data — from the root, matching what `takuhon dev` and `takuhon build` already render. No `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.17.0.
@@ -610,7 +627,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/takuhon-dev/takuhon/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/takuhon-dev/takuhon/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/takuhon-dev/takuhon/compare/v0.15.0...v0.15.1
