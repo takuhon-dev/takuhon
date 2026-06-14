@@ -2,9 +2,23 @@
 
 All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redirect package, the `create-takuhon` initializer, and the PyPI `takuhon` placeholder published from this repository are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This is a monorepo. Nine publishable artifacts release in lockstep at the same version: the seven scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
+This is a monorepo. Ten publishable artifacts release in lockstep at the same version: the eight scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
 ## [Unreleased]
+
+## [0.19.0] - 2026-06-15
+
+Minor release. Adds a second platform adapter, **`@takuhon/vercel`**, so a profile can be published on Vercel as well as Cloudflare — a step toward takuhon's "host anywhere, no lock-in" goal. The adapter is read-only and reuses the framework-agnostic public app from `@takuhon/api`, so there is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.6.0`. This adds a tenth publishable artifact; per the lockstep release policy all ten release at 0.19.0.
+
+### Added — `@takuhon/vercel` (new package)
+
+- A read-only Vercel adapter. `createTakuhonVercelApp({ storage, fallback? })` mounts `@takuhon/api`'s `createPublicApp` on the Vercel runtime under a top-level router that sets `localePrefixGetPath`, so the server-rendered profile page (`GET /` and `GET /<locale>/`, with embedded JSON-LD), the public read API (`/api/profile`, `/api/jsonld`, `/api/schema`), and `GET /takuhon.json` / `/.well-known/takuhon.json` are served with full privacy-filter parity. Mount it with `hono/vercel`'s `handle` in an App Router catch-all route.
+- Read-only storage with no database: `BundledTakuhonStorage(profile)` serves a bundled `takuhon.json` (validated at construction — fail fast), and `UrlTakuhonStorage(url)` fetches once from `TAKUHON_DATA_URL` and caches per instance. Writes reject; editing is via Git (edit, push, redeploy).
+- Cloudflare-only surfaces are intentionally absent: image uploads (`/assets/*`), the MCP endpoint (`/mcp`), and the activity badge / sync (`/activity.svg`, cron). `GET /api/activity` answers 404 and the discovery document omits `mcp`. There is no schema or `@takuhon/core` / `@takuhon/api` behavior change — the adapter is pure wiring.
+
+### Lockstep version bump
+
+- All ten publishable artifacts bump from `0.18.0` to `0.19.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the new `@takuhon/vercel`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/vercel` is new; the rest bump for lockstep alignment with no functional change. The scaffold's pinned `@takuhon/*` caret ranges advance to `^0.19.0`. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
 
 ## [0.18.0] - 2026-06-15
 
@@ -627,7 +641,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/takuhon-dev/takuhon/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/takuhon-dev/takuhon/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/takuhon-dev/takuhon/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...v0.16.0
