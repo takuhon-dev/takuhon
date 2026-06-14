@@ -16,11 +16,15 @@ function call(url: string, env: Env, init?: RequestInit): Promise<Response> {
 }
 
 describe('cloudflare worker — Phase 3.2', () => {
-  it('GET / returns a plain-text landing page', async () => {
+  it('GET / server-renders the profile page with embedded JSON-LD', async () => {
     const res = await call('https://worker.example/', makeEnv().env);
     expect(res.status).toBe(200);
-    expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('takuhon');
+    expect(res.headers.get('content-type')).toMatch(/text\/html/);
+    const body = await res.text();
+    expect(body.startsWith('<!DOCTYPE html>')).toBe(true);
+    expect(body).toContain('<script type="application/ld+json">');
+    // Canonical / hreflang are derived from the request origin, no config needed.
+    expect(body).toContain('<link rel="canonical" href="https://worker.example/">');
   });
 
   it('GET /api/profile falls back to bundled fixture when KV is empty', async () => {

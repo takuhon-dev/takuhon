@@ -84,8 +84,9 @@ describe('cloudflare worker — admin SPA serving (ASSETS bound)', () => {
     const { assets } = fakeAssets(BUNDLE);
     const res = await call('https://worker.example/', envWith(assets));
     expect(res.status).toBe(200);
-    expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('takuhon');
+    expect(res.headers.get('content-type')).toMatch(/text\/html/);
+    // The server-rendered profile page (with embedded JSON-LD), not the admin SPA.
+    expect(await res.text()).toContain('<script type="application/ld+json">');
   });
 
   it('still routes /api/admin/* to the admin API (not the SPA)', async () => {

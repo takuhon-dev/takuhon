@@ -27,12 +27,35 @@ function fetchPath(
 }
 
 describe('createPublicApp', () => {
-  it('GET / returns a plain-text landing page', async () => {
+  it('GET / server-renders the profile page with embedded JSON-LD', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/');
     expect(res.status).toBe(200);
-    expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('takuhon');
+    expect(res.headers.get('content-type')).toMatch(/text\/html/);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=300');
+    const body = await res.text();
+    expect(body.startsWith('<!DOCTYPE html>')).toBe(true);
+    expect(body).toContain('<html lang="en">');
+    expect(body).toContain('Pat Rivera');
+    // The JSON-LD a crawler reads is embedded in the page itself, not only on
+    // the separate /api/jsonld endpoint.
+    expect(body).toContain('<script type="application/ld+json">');
+    expect(body).toContain('"ProfilePage"');
+    // Canonical + hreflang are derived from this request's own origin.
+    expect(body).toContain('<link rel="canonical" href="https://app.example/">');
+    expect(body).toContain('<link rel="alternate" hreflang="ja" href="https://app.example/ja/">');
+    expect(body).toContain('hreflang="x-default"');
+  });
+
+  it('GET /<locale>/ server-renders the localized profile page', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/ja/');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toMatch(/text\/html/);
+    const body = await res.text();
+    expect(body).toContain('<html lang="ja">');
+    expect(body).toContain('パット・リベラ');
+    expect(body).toContain('<link rel="canonical" href="https://app.example/ja/">');
   });
 
   it('GET /health returns a storage-independent liveness payload', async () => {
@@ -326,12 +349,12 @@ describe('URL path locale prefix', () => {
     expect(body[0].inLanguage).toBe('ja');
   });
 
-  it('GET /ja/ serves the landing page (prefix maps to /)', async () => {
+  it('GET /ja/ serves the profile page (prefix maps to /)', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/ja/');
     expect(res.status).toBe(200);
-    expect(res.headers.get('content-type')).toMatch(/text\/plain/);
-    expect(await res.text()).toContain('takuhon');
+    expect(res.headers.get('content-type')).toMatch(/text\/html/);
+    expect(await res.text()).toContain('<html lang="ja">');
   });
 
   it('?lang= beats the path prefix (query is priority #1)', async () => {
@@ -616,6 +639,13 @@ describe('fixture-leak regression (examples/personal-profile/takuhon.json)', () 
     const res = await fetchPath(app, '/api/jsonld');
     expect(res.status).toBe(200);
     assertNoLeak(await res.text(), '/api/jsonld');
+  });
+
+  it('omits privacy-marked substrings from the server-rendered GET /', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/');
+    expect(res.status).toBe(200);
+    assertNoLeak(await res.text(), '/');
   });
 
   it('omits privacy-marked substrings from GET /takuhon.json', async () => {
