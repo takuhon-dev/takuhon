@@ -6,6 +6,27 @@ This is a monorepo. Nine publishable artifacts release in lockstep at the same v
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-06-14
+
+Minor release. The deployed profile is now **served as a page from the root**: `GET /` (and `GET /<locale>/`) returns the mobile-first profile HTML with Schema.org JSON-LD embedded in the page, instead of a plain-text hint. This makes the flagship Cloudflare Worker deployment serve what a visitor and a search-engine / AI crawler each need — a human-facing page and machine-readable structured data — from the root, matching what `takuhon dev` and `takuhon build` already render. No `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.17.0.
+
+### Changed — `@takuhon/api`
+
+- `createPublicApp`'s `GET /` (and the locale-prefixed `GET /<locale>/`) now returns the server-rendered profile page — a complete mobile-first HTML document with Schema.org JSON-LD embedded as `<script type="application/ld+json">`, plus `<link rel="canonical">` and `hreflang` alternates derived from the request's own origin — in place of the previous plain-text landing string. It runs the same `normalize → resolveLocale → applyPublicPrivacyFilter` pipeline as `GET /api/profile`, so the page honors `meta.privacy` exactly like the API. The JSON endpoints (`/api/profile`, `/api/jsonld`, `/api/schema`, `/takuhon.json`), the RFC 7807 error envelope, and `schemaVersion` are unchanged. The public-page CSP `img-src` now allows `https:` so remote avatar images load.
+- The pure static-HTML renderer (`renderProfileHtml`, `generateSite`, `renderCvHtml`, and the shared HTML helpers) moved here from `@takuhon/cli`. It is `@takuhon/core`-only (no DOM/bundler dependency) and is now shared by both the `GET /` route and `@takuhon/cli`'s `build` / `dev`, so a deployed profile and a local preview render identical markup. The renderer is re-exported from `@takuhon/api`.
+
+### Changed — `@takuhon/cloudflare`
+
+- The Worker root now serves the server-rendered profile page (via `@takuhon/api`'s `createPublicApp`), with canonical / `hreflang` derived from the request origin and `Cache-Control: public, max-age=300`; the existing admin cache purger already invalidates `/`, so an admin edit refreshes the page immediately. No adapter code change was required — the behavior flows through from `@takuhon/api`.
+
+### Changed — `@takuhon/cli`
+
+- `build` and `dev` import the static-HTML renderer from `@takuhon/api` (its new home) instead of a local module. Generated output is byte-for-byte unchanged.
+
+### Lockstep version bump
+
+- All nine publishable artifacts bump from `0.16.0` to `0.17.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/api`, `@takuhon/cloudflare`, and `@takuhon/cli` changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret ranges advance to `^0.17.0`. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
+
 ## [0.16.0] - 2026-06-14
 
 Minor release. Ships a **Gravatar avatar helper**: an owner who is not on GitHub (or who simply prefers it) can set an avatar from just an email address — no upload required — alongside the existing "paste a URL" and "upload an image" paths. `@takuhon/core` gains a pure `gravatarUrl(email, options?)` that hashes the email with a bundled synchronous SHA-256 and builds the Gravatar image URL; the admin profile form gains a "Use Gravatar" mode that calls it in the browser. The email is never stored — only the resulting URL is saved into `profile.avatar.url`. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.16.0.
@@ -589,7 +610,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/takuhon-dev/takuhon/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/takuhon-dev/takuhon/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/takuhon-dev/takuhon/compare/v0.14.0...v0.15.0
