@@ -133,6 +133,29 @@ describe('executeMcpTool()', () => {
     expect(result.certifications[0]?.credentialId).toBeUndefined();
   });
 
+  it('honors settings.publicVisibility on get_profile and get_section (parity)', () => {
+    const base = fixture();
+    const hidden: Takuhon = {
+      ...base,
+      careers: [
+        {
+          id: 'job-1',
+          organization: { en: 'MCP-Hidden-Org' },
+          role: { en: 'Eng' },
+          startDate: '2020-01',
+        },
+      ],
+      settings: { ...base.settings, publicVisibility: { careers: false } },
+    };
+    const whole = executeMcpTool('get_profile', { lang: 'en' }, hidden).data as {
+      careers: unknown[];
+    };
+    expect(whole.careers).toEqual([]);
+    const section = executeMcpTool('get_section', { section: 'careers', lang: 'en' }, hidden)
+      .data as unknown[];
+    expect(section).toEqual([]);
+  });
+
   it('throws McpRequestError for an unknown tool', () => {
     expect(() => executeMcpTool('delete_profile', {}, fixture())).toThrow(McpRequestError);
   });

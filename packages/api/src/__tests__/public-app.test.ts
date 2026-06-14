@@ -598,6 +598,79 @@ describe('public privacy filter', () => {
   });
 });
 
+describe('public section visibility (settings.publicVisibility) parity', () => {
+  // A unique, owner-injected career organization so we can assert its absence
+  // from any surface once the careers section is hidden.
+  const HIDDEN_ORG = 'Hidden-Org-Acme-XYZ';
+
+  function withVisibility(publicVisibility: Record<string, boolean>): Takuhon {
+    const base = makeSample();
+    return {
+      ...base,
+      careers: [
+        {
+          id: 'job-1',
+          organization: { en: HIDDEN_ORG },
+          role: { en: 'Engineer' },
+          startDate: '2020-01',
+        },
+      ],
+      contact: {
+        ...base.contact,
+        email: 'pat@example.com',
+        showEmail: true,
+        formUrl: 'https://example.com/contact',
+      },
+      settings: { ...base.settings, publicVisibility },
+    };
+  }
+
+  function makeAppWith(profile: Takuhon): { app: ReturnType<typeof createPublicApp> } {
+    const storage = new FakeStorage();
+    const app = createPublicApp({ storage, fallback: () => profile });
+    return { app };
+  }
+
+  it('empties a hidden array section on GET /api/profile', async () => {
+    const { app } = makeAppWith(withVisibility({ careers: false }));
+    const body: any = await (await fetchPath(app, '/api/profile')).json();
+    expect(body.data.careers).toEqual([]);
+  });
+
+  it('empties a hidden array section on GET /takuhon.json (raw shape)', async () => {
+    const { app } = makeAppWith(withVisibility({ careers: false }));
+    const body: any = await (await fetchPath(app, '/takuhon.json')).json();
+    expect(body.careers).toEqual([]);
+  });
+
+  it('empties a hidden contact section on /api/profile and /takuhon.json', async () => {
+    const { app } = makeAppWith(withVisibility({ contact: false }));
+    const profileBody: any = await (await fetchPath(app, '/api/profile')).json();
+    expect(profileBody.data.contact).toEqual({});
+    const rawBody: any = await (await fetchPath(app, '/takuhon.json')).json();
+    expect(rawBody.contact).toEqual({});
+  });
+
+  it('leaves sibling sections visible when one is hidden', async () => {
+    const { app } = makeAppWith(withVisibility({ careers: false }));
+    const body: any = await (await fetchPath(app, '/api/profile')).json();
+    // contact has no key → stays visible (default true).
+    expect(body.data.contact.email).toBe('pat@example.com');
+  });
+
+  it('keeps a hidden-section value out of the server-rendered GET / (HTML + embedded JSON-LD)', async () => {
+    const { app } = makeAppWith(withVisibility({ careers: false }));
+    const html = await (await fetchPath(app, '/')).text();
+    expect(html).not.toContain(HIDDEN_ORG);
+  });
+
+  it('keeps a hidden-section value out of GET /api/jsonld', async () => {
+    const { app } = makeAppWith(withVisibility({ careers: false }));
+    const text = await (await fetchPath(app, '/api/jsonld')).text();
+    expect(text).not.toContain(HIDDEN_ORG);
+  });
+});
+
 describe('fixture-leak regression (examples/personal-profile/takuhon.json)', () => {
   // The personal-profile example deliberately populates privacy-marked fields
   // (certifications[*].credentialId, education[*].grade, and contact.email
