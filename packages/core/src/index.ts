@@ -81,6 +81,9 @@ export type { Palette, RenderActivitySvgOptions } from './activity-svg.js';
 export { deriveCv } from './cv.js';
 export type { CvDocument, CvHeader, CvSection, CvSectionKind } from './cv.js';
 
+export { gravatarUrl } from './gravatar.js';
+export type { GravatarOptions } from './gravatar.js';
+
 export {
   executeMcpTool,
   MCP_PROFILE_SECTIONS,
