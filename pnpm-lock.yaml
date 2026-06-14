@@ -97,6 +97,18 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
 
+  adapters/vercel:
+    dependencies:
+      '@takuhon/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@takuhon/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      hono:
+        specifier: ^4.12.21
+        version: 4.12.21
+
   apps/admin:
     dependencies:
       '@takuhon/core':
