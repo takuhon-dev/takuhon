@@ -6,6 +6,22 @@ This is a monorepo. Nine publishable artifacts release in lockstep at the same v
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-06-14
+
+Minor release. Ships a **Gravatar avatar helper**: an owner who is not on GitHub (or who simply prefers it) can set an avatar from just an email address — no upload required — alongside the existing "paste a URL" and "upload an image" paths. `@takuhon/core` gains a pure `gravatarUrl(email, options?)` that hashes the email with a bundled synchronous SHA-256 and builds the Gravatar image URL; the admin profile form gains a "Use Gravatar" mode that calls it in the browser. The email is never stored — only the resulting URL is saved into `profile.avatar.url`. There is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.16.0.
+
+### Added — `@takuhon/core`
+
+- `gravatarUrl(email, options?)` builds the Gravatar avatar URL for an email address: it trims and lower-cases the email, hashes it with SHA-256, and assembles `https://gravatar.com/avatar/{hash}` with optional `?s=` (size) and `?d=` (default image) query parameters from `GravatarOptions`. It is a pure, deterministic transform — the email is never stored; only the returned URL is meant to be saved into `profile.avatar.url`. The SHA-256 is a small, dependency-free, synchronous implementation, so the helper runs identically on Node, Cloudflare Workers, and in the browser with no async Web Crypto call and no `eval` (safe under the strict admin CSP).
+
+### Added — `@takuhon/ui`
+
+- The admin profile form offers a third way to set an avatar, next to pasting a URL and uploading an image: a `GravatarField` with an email input and a "Use Gravatar" button that turns the email into a Gravatar URL via core's `gravatarUrl`, applied on click or Enter. The email is local-only — it is never written to the document or sent anywhere, and the input clears once applied; only the generated URL is stored. Because the hash is computed synchronously in the browser, there is no API/transport change and nothing runs `eval`, so it works under the strict admin CSP. `GravatarField` is exported from `@takuhon/ui/admin`.
+
+### Lockstep version bump
+
+- All nine publishable artifacts bump from `0.15.1` to `0.16.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. `@takuhon/core` and `@takuhon/ui` changed functionally; the rest bump for lockstep alignment. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
+
 ## [0.15.1] - 2026-06-13
 
 Patch release. Fixes a `@takuhon/activity` bug that broke the developer-activity sync on Cloudflare Workers — the daily cron never populated the snapshot, so `GET /activity.svg` stayed 404 and the in-page activity section never appeared. No `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.5.0`. Per the lockstep release policy all nine publishable artifacts release at 0.15.1.
@@ -574,6 +590,7 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
 [Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...HEAD
+[0.16.0]: https://github.com/takuhon-dev/takuhon/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/takuhon-dev/takuhon/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/takuhon-dev/takuhon/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/takuhon-dev/takuhon/compare/v0.13.0...v0.14.0
