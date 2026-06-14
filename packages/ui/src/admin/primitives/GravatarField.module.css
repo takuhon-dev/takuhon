@@ -1,0 +1,26 @@
+.actionRow {
+  display: flex;
+  margin-block-start: var(--takuhon-space-2);
+}
+
+.applyButton {
+  min-height: var(--takuhon-tap-target);
+  padding-inline: var(--takuhon-space-3);
+  border: 1px solid var(--takuhon-color-border);
+  border-radius: var(--takuhon-radius-sm);
+  background-color: var(--takuhon-color-bg);
+  color: var(--takuhon-color-text);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-base);
+  cursor: pointer;
+}
+
+.applyButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.applyButton:focus-visible {
+  outline: 2px solid var(--takuhon-color-primary);
+  outline-offset: 2px;
+}

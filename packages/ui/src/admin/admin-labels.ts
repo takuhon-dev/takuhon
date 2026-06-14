@@ -51,6 +51,8 @@ const EN = {
   'field.avatarUrl': 'Avatar URL',
   'field.avatarUpload': 'Upload image',
   'field.avatarAlt': 'Avatar alternative text',
+  'field.gravatarEmail': 'Gravatar email',
+  'field.gravatarApply': 'Use Gravatar',
   'field.location.country': 'Country',
   'field.location.region': 'Region',
   'field.location.locality': 'Locality',
@@ -102,6 +104,8 @@ const EN = {
 
   'hint.avatarNoUpload': 'Paste an image URL. Uploading image files is not available yet.',
   'hint.avatarUpload': 'Paste an image URL, or upload a JPEG, PNG, WebP, or GIF.',
+  'hint.gravatar':
+    'Enter an email to generate a Gravatar avatar URL. The email is not saved — only the resulting URL is stored.',
   'hint.month': 'Format: YYYY-MM (e.g. 2024-03).',
   'hint.country': 'ISO 3166-1 alpha-2 code, e.g. US.',
   'hint.tags': 'Comma-separated.',

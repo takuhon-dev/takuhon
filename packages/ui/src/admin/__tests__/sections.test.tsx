@@ -1,4 +1,4 @@
-import type { Link, Project, Settings, Skill } from '@takuhon/core';
+import { gravatarUrl, type Link, type Project, type Settings, type Skill } from '@takuhon/core';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -62,6 +62,23 @@ describe('ProfileForm', () => {
         expect.objectContaining({ avatar: { url: '/assets/1-ab.png' } }),
       );
     });
+  });
+
+  it('sets the avatar from a Gravatar email without ever storing the email', () => {
+    const onChange = vi.fn();
+    render(
+      <ProfileForm value={{ displayName: { en: 'Pat' } }} onChange={onChange} locales={LOCALES} />,
+    );
+    fireEvent.change(screen.getByLabelText('Gravatar email'), {
+      target: { value: 'person@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Use Gravatar' }));
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ avatar: { url: gravatarUrl('person@example.com') } }),
+    );
+    // The email is hashed into the URL and must never reach the document itself.
+    expect(JSON.stringify(onChange.mock.calls)).not.toContain('person@example.com');
   });
 });
 

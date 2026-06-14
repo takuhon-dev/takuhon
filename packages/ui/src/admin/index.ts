@@ -37,6 +37,7 @@ export {
   type AssetUploadResult,
   type UploadAsset,
 } from './primitives/ImageField.js';
+export { GravatarField, type GravatarFieldProps } from './primitives/GravatarField.js';
 export { LocaleTabs, type LocaleTabsProps } from './primitives/LocaleTabs.js';
 export { Repeater, type RepeaterProps } from './primitives/Repeater.js';
 
