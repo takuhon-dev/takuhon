@@ -13,6 +13,7 @@ import {
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
+import { renderProfileHtml } from './html/build-html.js';
 import { localePrefixGetPath, pathLocaleFromUrl } from './locale-prefix.js';
 import { resolveRequestLocales } from './locale-resolution.js';
 
@@ -48,7 +49,10 @@ const FALLBACK_VERSION = 'bundled-fixture';
 
 const PUBLIC_CSP = [
   "default-src 'self'",
-  "img-src 'self' data:",
+  // `https:` lets the server-rendered profile page load remote avatar images
+  // (the schema permits any https avatar URL, and `safeUrl` in the renderer
+  // already blocks non-http(s) schemes); `data:` covers inline placeholders.
+  "img-src 'self' https: data:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self'",
   "font-src 'self'",
@@ -110,7 +114,52 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     }),
   );
 
-  app.get('/', (c) => c.text('takuhon — visit /api/profile or /api/schema\n'));
+  // The public profile page. `getPath` has already stripped any `/{locale}`
+  // prefix, so this single route serves `/` (default locale) and `/<locale>/`
+  // alike; the locale token is recovered from the original URL. The same
+  // load → normalize → resolveLocale → privacy-filter pipeline that backs
+  // `/api/profile` feeds the pure `renderProfileHtml`, so the page a visitor —
+  // and any crawler reading the embedded JSON-LD — sees matches the API and the
+  // static `takuhon build` output exactly. Canonical / hreflang are derived
+  // from this request's own origin, so they are correct without configuration.
+  app.get('/', async (c) => {
+    const { data, version } = await loadProfile(deps);
+    const profile = normalize(data);
+    const { locale, fallbackLocale } = resolveRequestLocales(
+      c,
+      profile.settings.availableLocales,
+      pathLocaleFromUrl(c.req.url),
+    );
+    const localized = applyPublicPrivacyFilter(resolveLocale(profile, locale, fallbackLocale));
+
+    const defaultLocale = profile.settings.defaultLocale;
+    const locales = [...new Set([defaultLocale, ...profile.settings.availableLocales])];
+    const current = localized.resolvedLocale;
+    const origin = new URL(c.req.url).origin;
+    const localePath = (l: string): string => (l === defaultLocale ? '/' : `/${l}/`);
+
+    const snapshot =
+      profile.settings.activity?.enabled === true && deps.activityStorage
+        ? await deps.activityStorage.getActivitySnapshot()
+        : null;
+
+    const html = renderProfileHtml({
+      localized,
+      canonicalUrl: `${origin}${localePath(current)}`,
+      alternates: [
+        ...locales.map((l) => ({ hreflang: l, href: `${origin}${localePath(l)}` })),
+        { hreflang: 'x-default', href: `${origin}${localePath(defaultLocale)}` },
+      ],
+      localeNav: locales.map((l) => ({ locale: l, href: localePath(l), current: l === current })),
+      jsonLd: profile.settings.enableJsonLd !== false,
+      activitySnapshot: snapshot ?? undefined,
+    });
+
+    c.header('etag', `"${version}"`);
+    c.header('cache-control', 'public, max-age=300');
+    c.header('vary', 'Accept-Language, Cookie');
+    return c.html(html);
+  });
 
   // Liveness probe. Intentionally storage-independent: it reports that the
   // worker itself is serving requests, not that the profile store is
