@@ -23,7 +23,7 @@ import type { ContentLicenseFragment } from '../licenses.js';
  */
 export function buildTakuhonJson(license: ContentLicenseFragment): unknown {
   return {
-    schemaVersion: '0.5.0',
+    schemaVersion: '0.6.0',
     profile: {
       displayName: {
         en: 'Sam Lee',

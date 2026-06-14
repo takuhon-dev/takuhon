@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.5.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/0.6.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -360,7 +360,79 @@
           "default": false,
           "description": "Opt-in flag for first-party analytics. Default is false to keep takuhon privacy-respecting by default."
         },
-        "activity": { "$ref": "#/$defs/ActivitySettings" }
+        "activity": { "$ref": "#/$defs/ActivitySettings" },
+        "publicVisibility": { "$ref": "#/$defs/PublicVisibility" }
+      }
+    },
+    "PublicVisibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-section public visibility (added in 0.6.0). Each key is a content section; setting it to false hides that whole section from every public surface (GET /, /api/profile, /api/jsonld, /takuhon.json, MCP, and the derived CV) via the shared applyPublicPrivacyFilter. An absent key — or an absent object — means the section is public, so the default is all-visible and omitting this block is fully backwards-compatible. The profile identity (profile.displayName, …) is always public and is intentionally not a key here. Field-level controls (contact.showEmail, meta.privacy.*) still apply within a visible section: visibility is the AND of the feature toggle, this section flag, and the field flag.",
+      "properties": {
+        "links": {
+          "type": "boolean",
+          "description": "Default true. When false, links[] is emitted empty on public surfaces."
+        },
+        "careers": {
+          "type": "boolean",
+          "description": "Default true. When false, careers[] is emitted empty on public surfaces."
+        },
+        "projects": {
+          "type": "boolean",
+          "description": "Default true. When false, projects[] is emitted empty on public surfaces."
+        },
+        "skills": {
+          "type": "boolean",
+          "description": "Default true. When false, skills[] is emitted empty on public surfaces."
+        },
+        "certifications": {
+          "type": "boolean",
+          "description": "Default true. When false, certifications[] is emitted empty on public surfaces."
+        },
+        "memberships": {
+          "type": "boolean",
+          "description": "Default true. When false, memberships[] is emitted empty on public surfaces."
+        },
+        "volunteering": {
+          "type": "boolean",
+          "description": "Default true. When false, volunteering[] is emitted empty on public surfaces."
+        },
+        "honors": {
+          "type": "boolean",
+          "description": "Default true. When false, honors[] is emitted empty on public surfaces."
+        },
+        "education": {
+          "type": "boolean",
+          "description": "Default true. When false, education[] is emitted empty on public surfaces."
+        },
+        "publications": {
+          "type": "boolean",
+          "description": "Default true. When false, publications[] is emitted empty on public surfaces."
+        },
+        "languages": {
+          "type": "boolean",
+          "description": "Default true. When false, languages[] is emitted empty on public surfaces."
+        },
+        "courses": {
+          "type": "boolean",
+          "description": "Default true. When false, courses[] is emitted empty on public surfaces."
+        },
+        "patents": {
+          "type": "boolean",
+          "description": "Default true. When false, patents[] is emitted empty on public surfaces."
+        },
+        "testScores": {
+          "type": "boolean",
+          "description": "Default true. When false, testScores[] is emitted empty on public surfaces."
+        },
+        "recommendations": {
+          "type": "boolean",
+          "description": "Default true. When false, recommendations[] is emitted empty on public surfaces."
+        },
+        "contact": {
+          "type": "boolean",
+          "description": "Default true. When false, the contact section (email, formUrl) is emitted empty on public surfaces."
+        }
       }
     },
     "ActivitySettings": {

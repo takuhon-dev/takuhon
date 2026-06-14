@@ -293,6 +293,73 @@ describe('migrateTakuhon', () => {
     expect(validate(out).ok).toBe(true);
   });
 
+  it('migrates a 0.5.0 input forward to 0.6.0 (version stamp; settings.publicVisibility is optional)', () => {
+    const v050 = {
+      schemaVersion: '0.5.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      recommendations: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v050, '0.6.0');
+    expect(out.schemaVersion).toBe('0.6.0');
+    // Additive, version-only: no settings.publicVisibility is invented
+    // (default is all-sections-visible, so an absent block is correct).
+    expect(out.settings.publicVisibility).toBeUndefined();
+    expect(out.profile.displayName).toEqual({ en: 'Test' });
+    expect(validate(out).ok).toBe(true);
+  });
+
+  it('preserves a pre-existing settings.publicVisibility value during migration (no overwrite)', () => {
+    const input = {
+      schemaVersion: '0.5.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        publicVisibility: { education: false },
+      },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(input, '0.6.0');
+    expect(out.settings.publicVisibility).toEqual({ education: false });
+  });
+
+  it('chains 0.1.0 → 0.6.0 through all five registered migrations', () => {
+    const v010 = {
+      schemaVersion: '0.1.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v010, '0.6.0');
+    expect(out.schemaVersion).toBe('0.6.0');
+    // All five hops applied through to the 0.6.0 version stamp.
+    expect(out.certifications).toEqual([]);
+    expect(out.testScores).toEqual([]);
+    expect(out.recommendations).toEqual([]);
+    expect(out.settings.publicVisibility).toBeUndefined();
+    expect(validate(out).ok).toBe(true);
+  });
+
   it('MigrationError is an Error with the right name', () => {
     const err = new MigrationError('boom');
     expect(err).toBeInstanceOf(Error);
@@ -309,11 +376,12 @@ describe('migrateTakuhon', () => {
 });
 
 describe('migrations registry', () => {
-  it('contains the v0.1.0 → … → v0.5.0 entries in chain order', () => {
-    expect(migrations).toHaveLength(4);
+  it('contains the v0.1.0 → … → v0.6.0 entries in chain order', () => {
+    expect(migrations).toHaveLength(5);
     expect(migrations[0]).toMatchObject({ from: '0.1.0', to: '0.2.0' });
     expect(migrations[1]).toMatchObject({ from: '0.2.0', to: '0.3.0' });
     expect(migrations[2]).toMatchObject({ from: '0.3.0', to: '0.4.0' });
     expect(migrations[3]).toMatchObject({ from: '0.4.0', to: '0.5.0' });
+    expect(migrations[4]).toMatchObject({ from: '0.5.0', to: '0.6.0' });
   });
 });

@@ -57,7 +57,7 @@ describe('cloudflare worker — Phase 3.4 admin integration', () => {
     const body: any = await res.json();
     expect(typeof body.meta.version).toBe('string');
     expect(body.meta.version.length).toBeGreaterThan(0);
-    expect(body.meta.schemaVersion).toBe('0.5.0');
+    expect(body.meta.schemaVersion).toBe('0.6.0');
     expect(res.headers.get('cache-control')).toBe('private, no-store');
 
     const stored = await kv.getWithMetadata<KvMetadata>(KV_KEY, 'json');
@@ -183,6 +183,6 @@ describe('cloudflare worker — Phase 3.4 admin integration', () => {
     const res = await call('https://worker.example/api/profile', env);
     expect(res.status).toBe(200);
     const body: any = await res.json();
-    expect(body.meta.schemaVersion).toBe('0.5.0');
+    expect(body.meta.schemaVersion).toBe('0.6.0');
   });
 });
