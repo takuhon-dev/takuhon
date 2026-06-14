@@ -1,8 +1,10 @@
+import { gravatarUrl } from '@takuhon/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import axe from 'axe-core';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CheckboxField } from '../primitives/CheckboxField.js';
+import { GravatarField } from '../primitives/GravatarField.js';
 import { ImageField } from '../primitives/ImageField.js';
 import { SelectField } from '../primitives/SelectField.js';
 import { TextAreaField as TextArea } from '../primitives/TextAreaField.js';
@@ -127,6 +129,43 @@ describe('ImageField', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Image is too large');
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('GravatarField', () => {
+  it('renders an email input and an apply button', () => {
+    render(<GravatarField onApply={vi.fn()} />);
+    expect(screen.getByLabelText('Gravatar email')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Use Gravatar' })).toBeInTheDocument();
+  });
+
+  it('disables the apply button until an email is entered', () => {
+    render(<GravatarField onApply={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Use Gravatar' });
+    expect(button).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Gravatar email'), {
+      target: { value: 'person@example.com' },
+    });
+    expect(button).toBeEnabled();
+  });
+
+  it('applies the gravatar URL for the entered email and clears the input', () => {
+    const onApply = vi.fn();
+    render(<GravatarField onApply={onApply} />);
+    const input = screen.getByLabelText('Gravatar email');
+    fireEvent.change(input, { target: { value: '  Person@Example.com  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Use Gravatar' }));
+    expect(onApply).toHaveBeenCalledWith(gravatarUrl('person@example.com'));
+    expect(input).toHaveValue('');
+  });
+
+  it('applies on Enter within the email input', () => {
+    const onApply = vi.fn();
+    render(<GravatarField onApply={onApply} />);
+    const input = screen.getByLabelText('Gravatar email');
+    fireEvent.change(input, { target: { value: 'person@example.com' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onApply).toHaveBeenCalledWith(gravatarUrl('person@example.com'));
   });
 });
 

@@ -2,6 +2,7 @@ import type { Address, Avatar, LocaleTag, Profile } from '@takuhon/core';
 
 import { getAdminLabel } from '../admin-labels.js';
 import { errorsAt, NO_FIELD_ERRORS, type FieldErrorIndex } from '../errors.js';
+import { GravatarField } from '../primitives/GravatarField.js';
 import { ImageField, type UploadAsset } from '../primitives/ImageField.js';
 import { LocaleTabs } from '../primitives/LocaleTabs.js';
 import { TextField } from '../primitives/TextField.js';
@@ -112,6 +113,11 @@ export function ProfileForm({
         hint={getAdminLabel(uploadAsset ? 'hint.avatarUpload' : 'hint.avatarNoUpload')}
         errors={errorsAt(errors, `${POINTER}/avatar/url`)}
         uploadAsset={uploadAsset}
+      />
+      <GravatarField
+        onApply={(url) => {
+          updateAvatar({ url });
+        }}
       />
       <LocaleTabs
         label={getAdminLabel('field.avatarAlt')}
