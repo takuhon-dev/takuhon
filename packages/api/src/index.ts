@@ -38,3 +38,17 @@ export {
   type AuditLogger,
 } from './admin/audit-logger.js';
 export { noopCachePurger, type CachePurger } from './admin/cache-purger.js';
+
+// Pure, core-only static HTML rendering. `renderProfileHtml` powers both the
+// server-rendered public profile page (the `GET /` route below) and the static
+// pages emitted by `@takuhon/cli`'s `build`/`dev`; keeping it here lets every
+// adapter serve the same markup the CLI writes to disk.
+export {
+  renderProfileHtml,
+  escapeHtml,
+  type RenderInput,
+  type Alternate,
+  type LocaleLink,
+} from './html/build-html.js';
+export { generateSite, type SitePage, type GenerateOptions } from './html/site.js';
+export { renderCvHtml } from './html/cv-html.js';

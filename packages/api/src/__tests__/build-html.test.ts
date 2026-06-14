@@ -2,7 +2,7 @@ import { normalize, resolveLocale } from '@takuhon/core';
 import type { ActivitySnapshot, LocalizedTakuhon, Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
-import { escapeHtml, renderProfileHtml, type RenderInput } from '../build-html.js';
+import { escapeHtml, renderProfileHtml, type RenderInput } from '../html/build-html.js';
 
 /** Build a LocalizedTakuhon from a partial multi-locale document. */
 function localized(overrides: Record<string, unknown> = {}, locale = 'en'): LocalizedTakuhon {
