@@ -70,6 +70,31 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(res.headers.get('etag')).toBe('"kv-version-1"');
   });
 
+  it('honors settings.publicVisibility end-to-end through the worker (parity)', async () => {
+    const { env, kv } = makeEnv();
+    const base = exampleJson as Takuhon;
+    const stored: Takuhon = {
+      ...base,
+      careers: [
+        {
+          id: 'job-1',
+          organization: { en: 'CF-Hidden-Org' },
+          role: { en: 'Eng' },
+          startDate: '2020-01',
+        },
+      ],
+      settings: { ...base.settings, publicVisibility: { careers: false } },
+    };
+    const metadata: KvMetadata = { version: 'kv-version-2', updatedAt: '2026-05-15T00:00:00Z' };
+    await kv.put(KV_KEY, JSON.stringify(stored), { metadata });
+
+    const profileBody: any = await (await call('https://worker.example/api/profile', env)).json();
+    expect(profileBody.data.careers).toEqual([]);
+    // The hidden section value also never reaches the server-rendered page.
+    const html = await (await call('https://worker.example/', env)).text();
+    expect(html).not.toContain('CF-Hidden-Org');
+  });
+
   it('GET /api/schema returns the JSON Schema document', async () => {
     const res = await call('https://worker.example/api/schema', makeEnv().env);
     expect(res.status).toBe(200);
