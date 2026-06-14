@@ -25,11 +25,10 @@
 import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 
+import { escapeHtml, generateSite } from '@takuhon/api';
 import { applyPublicPrivacyFilter, normalize, validate } from '@takuhon/core';
 
-import { escapeHtml } from './build-html.js';
 import { readActivitySnapshotSync } from './file-activity-storage.js';
-import { generateSite } from './site.js';
 
 const DEFAULT_PATH = 'takuhon.json';
 const DEFAULT_PORT = 4321;

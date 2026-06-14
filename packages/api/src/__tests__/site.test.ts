@@ -7,7 +7,7 @@ import {
 } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
-import { generateSite } from '../site.js';
+import { generateSite } from '../html/site.js';
 
 /** A valid multi-locale (en + ja) 0.4.0 profile carrying privacy-sensitive fields. */
 function fixture(overrides: Record<string, unknown> = {}): Record<string, unknown> {

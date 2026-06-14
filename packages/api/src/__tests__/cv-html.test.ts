@@ -1,7 +1,7 @@
 import { deriveCv, normalize, resolveLocale, validate, type LocalizedTakuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
-import { renderCvHtml } from '../cv-html.js';
+import { renderCvHtml } from '../html/cv-html.js';
 
 function localized(overrides: Record<string, unknown> = {}, locale = 'en'): LocalizedTakuhon {
   const doc = {

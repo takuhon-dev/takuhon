@@ -26,6 +26,7 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
+import { generateSite } from '@takuhon/api';
 import {
   DARK_PALETTE,
   applyPublicPrivacyFilter,
@@ -36,7 +37,6 @@ import {
 
 import { writeFileAtomic } from './backup.js';
 import { readActivitySnapshotSync } from './file-activity-storage.js';
-import { generateSite } from './site.js';
 
 const DEFAULT_PATH = 'takuhon.json';
 const DEFAULT_OUTPUT = 'dist';
