@@ -92,6 +92,24 @@ const EN = {
   'field.settings.enableApi': 'Expose the public read API',
   'field.settings.enableAnalytics': 'Enable first-party analytics',
 
+  'field.settings.publicVisibility': 'Public sections',
+  'field.publicVisibility.links': 'Links',
+  'field.publicVisibility.careers': 'Experience',
+  'field.publicVisibility.projects': 'Projects',
+  'field.publicVisibility.skills': 'Skills',
+  'field.publicVisibility.certifications': 'Certifications',
+  'field.publicVisibility.memberships': 'Memberships',
+  'field.publicVisibility.volunteering': 'Volunteering',
+  'field.publicVisibility.honors': 'Honors & awards',
+  'field.publicVisibility.education': 'Education',
+  'field.publicVisibility.publications': 'Publications',
+  'field.publicVisibility.languages': 'Languages',
+  'field.publicVisibility.courses': 'Courses',
+  'field.publicVisibility.patents': 'Patents',
+  'field.publicVisibility.testScores': 'Test scores',
+  'field.publicVisibility.recommendations': 'Recommendations',
+  'field.publicVisibility.contact': 'Contact',
+
   'item.link': 'Link',
   'item.career': 'Position',
   'item.project': 'Project',
@@ -110,6 +128,8 @@ const EN = {
   'hint.country': 'ISO 3166-1 alpha-2 code, e.g. US.',
   'hint.tags': 'Comma-separated.',
   'hint.locales': 'Comma-separated BCP-47 tags, e.g. en, ja. Drives the language tabs above.',
+  'hint.publicVisibility':
+    'Unchecked sections are hidden from every public surface (page, API, JSON-LD). All sections are public by default.',
   'advanced.hint': 'Edit the entire document as JSON. Edits apply only while the JSON is valid.',
   'advanced.invalid': 'The JSON is not a valid takuhon document:',
 

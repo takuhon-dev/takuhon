@@ -157,4 +157,25 @@ describe('SettingsForm', () => {
     fireEvent.click(screen.getByLabelText(/Powered by takuhon/));
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ showPoweredBy: false }));
   });
+
+  it('hides a section by storing publicVisibility[section] = false', () => {
+    const onChange = vi.fn();
+    render(<SettingsForm value={settings} onChange={onChange} />);
+    // Sections default to visible (checked), so the first click hides them.
+    fireEvent.click(screen.getByLabelText('Education'));
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ publicVisibility: { education: false } }),
+    );
+  });
+
+  it('drops publicVisibility entirely when a hidden section is re-shown', () => {
+    const onChange = vi.fn();
+    const hidden: Settings = { ...settings, publicVisibility: { education: false } };
+    render(<SettingsForm value={hidden} onChange={onChange} />);
+    // Education starts unchecked; clicking re-shows it and clears the now-empty block.
+    fireEvent.click(screen.getByLabelText('Education'));
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ publicVisibility: undefined }),
+    );
+  });
 });

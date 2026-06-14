@@ -20,3 +20,10 @@
   font-weight: 600;
   color: var(--takuhon-color-text);
 }
+
+.hint {
+  margin: 0 0 var(--takuhon-space-3);
+  font-family: var(--takuhon-font-family);
+  font-size: var(--takuhon-font-size-sm);
+  color: var(--takuhon-color-text-muted);
+}
