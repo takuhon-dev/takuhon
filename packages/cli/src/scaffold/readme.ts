@@ -78,7 +78,7 @@ KV has no stored profile yet.
 pnpm dev   # runs \`wrangler dev\` locally
 \`\`\`
 
-The full route map (public + admin) is documented in the [\`@takuhon/cloudflare\` README](https://github.com/takuhon-dev/takuhon/tree/main/adapters/cloudflare#readme).
+Open the local URL it prints: the root serves your **profile page** — the same HTML a visitor and search-engine crawlers see in production, with Schema.org JSON-LD embedded — and the JSON API lives under \`/api/*\`. The full route map (public + admin) is documented in the [\`@takuhon/cloudflare\` README](https://github.com/takuhon-dev/takuhon/tree/main/adapters/cloudflare#readme).
 
 ## Admin
 
@@ -180,6 +180,8 @@ Both expose the tools \`get_profile\`, \`get_section\`, \`get_jsonld\`, \`list_l
 \`\`\`sh
 pnpm deploy   # runs \`wrangler deploy\`
 \`\`\`
+
+Once deployed, your Worker's root URL serves the **mobile profile page** with Schema.org JSON-LD embedded for search engines and AI agents; \`/<locale>/\` serves each translated page, and the JSON API stays under \`/api/*\`. Edits made in \`/admin\` appear on the page immediately.
 
 ## License
 
