@@ -23,6 +23,8 @@ local edge cache, and `console.log`-based audit logging.
 
 \* Registered only when an R2 bucket is bound (see [Image uploads](#image-uploads-r2)).
 
+`GET /` (and each available `/<locale>/`) returns the **server-rendered mobile profile page** — the same HTML `takuhon build` emits, with Schema.org JSON-LD embedded for crawlers — so a deployment serves a human-facing page and machine-readable structured data from the root, not just the JSON API. It is `Cache-Control: public, max-age=300` and is purged from the edge cache on every admin write.
+
 `POST` / `PATCH` on admin paths returns `405 Method Not Allowed`. Schema
 validation failures return `422 Unprocessable Entity` with an `errors[]`
 list of JSON-Schema-style fragment pointers.
