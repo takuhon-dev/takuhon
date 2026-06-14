@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.5.0');
+      expect(result.data.schemaVersion).toBe('0.6.0');
     }
   });
 
@@ -545,5 +545,77 @@ describe('validate() 0.5.0 additions (settings.activity)', () => {
       (e) => e.keyword === 'required' && e.pointer === '/settings/activity/github/username',
     );
     expect(missing).toBeDefined();
+  });
+});
+
+describe('validate() 0.6.0 additions (settings.publicVisibility)', () => {
+  const base = {
+    schemaVersion: '0.6.0',
+    profile: { displayName: { en: 'Test' } },
+    links: [],
+    careers: [],
+    projects: [],
+    skills: [],
+    contact: {},
+    meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+  };
+
+  it('accepts a document carrying a settings.publicVisibility block', () => {
+    const result = validate({
+      ...base,
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        publicVisibility: { careers: true, education: false, contact: false },
+      },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.settings.publicVisibility?.education).toBe(false);
+  });
+
+  it('accepts a document with no settings.publicVisibility (the field is optional)', () => {
+    const result = validate({
+      ...base,
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.settings.publicVisibility).toBeUndefined();
+  });
+
+  it('rejects an unknown publicVisibility section key (additionalProperties: false)', () => {
+    const result = validate({
+      ...base,
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        publicVisibility: { profile: false },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const extra = result.errors.find(
+      (e) =>
+        e.keyword === 'additionalProperties' && e.pointer.startsWith('/settings/publicVisibility'),
+    );
+    expect(extra).toBeDefined();
+  });
+
+  it('rejects a non-boolean publicVisibility value', () => {
+    const result = validate({
+      ...base,
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        publicVisibility: { careers: 'yes' },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const wrongType = result.errors.find(
+      (e) => e.keyword === 'type' && e.pointer === '/settings/publicVisibility/careers',
+    );
+    expect(wrongType).toBeDefined();
   });
 });

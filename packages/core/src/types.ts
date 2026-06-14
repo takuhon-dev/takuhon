@@ -356,6 +356,43 @@ export interface Settings {
   enableAnalytics?: boolean;
   /** Opt-in developer-activity dashboard configuration (added in 0.5.0). */
   activity?: ActivitySettings;
+  /** Per-section public visibility (added in 0.6.0). Absent = all sections visible. */
+  publicVisibility?: PublicVisibility;
+}
+
+/**
+ * Per-section public/private visibility (added in 0.6.0).
+ *
+ * Each key names a content section. Setting it to `false` hides that whole
+ * section from every public surface (`GET /`, `/api/profile`, `/api/jsonld`,
+ * `/takuhon.json`, MCP, and the derived CV) through the shared
+ * {@link applyPublicPrivacyFilter}. An absent key — or an absent object —
+ * means the section is public, so the default is all-visible and omitting this
+ * block is fully backwards-compatible.
+ *
+ * The profile identity (`profile.displayName`, …) is always public and is
+ * intentionally not representable here. Field-level controls
+ * (`contact.showEmail`, `meta.privacy.*`) still apply within a visible section:
+ * a field is public only when the feature toggle, this section flag, and the
+ * field flag all allow it (AND composition).
+ */
+export interface PublicVisibility {
+  links?: boolean;
+  careers?: boolean;
+  projects?: boolean;
+  skills?: boolean;
+  certifications?: boolean;
+  memberships?: boolean;
+  volunteering?: boolean;
+  honors?: boolean;
+  education?: boolean;
+  publications?: boolean;
+  languages?: boolean;
+  courses?: boolean;
+  patents?: boolean;
+  testScores?: boolean;
+  recommendations?: boolean;
+  contact?: boolean;
 }
 
 /**
