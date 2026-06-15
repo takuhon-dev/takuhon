@@ -21,13 +21,20 @@ import { cancel, intro, outro } from '@clack/prompts';
 
 import { buildContentLicense, isValidSpdxInput } from './licenses.js';
 import { promptLicense } from './prompts.js';
-import { copyAdminBundle, TargetDirectoryExistsError, writeProject } from './scaffold/index.js';
+import {
+  copyAdminBundle,
+  TargetDirectoryExistsError,
+  writeProject,
+  type ScaffoldPlatform,
+} from './scaffold/index.js';
+import { isValidVercelProjectName } from './scaffold/vercel.js';
 import { isValidWorkerName } from './scaffold/wrangler-toml.js';
 
 interface CliArgs {
   readonly targetArg: string | undefined;
   readonly extraPositionals: readonly string[];
   readonly license: string | undefined;
+  readonly platform: string | undefined;
   readonly help: boolean;
 }
 
@@ -38,6 +45,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     strict: true,
     options: {
       license: { type: 'string' },
+      platform: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -45,17 +53,21 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     targetArg: positionals[0],
     extraPositionals: positionals.slice(1),
     license: values.license,
+    platform: values.platform,
     help: values.help === true,
   };
 }
 
 function printHelp(): void {
   process.stdout.write(
-    `Usage: create-takuhon <target-dir> [--license <spdxId>]\n` +
+    `Usage: create-takuhon <target-dir> [--platform <cloudflare|vercel>] [--license <spdxId>]\n` +
       `\n` +
       `Scaffolds a Takuhon profile deployment in <target-dir>.\n` +
       `\n` +
       `Options:\n` +
+      `  --platform <name>    Target platform: "cloudflare" (default) or "vercel".\n` +
+      `                       Cloudflare is the full deployment (admin UI, KV);\n` +
+      `                       Vercel is a read-only profile published from Git.\n` +
       `  --license <spdxId>   Skip the interactive license prompt and use the\n` +
       `                       given SPDX identifier (e.g. CC-BY-4.0, MIT,\n` +
       `                       Proprietary). Useful for CI / automation.\n` +
@@ -92,14 +104,34 @@ async function main(argv: readonly string[]): Promise<number> {
     return 2;
   }
 
+  let platform: ScaffoldPlatform;
+  if (parsed.platform === undefined || parsed.platform === 'cloudflare') {
+    platform = 'cloudflare';
+  } else if (parsed.platform === 'vercel') {
+    platform = 'vercel';
+  } else {
+    process.stderr.write(
+      `Error: invalid --platform value "${parsed.platform}". Use "cloudflare" or "vercel".\n`,
+    );
+    return 2;
+  }
+
   const targetDir = resolve(process.cwd(), parsed.targetArg);
   const projectName = basename(targetDir);
 
-  if (!isValidWorkerName(projectName)) {
+  if (platform === 'cloudflare' && !isValidWorkerName(projectName)) {
     process.stderr.write(
       `Error: target directory basename "${projectName}" is not a valid Cloudflare Worker name.\n` +
         `Names must be lowercase, start and end with a letter or digit, and contain only ` +
         `letters, digits, and hyphens (max 63 chars).\n`,
+    );
+    return 2;
+  }
+  if (platform === 'vercel' && !isValidVercelProjectName(projectName)) {
+    process.stderr.write(
+      `Error: target directory basename "${projectName}" is not a valid Vercel project name.\n` +
+        `Names must be lowercase, start and end with a letter or digit, and contain only ` +
+        `letters, digits, dots, underscores, and hyphens (max 100 chars).\n`,
     );
     return 2;
   }
@@ -125,7 +157,7 @@ async function main(argv: readonly string[]): Promise<number> {
   const license = buildContentLicense(spdxId);
 
   try {
-    await writeProject({ targetDir, projectName, license });
+    await writeProject({ targetDir, projectName, license, platform });
   } catch (err) {
     if (err instanceof TargetDirectoryExistsError) {
       cancel(`Target directory already exists: ${parsed.targetArg}`);
@@ -134,15 +166,35 @@ async function main(argv: readonly string[]): Promise<number> {
     throw err;
   }
 
-  // Copy the bundled admin SPA into the project so the Worker can serve the
-  // form UI at /admin. On failure, remove the just-created project directory so
-  // the user can retry into the same path (writeProject refuses an existing one).
-  try {
-    await copyAdminBundle({ targetDir });
-  } catch (err) {
-    await rm(targetDir, { recursive: true, force: true });
-    cancel(err instanceof Error ? err.message : 'Failed to copy the admin UI bundle.');
-    return 1;
+  // The Cloudflare scaffold ships the admin SPA so the Worker can serve the form
+  // UI at /admin. Copy it into the project; on failure, remove the just-created
+  // directory so the user can retry into the same path (writeProject refuses an
+  // existing one). The read-only Vercel scaffold has no admin UI, so it skips
+  // this step entirely.
+  if (platform === 'cloudflare') {
+    try {
+      await copyAdminBundle({ targetDir });
+    } catch (err) {
+      await rm(targetDir, { recursive: true, force: true });
+      cancel(err instanceof Error ? err.message : 'Failed to copy the admin UI bundle.');
+      return 1;
+    }
+  }
+
+  if (platform === 'vercel') {
+    outro(
+      `Created ${projectName} (license: ${spdxId}) for Vercel.\n` +
+        `\n` +
+        `Next steps:\n` +
+        `  cd ${parsed.targetArg}\n` +
+        `  pnpm install\n` +
+        `  # 1. Edit takuhon.json with your profile data\n` +
+        `  pnpm dev            # local Next.js dev server\n` +
+        `  # 2. Deploy: push to a Git repo connected to Vercel, or run \`npx vercel\`\n` +
+        `\n` +
+        `This adapter is read-only: edit takuhon.json and redeploy to publish changes.`,
+    );
+    return 0;
   }
 
   outro(

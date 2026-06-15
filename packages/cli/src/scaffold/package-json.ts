@@ -14,6 +14,8 @@
  * it's the deploy / dev-server tool.
  */
 
+import { TAKUHON_DEP_RANGE } from './deps.js';
+
 export interface PackageJsonOptions {
   /** Used for the npm `name` field. */
   readonly projectName: string;
@@ -31,9 +33,9 @@ export function buildPackageJson(opts: PackageJsonOptions): Record<string, unkno
       deploy: 'wrangler deploy',
     },
     dependencies: {
-      '@takuhon/api': '^0.19.0',
-      '@takuhon/cloudflare': '^0.19.0',
-      '@takuhon/core': '^0.19.0',
+      '@takuhon/api': TAKUHON_DEP_RANGE,
+      '@takuhon/cloudflare': TAKUHON_DEP_RANGE,
+      '@takuhon/core': TAKUHON_DEP_RANGE,
       hono: '^4.0.0',
     },
     devDependencies: {
