@@ -29,6 +29,13 @@ final class Plugin {
 	private static $instance = null;
 
 	/**
+	 * The data store.
+	 *
+	 * @var Store
+	 */
+	private $store;
+
+	/**
 	 * Return the shared instance, creating it on first call.
 	 */
 	public static function instance(): Plugin {
@@ -43,16 +50,28 @@ final class Plugin {
 	 * Wire WordPress hooks. Private so the only entry point is {@see instance()}.
 	 */
 	private function __construct() {
+		require_once TAKUHON_PLUGIN_DIR . 'includes/class-takuhon-store.php';
+		require_once TAKUHON_PLUGIN_DIR . 'includes/class-takuhon-public-api.php';
+
+		$this->store = new Store();
+
 		add_action( 'init', array( $this, 'init' ) );
+	}
+
+	/**
+	 * The shared data store.
+	 */
+	public function store(): Store {
+		return $this->store;
 	}
 
 	/**
 	 * Runtime initialisation.
 	 *
-	 * Intentionally empty for now. Storage, REST routes, and the block are
-	 * registered here in subsequent phases.
+	 * Registers the public read surface. The admin screen and the Gutenberg
+	 * block are wired up in subsequent phases.
 	 */
 	public function init(): void {
-		/* No-op: feature registration is added in later phases. */
+		( new Public_Api( $this->store ) )->register();
 	}
 }
