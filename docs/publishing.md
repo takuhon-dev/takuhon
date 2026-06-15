@@ -167,6 +167,19 @@ done
 # Inspect the resulting *.tgz files in /tmp.
 ```
 
+## WordPress plugin release (not npm)
+
+The WordPress adapter (`@takuhon/wordpress`) is a **private** package — it is not published to npm. It versions independently of the lockstep `@takuhon/*` family (its version lives in `adapters/wordpress/package.json` and the plugin header), and it ships as an installable plugin zip attached to a GitHub Release.
+
+It has its own workflow, `release-wordpress.yml`, on a separate tag namespace so it never touches the npm packages:
+
+1. Bump the plugin version in `adapters/wordpress/package.json`, `adapters/wordpress/takuhon/takuhon.php` (the `Version:` header and `TAKUHON_VERSION`), and `adapters/wordpress/takuhon/readme.txt` (`Stable tag:`) as needed. Land it through a normal PR.
+2. Push a matching tag: `wordpress-v<version>` (e.g. `wordpress-v0.1.0`). The workflow verifies the tag matches `adapters/wordpress/package.json` and fails otherwise.
+3. The workflow builds the admin bundle (`takuhon/build/admin.js`), packages `adapters/wordpress/takuhon/` (plus the GPL `LICENSE` and `NOTICE`) into `takuhon-wordpress-<version>.zip`, signs it with cosign keyless, and creates the GitHub Release with the zip and its `.bundle`.
+4. `workflow_dispatch` is a packaging dry-run only (build + zip, no signing or Release) for smoke-testing.
+
+No `v*.*.*` tag is involved, so the npm `release.yml` does not run and no `@takuhon/*` package is re-published.
+
 ## Notes
 
 - Do not publish from a local machine; always go through the workflow. Local publishing bypasses the OIDC trusted publishing path entirely.
