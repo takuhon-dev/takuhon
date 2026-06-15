@@ -1,0 +1,25 @@
+{
+  "name": "@takuhon/wordpress",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WordPress adapter for takuhon — a GPL-2.0-or-later plugin that stores takuhon.json and serves the public profile (Gutenberg block + REST API). Distributed as a plugin zip, not on npm.",
+  "license": "GPL-2.0-or-later",
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/adapters/wordpress#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "adapters/wordpress"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "profile",
+    "wordpress",
+    "adapter",
+    "gutenberg"
+  ],
+  "type": "module"
+}

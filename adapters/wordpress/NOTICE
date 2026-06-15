@@ -1,0 +1,18 @@
+@takuhon/wordpress
+Copyright 2026 Takuhon contributors
+
+This product includes software developed by the Takuhon project
+(https://github.com/takuhon-dev/takuhon).
+
+The WordPress adapter is licensed under the GNU General Public License,
+version 2 or (at your option) any later version (GPL-2.0-or-later); see
+LICENSE. WordPress plugins are treated as derivative works of WordPress
+(GPL-2.0+), so this adapter is GPL regardless of distribution channel.
+
+It calls @takuhon/core and @takuhon/api, which are licensed under the
+Apache License, Version 2.0. Apache-2.0 is one-way compatible with
+GPL-3.0+, so combining them is permitted via this adapter's "or later"
+clause. Those packages retain their own LICENSE and NOTICE files.
+
+Third-party dependencies retain their own licenses; see this package's
+node_modules listing for details.
