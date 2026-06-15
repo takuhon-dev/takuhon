@@ -63,7 +63,7 @@ For each release:
    pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build
    ```
 
-   `npm version` bumps every workspace package, including the non-published `apps/playground`, `apps/admin`, and `adapters/static`; restore those to their prior version if you keep them off the lockstep trail (only the ten publishable artifacts are released). For a **minor** bump, also advance the `@takuhon/*` caret ranges in `packages/cli/src/scaffold/package-json.ts` to the new minor — a caret does not span minors under 0.x, so a scaffolded project would otherwise pin the previous generation. A guard test enforces this, so a missed bump fails the `verify` job.
+   `npm version` bumps every workspace package, including the non-published `apps/playground`, `apps/admin`, and `adapters/static`; restore those to their prior version if you keep them off the lockstep trail (only the ten publishable artifacts are released). For a **minor** bump, also advance the shared `@takuhon/*` caret range in `packages/cli/src/scaffold/deps.ts` (`TAKUHON_DEP_RANGE`, used by both the Cloudflare and Vercel scaffolds) to the new minor — a caret does not span minors under 0.x, so a scaffolded project would otherwise pin the previous generation. A guard test enforces this for both platform scaffolds, so a missed bump fails the `verify` job.
 
 2. Commit the version bump on a topic branch, open a PR, get CI green, and merge to `main`. Direct push to `main` is not allowed.
 

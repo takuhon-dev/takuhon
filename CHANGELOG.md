@@ -6,6 +6,22 @@ This is a monorepo. Ten publishable artifacts release in lockstep at the same ve
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-06-15
+
+Minor release. Adds `create-takuhon --platform vercel`, so a profile can be scaffolded for Vercel with one command — the same onboarding Cloudflare already had — built on the `@takuhon/vercel` adapter shipped in 0.19.0. No `@takuhon/core` schema change (`schemaVersion` stays `0.6.0`). Per the lockstep release policy all ten publishable artifacts release at 0.20.0.
+
+### Added — `create-takuhon` / `@takuhon/cli`
+
+- **`--platform <cloudflare|vercel>`** flag (default `cloudflare`, so existing behavior is byte-identical). `--platform vercel` scaffolds a minimal Next.js App Router project whose catch-all Route Handler (`app/[[...route]]/route.ts`) mounts `@takuhon/vercel` via `hono/vercel`, serving the read-only public surface (profile page, `/api/*`, JSON-LD, `takuhon.json`). It emits no `wrangler.toml`, Worker entry, admin bundle, or KV/token setup, and prints a Vercel-specific next-steps outro. Project-name validation is platform-aware (Cloudflare Worker name vs Vercel project name).
+
+### Changed — `@takuhon/cli` (internal)
+
+- The scaffold's `@takuhon/*` caret range now lives in a single `scaffold/deps.ts` constant (`TAKUHON_DEP_RANGE`) shared by both platform scaffolds, so a minor release advances it in one place; the pin-guard test checks both scaffolds.
+
+### Lockstep version bump
+
+- All ten publishable artifacts bump from `0.19.0` to `0.20.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, `@takuhon/vercel`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/cli` (the scaffolder) changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range advances to `^0.20.0`. (`apps/admin`, `apps/playground`, and `adapters/static` are private and not published.)
+
 ## [0.19.0] - 2026-06-15
 
 Minor release. Adds a second platform adapter, **`@takuhon/vercel`**, so a profile can be published on Vercel as well as Cloudflare — a step toward takuhon's "host anywhere, no lock-in" goal. The adapter is read-only and reuses the framework-agnostic public app from `@takuhon/api`, so there is no `@takuhon/core` schema change: the bundled `schemaVersion` stays `0.6.0`. This adds a tenth publishable artifact; per the lockstep release policy all ten release at 0.19.0.
@@ -641,7 +657,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/takuhon-dev/takuhon/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/takuhon-dev/takuhon/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/takuhon-dev/takuhon/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/takuhon-dev/takuhon/compare/v0.16.0...v0.17.0
