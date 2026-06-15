@@ -4,12 +4,12 @@ WordPress adapter for [takuhon](https://github.com/takuhon-dev/takuhon) — the
 third platform adapter, alongside [`@takuhon/cloudflare`](../cloudflare) and
 [`@takuhon/vercel`](../vercel).
 
-> **Status: work in progress (Phase 1).** The plugin now has the full
-> derive-at-edit-time loop: an admin screen edits/imports the profile, derives
-> the public bundle in the browser with `@takuhon/core` / `@takuhon/api`, and
-> publishes it; the public read API (profile / JSON-LD / schema / `takuhon.json`
-> / `.well-known/takuhon.json`) serves it. The Gutenberg block that renders the
-> stored HTML is the remaining Phase 1 piece (see the staged rollout below).
+> **Status: Phase 1 feature-complete; not yet released.** The full
+> derive-at-edit-time loop works end to end: an admin screen edits/imports the
+> profile, derives the public bundle in the browser with `@takuhon/core` /
+> `@takuhon/api`, and publishes it; the public read API (profile / JSON-LD /
+> schema / `takuhon.json` / `.well-known/takuhon.json`) and the `takuhon/profile`
+> Gutenberg block serve it. Remaining: docs and the release plugin-zip packaging.
 
 ## What this is
 
@@ -47,8 +47,9 @@ never reaches a public endpoint.
 
 ## Scope (Phase 1)
 
-- Gutenberg block `takuhon/profile` — serves the stored server-rendered HTML
-  (local mode) or renders a remote takuhon API by URL (remote mode).
+- Gutenberg block `takuhon/profile` — embeds the profile in an isolated iframe:
+  the stored server-rendered page (local mode) or a remote takuhon site by URL
+  (remote mode). Local mode also emits page-level JSON-LD for SEO.
 - A minimal admin screen — import/paste a `takuhon.json`, validate it with
   `@takuhon/core`, and save the master plus derived artifacts.
 - Public REST API: `profile`, `jsonld`, `schema`, `takuhon.json`,
@@ -99,7 +100,8 @@ their own test suites.
   page, paste/import a `takuhon.json`, and publish. Then
   `GET /wp-json/takuhon/v1/{profile,jsonld,schema}` and (with pretty permalinks)
   `GET /takuhon.json` and `GET /.well-known/takuhon.json` return the derived
-  public artifacts; the private master is never served.
+  public artifacts; the private master is never served. Add the **Takuhon
+  Profile** block to a page to embed the profile (local or remote mode).
 
 ## License
 

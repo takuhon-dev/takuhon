@@ -82,6 +82,14 @@ final class Public_Api {
 			'/schema',
 			array_merge( $public, array( 'callback' => array( $this, 'rest_schema' ) ) )
 		);
+		// Serves the stored full-page profile HTML for the locale resolved from
+		// the request. Used as the `takuhon/profile` block's local-mode iframe
+		// source; reachable regardless of permalink settings via the REST API.
+		register_rest_route(
+			self::NAMESPACE,
+			'/page',
+			array_merge( $public, array( 'callback' => array( $this, 'rest_page' ) ) )
+		);
 	}
 
 	/**
@@ -137,6 +145,28 @@ final class Public_Api {
 		$response->header( 'Cache-Control', 'public, max-age=3600' );
 
 		return $response;
+	}
+
+	/**
+	 * `GET /wp-json/takuhon/v1/page` — the stored, server-rendered full-page
+	 * profile HTML for the locale resolved from the request. Emits raw HTML and
+	 * stops, so it can be used directly as an iframe source. 404 (HTML) when no
+	 * profile is published.
+	 *
+	 * @param \WP_REST_Request $request The request.
+	 */
+	public function rest_page( $request ): void {
+		$html = $this->store->get_page( $this->requested_locale( $request ) );
+
+		if ( null === $html ) {
+			$this->send_html(
+				'<!doctype html><html><head><meta charset="utf-8"><title>Not found</title></head><body><p>No takuhon profile has been published.</p></body></html>',
+				404,
+				'no-store'
+			);
+		}
+
+		$this->send_html( $html, 200, 'public, max-age=300' );
 	}
 
 	/**
@@ -281,6 +311,27 @@ final class Public_Api {
 		}
 
 		echo wp_json_encode( $body );
+		exit;
+	}
+
+	/**
+	 * Emit an HTML document and stop. Never returns. The body is already a
+	 * complete, escaped document produced by the takuhon renderer, so it is
+	 * echoed verbatim.
+	 *
+	 * @param string $html          The HTML document.
+	 * @param int    $status        The HTTP status code.
+	 * @param string $cache_control The Cache-Control header value.
+	 */
+	private function send_html( string $html, int $status, string $cache_control ): void {
+		if ( ! headers_sent() ) {
+			status_header( $status );
+			header( 'Content-Type: text/html; charset=utf-8' );
+			header( 'Cache-Control: ' . $cache_control );
+			header( 'X-Content-Type-Options: nosniff' );
+		}
+
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already a rendered document.
 		exit;
 	}
 }

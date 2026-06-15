@@ -12,6 +12,9 @@ export default tseslint.config(
     ignores: [
       '**/dist/**',
       '**/build/**',
+      // WordPress block runtime scripts: hand-written against the wp.* globals,
+      // outside the typed TS project (the linted TS lives in adapters/*/src).
+      'adapters/wordpress/takuhon/blocks/**',
       '**/node_modules/**',
       '**/.tsbuildinfo',
       '**/coverage/**',
