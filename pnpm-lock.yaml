@@ -109,6 +109,8 @@ importers:
         specifier: ^4.12.21
         version: 4.12.21
 
+  adapters/wordpress: {}
+
   apps/admin:
     dependencies:
       '@takuhon/core':
