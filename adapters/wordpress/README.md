@@ -4,11 +4,12 @@ WordPress adapter for [takuhon](https://github.com/takuhon-dev/takuhon) — the
 third platform adapter, alongside [`@takuhon/cloudflare`](../cloudflare) and
 [`@takuhon/vercel`](../vercel).
 
-> **Status: work in progress (Phase 1).** The plugin can now store a profile
-> and serve the public read API (profile / JSON-LD / schema / `takuhon.json` /
-> `.well-known/takuhon.json`). The admin screen that derives and saves the
-> profile, and the Gutenberg block that renders it, are still to come (see the
-> staged rollout below).
+> **Status: work in progress (Phase 1).** The plugin now has the full
+> derive-at-edit-time loop: an admin screen edits/imports the profile, derives
+> the public bundle in the browser with `@takuhon/core` / `@takuhon/api`, and
+> publishes it; the public read API (profile / JSON-LD / schema / `takuhon.json`
+> / `.well-known/takuhon.json`) serves it. The Gutenberg block that renders the
+> stored HTML is the remaining Phase 1 piece (see the staged rollout below).
 
 ## What this is
 
@@ -66,13 +67,26 @@ plugin directory is a later phase.
 
 ## Development
 
-The takuhon logic lives in `@takuhon/core` / `@takuhon/api` and is covered by
-their own test suites. The PHP here is thin store-and-serve glue:
+The admin React app lives in `src/`; the PHP plugin lives in `takuhon/`. The
+takuhon logic comes entirely from `@takuhon/core` / `@takuhon/api`, which have
+their own test suites.
 
-- **Store / public-API logic** — a fast standalone harness stubs the handful of
-  WordPress functions it uses and exercises the store and the public REST/JSON
-  callbacks (including the privacy invariant that the private master profile
-  never reaches a public response):
+- **Build the admin bundle** — Vite bundles `src/admin` into a single
+  self-contained `takuhon/build/admin.js` (React, `@takuhon/core`, and the
+  `@takuhon/api` HTML renderer are all included; nothing is provided by
+  WordPress at runtime). This output ships inside the plugin zip.
+
+  ```sh
+  pnpm --filter @takuhon/wordpress build
+  ```
+
+- **Derivation logic (vitest)** — `src/admin/derive.ts` is the heart of the
+  derive-at-edit-time model and is covered by `pnpm test`.
+
+- **Store / REST logic (PHP)** — a fast standalone harness stubs the handful of
+  WordPress functions used and exercises the store, the public read callbacks,
+  and the admin publish/read callbacks (including the privacy invariant that the
+  private master profile never reaches a public response):
 
   ```sh
   pnpm --filter @takuhon/wordpress test:php   # or: php tests/run.php
@@ -81,7 +95,8 @@ their own test suites. The PHP here is thin store-and-serve glue:
   This requires a local PHP CLI and is **not** wired into CI; integration
   testing is wp-env based and added in a later phase.
 
-- **WordPress integration smoke (manual, wp-env)** — once a profile is saved,
+- **WordPress integration smoke (manual, wp-env)** — open the Takuhon admin
+  page, paste/import a `takuhon.json`, and publish. Then
   `GET /wp-json/takuhon/v1/{profile,jsonld,schema}` and (with pretty permalinks)
   `GET /takuhon.json` and `GET /.well-known/takuhon.json` return the derived
   public artifacts; the private master is never served.

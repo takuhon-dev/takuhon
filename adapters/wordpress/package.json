@@ -23,6 +23,19 @@
   ],
   "type": "module",
   "scripts": {
+    "typecheck": "tsc",
+    "build": "vite build",
+    "test": "vitest run",
     "test:php": "php tests/run.php"
+  },
+  "dependencies": {
+    "@takuhon/api": "workspace:*",
+    "@takuhon/core": "workspace:*",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
   }
 }
