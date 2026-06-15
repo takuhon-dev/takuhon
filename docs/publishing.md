@@ -177,6 +177,7 @@ It has its own workflow, `release-wordpress.yml`, on a separate tag namespace so
 2. Push a matching tag: `wordpress-v<version>` (e.g. `wordpress-v0.1.0`). The workflow verifies the tag matches `adapters/wordpress/package.json` and fails otherwise.
 3. The workflow builds the admin bundle (`takuhon/build/admin.js`), packages `adapters/wordpress/takuhon/` (plus the GPL `LICENSE` and `NOTICE`) into `takuhon-wordpress-<version>.zip`, signs it with cosign keyless, and creates the GitHub Release with the zip and its `.bundle`.
 4. `workflow_dispatch` is a packaging dry-run only (build + zip, no signing or Release) for smoke-testing.
+5. **Update the adapter status in the docs site.** When an adapter's availability changes (e.g. WordPress In development → Available), flip it in takuhon-site's `concepts/adapters.md` table **and** the `index.mdx` homepage summary, in **both** en and ja. takuhon-site's `pnpm check:adapters` CI guard fails if the table and the homepage disagree, so a forgotten flip is caught — but make the edit part of shipping rather than relying on the guard.
 
 No `v*.*.*` tag is involved, so the npm `release.yml` does not run and no `@takuhon/*` package is re-published.
 
