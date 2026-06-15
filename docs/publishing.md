@@ -31,7 +31,7 @@ This is a per-package step on npmjs.com. Run it once per package, before the fir
 
 3. **Click `Save changes`** at the bottom of the form. The web UI does not always autosave; the most common cause of a 404 from `npm publish` post-setup is a trusted publisher form that was filled out but never persisted.
 
-Once all nine packages are configured, the workflow can authenticate via the GitHub Actions OIDC token without any classic `NPM_TOKEN` secret.
+Once all ten packages are configured, the workflow can authenticate via the GitHub Actions OIDC token without any classic `NPM_TOKEN` secret.
 
 ### First publish of a new package
 
@@ -63,7 +63,7 @@ For each release:
    pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build
    ```
 
-   `npm version` bumps every workspace package, including the non-published `apps/playground`, `apps/admin`, and `adapters/static`; restore those to their prior version if you keep them off the lockstep trail (only the nine publishable artifacts are released). For a **minor** bump, also advance the `@takuhon/*` caret ranges in `packages/cli/src/scaffold/package-json.ts` to the new minor — a caret does not span minors under 0.x, so a scaffolded project would otherwise pin the previous generation. A guard test enforces this, so a missed bump fails the `verify` job.
+   `npm version` bumps every workspace package, including the non-published `apps/playground`, `apps/admin`, and `adapters/static`; restore those to their prior version if you keep them off the lockstep trail (only the ten publishable artifacts are released). For a **minor** bump, also advance the `@takuhon/*` caret ranges in `packages/cli/src/scaffold/package-json.ts` to the new minor — a caret does not span minors under 0.x, so a scaffolded project would otherwise pin the previous generation. A guard test enforces this, so a missed bump fails the `verify` job.
 
 2. Commit the version bump on a topic branch, open a PR, get CI green, and merge to `main`. Direct push to `main` is not allowed.
 
@@ -78,10 +78,10 @@ For each release:
 
 4. The `Release` workflow runs automatically on the tag push and proceeds in these jobs:
    - **`verify`** — re-runs `pnpm typecheck / lint / format:check / test / build` on the tagged tree. Catches a tag pushed at a commit that turned out broken since the last CI run.
-   - **`publish-scoped`** (matrix) — publishes `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, and `@takuhon/cloudflare` to npm via OIDC trusted publishing with provenance attestation. `fail-fast: true` so a dep-graph mismatch never leaks a partial release set.
+   - **`publish-scoped`** (matrix) — publishes `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, and `@takuhon/vercel` to npm via OIDC trusted publishing with provenance attestation. `fail-fast: true` so a dep-graph mismatch never leaks a partial release set.
    - **`publish-bare`** — publishes the bare-name `takuhon` redirect package after the scoped packages, so consumers running `npm i -g takuhon` always find `@takuhon/cli@<same-version>` already on the registry.
    - **`publish-create-takuhon`** — publishes the `create-takuhon` initializer after the scoped packages, so `npm create takuhon` finds `@takuhon/cli@<same-version>` already on the registry. Isolated: no other job depends on it (see "First publish of `create-takuhon`" above).
-   - **`github-release`** — creates a GitHub Release with auto-generated release notes, nine tarballs, and nine cosign sign-blob bundles attached as assets.
+   - **`github-release`** — creates a GitHub Release with auto-generated release notes, ten tarballs, and ten cosign sign-blob bundles attached as assets.
 
 5. **Optional dry-run**: trigger the workflow manually via the Actions tab with `Run workflow` and `dry_run: true`. The dry-run packs the tarballs and runs `pnpm publish --dry-run` for each package but **does not** exercise the OIDC auth handshake, does not produce provenance attestation, and does not create a GitHub Release. Use it as a packaging smoke test only; the full OIDC trusted-publishing path is validated solely by an actual `vX.Y.Z` tag push.
 
@@ -91,7 +91,7 @@ For each release:
 VER=0.6.1
 
 # 1. Confirm version + provenance attestation for every package
-for PKG in @takuhon/core @takuhon/api @takuhon/ui @takuhon/activity @takuhon/mcp @takuhon/cli @takuhon/cloudflare takuhon create-takuhon; do
+for PKG in @takuhon/core @takuhon/api @takuhon/ui @takuhon/activity @takuhon/mcp @takuhon/cli @takuhon/cloudflare @takuhon/vercel takuhon create-takuhon; do
   echo "=== $PKG@$VER ==="
   npm view "${PKG}@${VER}" version
   npm view "${PKG}@${VER}" --json | jq '{

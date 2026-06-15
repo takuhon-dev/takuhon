@@ -116,6 +116,8 @@ jobs:
             dir: packages/cli
           - pkg: '@takuhon/cloudflare'
             dir: adapters/cloudflare
+          - pkg: '@takuhon/vercel'
+            dir: adapters/vercel
 
     steps:
       - name: Checkout
@@ -395,7 +397,7 @@ jobs:
   # ==========================================================
   # 4. github-release
   #    After the scoped + bare npm packages publish successfully, create a
-  #    GitHub Release with auto-generated release notes plus the nine
+  #    GitHub Release with auto-generated release notes plus the ten
   #    tarballs as assets. Each tarball is signed with cosign keyless
   #    sign-blob (Sigstore Fulcio + Rekor) so downstream consumers can verify
   #    the bundle against the originating workflow run.
@@ -437,14 +439,14 @@ jobs:
       - name: Build all workspace packages
         run: pnpm build
 
-      - name: Pack all nine publishable packages to artifacts/
+      - name: Pack all ten publishable packages to artifacts/
         # pnpm pack rewrites workspace:* deps to their actual semver, so the
         # tarballs produced here match the ones published to npm by the
         # publish-scoped / publish-bare / publish-create-takuhon jobs above.
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/artifacts"
-          for d in packages/core packages/api packages/ui packages/activity packages/mcp packages/cli adapters/cloudflare packages/takuhon packages/create-takuhon; do
+          for d in packages/core packages/api packages/ui packages/activity packages/mcp packages/cli adapters/cloudflare adapters/vercel packages/takuhon packages/create-takuhon; do
             echo "Packing $d"
             (cd "$d" && pnpm pack --pack-destination "$GITHUB_WORKSPACE/artifacts")
           done
