@@ -4,9 +4,11 @@ WordPress adapter for [takuhon](https://github.com/takuhon-dev/takuhon) — the
 third platform adapter, alongside [`@takuhon/cloudflare`](../cloudflare) and
 [`@takuhon/vercel`](../vercel).
 
-> **Status: work in progress (Phase 1).** This directory currently holds the
-> plugin skeleton only. It does not yet store or serve a profile. Tracking the
-> staged rollout described below.
+> **Status: work in progress (Phase 1).** The plugin can now store a profile
+> and serve the public read API (profile / JSON-LD / schema / `takuhon.json` /
+> `.well-known/takuhon.json`). The admin screen that derives and saves the
+> profile, and the Gutenberg block that renders it, are still to come (see the
+> staged rollout below).
 
 ## What this is
 
@@ -61,6 +63,28 @@ This package is **not published to npm** — a WordPress plugin is installed as 
 zip, not consumed as a module. The plugin zip is built from the `takuhon/`
 directory and attached to GitHub Releases. Submission to the WordPress.org
 plugin directory is a later phase.
+
+## Development
+
+The takuhon logic lives in `@takuhon/core` / `@takuhon/api` and is covered by
+their own test suites. The PHP here is thin store-and-serve glue:
+
+- **Store / public-API logic** — a fast standalone harness stubs the handful of
+  WordPress functions it uses and exercises the store and the public REST/JSON
+  callbacks (including the privacy invariant that the private master profile
+  never reaches a public response):
+
+  ```sh
+  pnpm --filter @takuhon/wordpress test:php   # or: php tests/run.php
+  ```
+
+  This requires a local PHP CLI and is **not** wired into CI; integration
+  testing is wp-env based and added in a later phase.
+
+- **WordPress integration smoke (manual, wp-env)** — once a profile is saved,
+  `GET /wp-json/takuhon/v1/{profile,jsonld,schema}` and (with pretty permalinks)
+  `GET /takuhon.json` and `GET /.well-known/takuhon.json` return the derived
+  public artifacts; the private master is never served.
 
 ## License
 

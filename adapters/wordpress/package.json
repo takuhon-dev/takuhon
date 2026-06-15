@@ -21,5 +21,8 @@
     "adapter",
     "gutenberg"
   ],
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "test:php": "php tests/run.php"
+  }
 }
