@@ -1,0 +1,121 @@
+name: Release WordPress plugin
+
+# The WordPress adapter is a private, non-npm package versioned independently of
+# the lockstep @takuhon/* family, so it ships on its own tag namespace
+# (`wordpress-v*`) rather than the `v*.*.*` npm release. This builds the plugin,
+# packages it as an installable zip (with the admin bundle and the GPL LICENSE),
+# signs it with cosign keyless, and attaches it to a GitHub Release. No npm
+# package is published or re-published.
+#
+# workflow_dispatch is a dry-run only: it builds and packages the zip for a
+# smoke test but never signs or creates a Release.
+
+on:
+  push:
+    tags:
+      - 'wordpress-v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build and package the zip only — do not sign or create a Release. Tag-push always creates the Release.'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-wordpress:
+    name: Package and release the WordPress plugin
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # create the GitHub Release
+      id-token: write # cosign keyless signing (Sigstore/Fulcio)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all workspace packages
+        # Builds @takuhon/core and @takuhon/api first (topological order), then
+        # the WordPress admin bundle (takuhon/build/admin.js) via the plugin's
+        # vite build.
+        run: pnpm build
+
+      - name: Resolve the plugin version and check the tag
+        id: meta
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./adapters/wordpress/package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "zip=takuhon-wordpress-$VERSION.zip" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            expected="wordpress-v$VERSION"
+            if [ "${{ github.ref_name }}" != "$expected" ]; then
+              echo "::error::Tag ${{ github.ref_name }} does not match the plugin version ($expected). Bump adapters/wordpress/package.json or retag."
+              exit 1
+            fi
+          fi
+
+      - name: Assemble and package the plugin zip
+        run: |
+          set -euo pipefail
+          # The admin bundle must exist, or the zip would ship a broken plugin.
+          test -f adapters/wordpress/takuhon/build/admin.js \
+            || { echo "::error::adapters/wordpress/takuhon/build/admin.js is missing — did the build run?"; exit 1; }
+
+          stage="$(mktemp -d)"
+          cp -R adapters/wordpress/takuhon "$stage/takuhon"
+          cp adapters/wordpress/LICENSE "$stage/takuhon/LICENSE"
+          cp adapters/wordpress/NOTICE "$stage/takuhon/NOTICE"
+
+          # Never ship host-machine absolute paths (e.g. leaked into a bundle).
+          if grep -r -E '/Users/|/home/[a-z]' "$stage/takuhon" 2>/dev/null | grep -v '/home/runner/'; then
+            echo "::error::Found host-machine absolute paths in the plugin payload."
+            exit 1
+          fi
+
+          mkdir -p "$GITHUB_WORKSPACE/artifacts"
+          (cd "$stage" && zip -rq "$GITHUB_WORKSPACE/artifacts/${{ steps.meta.outputs.zip }}" takuhon)
+          unzip -l "$GITHUB_WORKSPACE/artifacts/${{ steps.meta.outputs.zip }}"
+
+      - name: Install cosign
+        if: ${{ github.event_name == 'push' }}
+        uses: sigstore/cosign-installer@f713795cb21599bc4e5c4b58cbad1da852d7eeb9 # v3
+
+      - name: Sign the plugin zip (Sigstore keyless)
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          set -euo pipefail
+          zip="$GITHUB_WORKSPACE/artifacts/${{ steps.meta.outputs.zip }}"
+          cosign sign-blob --yes --bundle "$zip.bundle" "$zip"
+          ls -la "$GITHUB_WORKSPACE/artifacts/"
+
+      - name: Create the GitHub Release with the signed plugin zip
+        if: ${{ github.event_name == 'push' }}
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/*.zip
+            artifacts/*.bundle
