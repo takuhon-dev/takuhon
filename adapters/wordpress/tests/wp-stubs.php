@@ -49,6 +49,10 @@ function __return_true() {
 	return true;
 }
 
+function current_user_can( $capability, ...$args ) {
+	return $GLOBALS['__takuhon_can'] ?? true;
+}
+
 function __( $text, $domain = 'default' ) {
 	return $text;
 }

@@ -11,7 +11,9 @@
 require_once __DIR__ . '/wp-stubs.php';
 require_once __DIR__ . '/../takuhon/includes/class-takuhon-store.php';
 require_once __DIR__ . '/../takuhon/includes/class-takuhon-public-api.php';
+require_once __DIR__ . '/../takuhon/includes/class-takuhon-admin.php';
 
+use Takuhon\Admin;
 use Takuhon\Public_Api;
 use Takuhon\Store;
 
@@ -192,6 +194,33 @@ $store->save( sample_master(), array_merge( sample_public(), array( 'master_leak
 $stored_keys = array_keys( get_option( Store::OPTION_PUBLIC ) );
 check( 'unknown key not stored', ! in_array( 'master_leak', $stored_keys, true ) );
 check( 'PRIVACY: leaked key value absent from public option', false === strpos( json_encode( get_option( Store::OPTION_PUBLIC ) ), PRIVATE_MARKER ) );
+
+echo "\nAdmin REST\n";
+reset_options();
+$store = new Store();
+$admin = new Admin( $store );
+
+$get_empty = $admin->rest_get_master( new WP_REST_Request() );
+check( 'admin GET master is empty object when unset', $get_empty->get_data() instanceof stdClass );
+
+$bad = $admin->rest_publish( new WP_REST_Request() );
+check( 'admin publish rejects a missing payload', $bad instanceof WP_Error );
+check( 'admin publish 400 on bad payload', 400 === ( $bad->get_error_data()['status'] ?? 0 ) );
+
+$publish_req = new WP_REST_Request();
+$publish_req->set_param( 'master', sample_master() );
+$publish_req->set_param( 'public', sample_public() );
+$ok = $admin->rest_publish( $publish_req );
+check( 'admin publish returns a response', $ok instanceof WP_REST_Response );
+check( 'admin publish reports published locales', array( 'en', 'ja' ) === ( $ok->get_data()['locales'] ?? null ) );
+check( 'admin publish persisted the profile', true === $store->has_profile() );
+check( 'admin GET master returns the saved master after publish', PRIVATE_MARKER === ( $admin->rest_get_master( new WP_REST_Request() )->get_data()['private_note'] ?? null ) );
+
+// The just-published profile is now served publicly, privacy-filtered.
+$public_api = new Public_Api( $store );
+$served      = $public_api->rest_profile( new WP_REST_Request() );
+check( 'published profile is served publicly', $served instanceof WP_REST_Response );
+check( 'PRIVACY: served profile has no private field', false === strpos( json_encode( $served->get_data() ), PRIVATE_MARKER ) );
 
 echo "\nclear()\n";
 $store->clear();

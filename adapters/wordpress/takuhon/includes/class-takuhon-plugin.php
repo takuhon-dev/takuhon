@@ -52,6 +52,7 @@ final class Plugin {
 	private function __construct() {
 		require_once TAKUHON_PLUGIN_DIR . 'includes/class-takuhon-store.php';
 		require_once TAKUHON_PLUGIN_DIR . 'includes/class-takuhon-public-api.php';
+		require_once TAKUHON_PLUGIN_DIR . 'includes/class-takuhon-admin.php';
 
 		$this->store = new Store();
 
@@ -73,5 +74,6 @@ final class Plugin {
 	 */
 	public function init(): void {
 		( new Public_Api( $this->store ) )->register();
+		( new Admin( $this->store ) )->register();
 	}
 }
