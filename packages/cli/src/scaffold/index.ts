@@ -24,8 +24,20 @@ import { renderPackageJson } from './package-json.js';
 import { renderReadme } from './readme.js';
 import { renderTakuhonJson } from './takuhon-json.js';
 import { renderTsconfigJson } from './tsconfig-json.js';
+import {
+  renderNextConfig,
+  renderVercelEnvExample,
+  renderVercelGitignore,
+  renderVercelPackageJson,
+  renderVercelReadme,
+  renderVercelRouteTs,
+  renderVercelTsconfigJson,
+} from './vercel.js';
 import { renderWorkerIndexTs } from './worker-index-ts.js';
 import { ADMIN_DIST_DIRNAME, renderWranglerToml } from './wrangler-toml.js';
+
+/** Target platform for a scaffolded project. */
+export type ScaffoldPlatform = 'cloudflare' | 'vercel';
 
 export interface WriteProjectOptions {
   /** Absolute path of the directory to create. Must not exist. */
@@ -34,6 +46,8 @@ export interface WriteProjectOptions {
   readonly projectName: string;
   /** Chosen content license (already mapped via `buildContentLicense`). */
   readonly license: ContentLicenseFragment;
+  /** Target platform. Defaults to `'cloudflare'` (backwards-compatible). */
+  readonly platform?: ScaffoldPlatform;
 }
 
 export interface WriteProjectResult {
@@ -61,7 +75,7 @@ export class TargetDirectoryExistsError extends Error {
  * deterministic so callers (and tests) can rely on it.
  */
 export async function writeProject(opts: WriteProjectOptions): Promise<WriteProjectResult> {
-  const { targetDir, projectName, license } = opts;
+  const { targetDir, projectName, license, platform = 'cloudflare' } = opts;
 
   // mkdir with recursive: false fails if the directory exists; we surface a
   // typed error so the CLI entry can render a friendly message.
@@ -74,16 +88,28 @@ export async function writeProject(opts: WriteProjectOptions): Promise<WriteProj
     throw err;
   }
 
-  const files: { readonly path: string; readonly content: string }[] = [
-    { path: 'takuhon.json', content: renderTakuhonJson(license) },
-    { path: 'wrangler.toml', content: renderWranglerToml(projectName) },
-    { path: 'package.json', content: renderPackageJson({ projectName }) },
-    { path: 'README.md', content: renderReadme({ projectName, license }) },
-    { path: '.gitignore', content: renderGitignore() },
-    { path: '.env.example', content: renderEnvExample() },
-    { path: 'tsconfig.json', content: renderTsconfigJson() },
-    { path: 'src/index.ts', content: renderWorkerIndexTs() },
-  ];
+  const files: { readonly path: string; readonly content: string }[] =
+    platform === 'vercel'
+      ? [
+          { path: 'takuhon.json', content: renderTakuhonJson(license) },
+          { path: 'package.json', content: renderVercelPackageJson({ projectName }) },
+          { path: 'README.md', content: renderVercelReadme({ projectName, license }) },
+          { path: '.gitignore', content: renderVercelGitignore() },
+          { path: '.env.example', content: renderVercelEnvExample() },
+          { path: 'tsconfig.json', content: renderVercelTsconfigJson() },
+          { path: 'next.config.mjs', content: renderNextConfig() },
+          { path: 'app/[[...route]]/route.ts', content: renderVercelRouteTs() },
+        ]
+      : [
+          { path: 'takuhon.json', content: renderTakuhonJson(license) },
+          { path: 'wrangler.toml', content: renderWranglerToml(projectName) },
+          { path: 'package.json', content: renderPackageJson({ projectName }) },
+          { path: 'README.md', content: renderReadme({ projectName, license }) },
+          { path: '.gitignore', content: renderGitignore() },
+          { path: '.env.example', content: renderEnvExample() },
+          { path: 'tsconfig.json', content: renderTsconfigJson() },
+          { path: 'src/index.ts', content: renderWorkerIndexTs() },
+        ];
 
   for (const { path, content } of files) {
     const fullPath = join(targetDir, path);
