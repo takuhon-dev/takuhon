@@ -12,8 +12,10 @@ require_once __DIR__ . '/wp-stubs.php';
 require_once __DIR__ . '/../takuhon/includes/class-takuhon-store.php';
 require_once __DIR__ . '/../takuhon/includes/class-takuhon-public-api.php';
 require_once __DIR__ . '/../takuhon/includes/class-takuhon-admin.php';
+require_once __DIR__ . '/../takuhon/includes/class-takuhon-block.php';
 
 use Takuhon\Admin;
+use Takuhon\Block;
 use Takuhon\Public_Api;
 use Takuhon\Store;
 
@@ -221,6 +223,26 @@ $public_api = new Public_Api( $store );
 $served      = $public_api->rest_profile( new WP_REST_Request() );
 check( 'published profile is served publicly', $served instanceof WP_REST_Response );
 check( 'PRIVACY: served profile has no private field', false === strpos( json_encode( $served->get_data() ), PRIVATE_MARKER ) );
+
+echo "\nProfile block\n";
+reset_options();
+$store = new Store();
+$block = new Block( $store );
+
+$remote = $block->render( array( 'mode' => 'remote', 'apiUrl' => 'https://remote.example' ) );
+check( 'remote block embeds the API URL in an iframe', str_contains( $remote, '<iframe' ) && str_contains( $remote, 'https://remote.example' ) );
+
+$remote_unset = $block->render( array( 'mode' => 'remote' ) );
+check( 'remote block without a URL shows a placeholder', str_contains( $remote_unset, 'takuhon-block-placeholder' ) && ! str_contains( $remote_unset, '<iframe' ) );
+
+$local_empty = $block->render( array( 'mode' => 'local' ) );
+check( 'local block with no profile shows a placeholder', str_contains( $local_empty, 'takuhon-block-placeholder' ) && ! str_contains( $local_empty, '<iframe' ) );
+
+$store->save( sample_master(), sample_public() );
+$local = $block->render( array() );
+check( 'local block (default mode) embeds the /page route in an iframe', str_contains( $local, '<iframe' ) && str_contains( $local, '/takuhon/v1/page' ) );
+check( 'local block emits page-level JSON-LD', str_contains( $local, 'application/ld+json' ) );
+check( 'PRIVACY: rendered block markup has no private field', false === strpos( $local, PRIVATE_MARKER ) );
 
 echo "\nclear()\n";
 $store->clear();

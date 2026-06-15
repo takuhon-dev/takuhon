@@ -85,6 +85,40 @@ function rest_url( $path = '' ) {
 	return 'https://example.test/wp-json/' . ltrim( $path, '/' );
 }
 
+function add_query_arg( $key, $value, $url ) {
+	$separator = ( false === strpos( $url, '?' ) ) ? '?' : '&';
+
+	return $url . $separator . rawurlencode( $key ) . '=' . rawurlencode( $value );
+}
+
+function esc_url( $url ) {
+	return $url;
+}
+
+function esc_attr( $text ) {
+	return $text;
+}
+
+function esc_attr__( $text, $domain = 'default' ) {
+	return $text;
+}
+
+function esc_html( $text ) {
+	return $text;
+}
+
+function esc_html__( $text, $domain = 'default' ) {
+	return $text;
+}
+
+function register_block_type( $name, $args = array() ) {
+	return true;
+}
+
+function wp_register_script( $handle, $src = '', $deps = array(), $ver = false, $args = array() ) {
+	return true;
+}
+
 class WP_REST_Response {
 	private $data;
 	private $headers = array();

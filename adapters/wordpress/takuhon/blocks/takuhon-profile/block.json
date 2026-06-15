@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "takuhon/profile",
+  "version": "0.1.0",
+  "title": "Takuhon Profile",
+  "category": "embed",
+  "icon": "id",
+  "description": "Embed your takuhon profile — from this site or a remote takuhon API.",
+  "keywords": ["takuhon", "profile", "links"],
+  "textdomain": "takuhon",
+  "editorScript": "takuhon-profile-editor",
+  "attributes": {
+    "mode": { "type": "string", "default": "local" },
+    "apiUrl": { "type": "string", "default": "" }
+  },
+  "supports": {
+    "html": false,
+    "align": ["wide", "full"]
+  }
+}
