@@ -184,18 +184,5 @@ GEMINI.md
 .agents/local/
 .agents/tmp/
 
-# ===== Local tooling state =====
-# Sibling-project / workflow tooling that some contributors run alongside
-# the takuhon checkout. The patterns are intentionally narrow (no `.basou/`
-# wildcard) so any shared artefacts a contributor explicitly commits still
-# go through.
-.basou/logs/
-.basou/raw/
-.basou/tmp/
-.basou/status.json
-.basou/sessions/*/events.jsonl
-.basou/sessions/*/artifacts/
-.basou/approvals/pending/
-.basou/approvals/resolved/
-# basou: local-only tooling state -- never commit (supersedes any narrow .basou patterns above)
+# Basou - local-only: never commit basou's trail (regenerable from the agents' logs)
 .basou/
