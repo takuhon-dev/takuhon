@@ -197,3 +197,5 @@ GEMINI.md
 .basou/sessions/*/artifacts/
 .basou/approvals/pending/
 .basou/approvals/resolved/
+# basou: local-only tooling state -- never commit (supersedes any narrow .basou patterns above)
+.basou/
