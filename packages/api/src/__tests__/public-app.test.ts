@@ -80,6 +80,38 @@ describe('createPublicApp', () => {
     expect(body.status).toBe('ok');
   });
 
+  it('exposes permissive CORS headers on public reads (read-anywhere)', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    const paths = [
+      '/',
+      '/api/profile',
+      '/api/jsonld',
+      '/takuhon.json',
+      '/api/schema',
+      '/.well-known/takuhon.json',
+    ];
+    for (const path of paths) {
+      const res = await fetchPath(app, path);
+      expect(res.headers.get('access-control-allow-origin'), path).toBe('*');
+      expect(res.headers.get('access-control-expose-headers'), path).toBe('ETag');
+    }
+  });
+
+  it('answers a CORS preflight (OPTIONS) with 204 and the allowed methods', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/profile', {
+      method: 'OPTIONS',
+      headers: { 'access-control-request-headers': 'x-custom' },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+    expect(res.headers.get('access-control-allow-methods')).toContain('GET');
+    // Requested headers are echoed back so any non-simple read is permitted.
+    expect(res.headers.get('access-control-allow-headers')).toBe('x-custom');
+    expect(res.headers.get('access-control-max-age')).toBe('86400');
+  });
+
   it('GET /api/profile uses storage data when present', async () => {
     const { app, storage } = makeApp();
     await storage.saveProfile(makeSample());
