@@ -173,6 +173,19 @@ describe('createPublicApp', () => {
     expect(body.instance).toBe('/api/profile');
   });
 
+  it('500 responses do not leak internal exception text', async () => {
+    const storage = new FakeStorage();
+    storage.getProfile = (): never => {
+      throw new Error('secret-internal-detail');
+    };
+    const app = createPublicApp({ storage });
+    const res = await fetchPath(app, '/api/profile');
+    expect(res.status).toBe(500);
+    const body: any = await res.json();
+    expect(JSON.stringify(body)).not.toContain('secret-internal-detail');
+    expect(body.detail).toBe('An unexpected error occurred while handling the request.');
+  });
+
   it('every response carries the six baseline security headers', async () => {
     const { app } = makeApp();
     const res = await fetchPath(app, '/api/schema');
