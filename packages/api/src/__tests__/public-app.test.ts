@@ -154,7 +154,7 @@ describe('createPublicApp', () => {
     const body: any = await res.json();
     expect(body.data.profile.displayName).toBe('Pat Rivera');
     expect(body.meta.locale).toBe('en');
-    expect(body.meta.schemaVersion).toBe('0.6.0');
+    expect(body.meta.schemaVersion).toBe('0.7.0');
     expect(res.headers.get('etag')).toBe('"v1"');
     expect(res.headers.get('cache-control')).toBe('private, max-age=300');
   });
@@ -216,7 +216,7 @@ describe('createPublicApp', () => {
     const res = await fetchPath(app, '/.well-known/takuhon.json');
     expect(res.headers.get('cache-control')).toBe('public, max-age=3600');
     const body: any = await res.json();
-    expect(body.schemaVersion).toBe('0.6.0');
+    expect(body.schemaVersion).toBe('0.7.0');
     expect(body.canonical).toBe('/takuhon.json');
   });
 
@@ -747,6 +747,68 @@ describe('public section visibility (settings.publicVisibility) parity', () => {
     const { app } = makeAppWith(withVisibility({ careers: false }));
     const text = await (await fetchPath(app, '/api/jsonld')).text();
     expect(text).not.toContain(HIDDEN_ORG);
+  });
+});
+
+describe('public per-item visibility (<item>.visibility) parity', () => {
+  // Distinctive, owner-injected values so we can assert a private item is gone
+  // from every public surface while a sibling public item survives.
+  const PUBLIC_URL = 'https://example.com/pat/visible-link';
+  const PRIVATE_URL = 'https://example.com/pat/secret-link';
+  const PRIVATE_ORG = 'Stealth-Co-XYZ';
+
+  function withItems(): Takuhon {
+    const base = makeSample();
+    return {
+      ...base,
+      links: [
+        { id: 'pub', type: 'website', url: PUBLIC_URL },
+        { id: 'sec', type: 'blog', url: PRIVATE_URL, visibility: 'private' },
+      ],
+      careers: [
+        {
+          id: 'job-1',
+          organization: { en: PRIVATE_ORG },
+          role: { en: 'Engineer' },
+          startDate: '2020-01',
+          visibility: 'private',
+        },
+      ],
+    };
+  }
+
+  function makeAppWith(profile: Takuhon): { app: ReturnType<typeof createPublicApp> } {
+    const storage = new FakeStorage();
+    const app = createPublicApp({ storage, fallback: () => profile });
+    return { app };
+  }
+
+  it('drops a private link but keeps public links on GET /api/profile', async () => {
+    const { app } = makeAppWith(withItems());
+    const body: any = await (await fetchPath(app, '/api/profile')).json();
+    const urls = body.data.links.map((l: { url: string }) => l.url);
+    expect(urls).toContain(PUBLIC_URL);
+    expect(urls).not.toContain(PRIVATE_URL);
+    expect(body.data.careers).toEqual([]);
+  });
+
+  it('drops a private item on GET /takuhon.json (raw shape)', async () => {
+    const { app } = makeAppWith(withItems());
+    const body: any = await (await fetchPath(app, '/takuhon.json')).json();
+    const urls = body.links.map((l: { url: string }) => l.url);
+    expect(urls).toContain(PUBLIC_URL);
+    expect(urls).not.toContain(PRIVATE_URL);
+    expect(body.careers).toEqual([]);
+  });
+
+  it('keeps a private item out of GET /api/jsonld and the server-rendered GET /', async () => {
+    const { app } = makeAppWith(withItems());
+    const jsonld = await (await fetchPath(app, '/api/jsonld')).text();
+    expect(jsonld).not.toContain(PRIVATE_URL);
+    const html = await (await fetchPath(app, '/')).text();
+    expect(html).not.toContain(PRIVATE_URL);
+    expect(html).not.toContain(PRIVATE_ORG);
+    expect(html).toContain(PUBLIC_URL);
   });
 });
 

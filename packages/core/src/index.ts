@@ -183,4 +183,4 @@ export type {
  * A takuhon profile document's `schemaVersion` field must be migrate-compatible
  * with this version. See operational-lifecycle docs for the migration policy.
  */
-export const SCHEMA_VERSION = '0.6.0';
+export const SCHEMA_VERSION = '0.7.0';

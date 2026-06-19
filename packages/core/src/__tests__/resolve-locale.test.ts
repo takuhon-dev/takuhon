@@ -262,3 +262,24 @@ describe('resolveLocale() 0.2.0 / 0.3.0 entity helpers', () => {
     expect(resolved.recommendations[0]?.relatedCareerId).toBe('acme');
   });
 });
+
+describe('resolveLocale() carries per-item visibility', () => {
+  it('preserves <item>.visibility from the raw document onto the localized items', () => {
+    const data = cloneExample();
+    data.links[0]!.visibility = 'private';
+    data.careers[0]!.visibility = 'private';
+    data.projects[0]!.visibility = 'public';
+    // `skills` pass through unchanged, so visibility rides along with the item.
+    data.skills[0]!.visibility = 'private';
+    const resolved = resolveLocale(data, 'en');
+    expect(resolved.links[0]?.visibility).toBe('private');
+    expect(resolved.careers[0]?.visibility).toBe('private');
+    expect(resolved.projects[0]?.visibility).toBe('public');
+    expect(resolved.skills[0]?.visibility).toBe('private');
+  });
+
+  it('leaves visibility undefined on items that do not set it', () => {
+    const resolved = resolveLocale(cloneExample(), 'en');
+    expect(resolved.links[0]?.visibility).toBeUndefined();
+  });
+});

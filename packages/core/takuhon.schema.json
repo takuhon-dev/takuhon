@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.6.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/0.7.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -142,6 +142,11 @@
       "pattern": "^[a-z0-9][a-z0-9-]*$",
       "description": "URL-safe identifier (lowercase alphanumerics and hyphens, must start with alphanumeric)."
     },
+    "Visibility": {
+      "type": "string",
+      "enum": ["public", "private"],
+      "description": "Per-item public visibility (added in 0.7.0). 'private' removes the item from every public surface via applyPublicPrivacyFilter; an absent value or 'public' keeps the item public."
+    },
     "LocalizedTitle": {
       "type": "object",
       "minProperties": 1,
@@ -233,6 +238,7 @@
       "required": ["id", "type", "url"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "type": { "$ref": "#/$defs/LinkType" },
         "label": { "$ref": "#/$defs/LocalizedTitle" },
         "url": { "$ref": "#/$defs/Url" },
@@ -259,6 +265,7 @@
       "required": ["id", "organization", "role", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "organization": { "$ref": "#/$defs/LocalizedTitle" },
         "role": { "$ref": "#/$defs/LocalizedTitle" },
         "description": { "$ref": "#/$defs/LocalizedBody" },
@@ -278,6 +285,7 @@
       "required": ["id", "title"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "description": { "$ref": "#/$defs/LocalizedBody" },
         "url": { "$ref": "#/$defs/Url" },
@@ -301,6 +309,7 @@
       "required": ["id", "label"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "label": { "type": "string", "minLength": 1, "maxLength": 100 },
         "category": {
           "type": "string",
@@ -555,6 +564,7 @@
       "required": ["id", "title", "issuingOrganization", "issueDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "issuingOrganization": { "$ref": "#/$defs/LocalizedTitle" },
         "issueDate": { "$ref": "#/$defs/YearMonth" },
@@ -578,6 +588,7 @@
       "required": ["id", "organization", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "organization": { "$ref": "#/$defs/LocalizedTitle" },
         "role": { "$ref": "#/$defs/LocalizedTitle" },
         "description": { "$ref": "#/$defs/LocalizedBody" },
@@ -597,6 +608,7 @@
       "required": ["id", "organization", "role", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "organization": { "$ref": "#/$defs/LocalizedTitle" },
         "role": { "$ref": "#/$defs/LocalizedTitle" },
         "cause": { "$ref": "#/$defs/LocalizedTitle" },
@@ -616,6 +628,7 @@
       "required": ["id", "title", "issuer", "date"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "issuer": { "$ref": "#/$defs/LocalizedTitle" },
         "description": { "$ref": "#/$defs/LocalizedBody" },
@@ -630,6 +643,7 @@
       "required": ["id", "institution", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "institution": { "$ref": "#/$defs/LocalizedTitle" },
         "degree": { "$ref": "#/$defs/LocalizedTitle" },
         "fieldOfStudy": { "$ref": "#/$defs/LocalizedTitle" },
@@ -656,6 +670,7 @@
       "required": ["id", "title", "date"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "publisher": { "$ref": "#/$defs/LocalizedTitle" },
         "description": { "$ref": "#/$defs/LocalizedBody" },
@@ -682,6 +697,7 @@
       "required": ["id", "language", "proficiency"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "language": { "$ref": "#/$defs/LocaleTag" },
         "displayName": { "$ref": "#/$defs/LocalizedTitle" },
         "proficiency": {
@@ -698,6 +714,7 @@
       "required": ["id", "title"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "provider": { "$ref": "#/$defs/LocalizedTitle" },
         "courseNumber": { "type": "string", "minLength": 1, "maxLength": 50 },
@@ -717,6 +734,7 @@
       "required": ["id", "title", "patentNumber", "status"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "patentNumber": { "type": "string", "minLength": 1, "maxLength": 100 },
         "office": {
@@ -746,6 +764,7 @@
       "required": ["id", "title", "score", "date"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "title": { "$ref": "#/$defs/LocalizedTitle" },
         "score": {
           "type": "string",
@@ -769,6 +788,7 @@
       "required": ["id", "body", "author"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
         "body": { "$ref": "#/$defs/LocalizedBody" },
         "author": { "$ref": "#/$defs/RecommendationAuthor" },
         "relationship": {

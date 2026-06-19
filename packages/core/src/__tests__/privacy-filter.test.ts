@@ -187,3 +187,103 @@ describe('applyPublicPrivacyFilter() — section × field composition (AND)', ()
     expect(out.education[0]?.institution).toEqual({ en: 'Uni' });
   });
 });
+
+describe('applyPublicPrivacyFilter() — item visibility (<item>.visibility)', () => {
+  it('removes a link marked visibility: private, keeping public and unmarked links', () => {
+    const out = applyPublicPrivacyFilter(
+      profile({
+        links: [
+          { id: 'site', type: 'website', url: 'https://example.com' },
+          { id: 'blog', type: 'blog', url: 'https://blog.example.com', visibility: 'private' },
+          { id: 'gh', type: 'github', url: 'https://github.com/x', visibility: 'public' },
+        ],
+      }),
+    );
+    expect(out.links.map((l) => l.id)).toEqual(['site', 'gh']);
+  });
+
+  it('removes private items uniformly across sections (projects, careers)', () => {
+    const out = applyPublicPrivacyFilter(
+      profile({
+        projects: [
+          { id: 'p1', title: { en: 'Shipped' } },
+          { id: 'p2', title: { en: 'Draft' }, visibility: 'private' },
+        ],
+        careers: [
+          {
+            id: 'c1',
+            organization: { en: 'Acme' },
+            role: { en: 'Eng' },
+            startDate: '2020-01',
+            visibility: 'private',
+          },
+        ],
+      }),
+    );
+    expect(out.projects.map((p) => p.id)).toEqual(['p1']);
+    expect(out.careers).toEqual([]);
+  });
+
+  it('is short-circuited by the section layer (hidden section empties regardless of item flags)', () => {
+    const out = applyPublicPrivacyFilter(
+      profile({
+        links: [{ id: 'a', type: 'website', url: 'https://a.example', visibility: 'public' }],
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          publicVisibility: { links: false },
+        },
+      }),
+    );
+    expect(out.links).toEqual([]);
+  });
+
+  it('composes with the field layer: a private cert is removed; survivors still lose credentialId', () => {
+    const out = applyPublicPrivacyFilter(
+      profile({
+        certifications: [
+          {
+            id: 'c1',
+            title: { en: 'C1' },
+            issuingOrganization: { en: 'Org' },
+            issueDate: '2024-01',
+            credentialId: 'PUBLIC-ITEM-FIELD-STILL-STRIPPED',
+          },
+          {
+            id: 'c2',
+            title: { en: 'C2' },
+            issuingOrganization: { en: 'Org' },
+            issueDate: '2024-02',
+            credentialId: 'SECRET',
+            visibility: 'private',
+          },
+        ],
+      }),
+    );
+    expect(out.certifications.map((c) => c.id)).toEqual(['c1']);
+    expect(out.certifications[0]).not.toHaveProperty('credentialId');
+  });
+
+  it('returns the original reference when no item is private', () => {
+    const input = profile({
+      certifications: [],
+      education: [],
+      patents: [],
+      contact: { email: 'me@example.com', showEmail: true },
+      links: [{ id: 'a', type: 'website', url: 'https://a.example', visibility: 'public' }],
+    });
+    expect(applyPublicPrivacyFilter(input)).toBe(input);
+  });
+
+  it('does not mutate the input when removing private items', () => {
+    const input = profile({
+      links: [
+        { id: 'a', type: 'website', url: 'https://a.example' },
+        { id: 'b', type: 'blog', url: 'https://b.example', visibility: 'private' },
+      ],
+    });
+    const snapshot = JSON.stringify(input);
+    applyPublicPrivacyFilter(input);
+    expect(JSON.stringify(input)).toBe(snapshot);
+  });
+});

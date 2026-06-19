@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.6.0');
+      expect(result.data.schemaVersion).toBe('0.7.0');
     }
   });
 
@@ -617,5 +617,56 @@ describe('validate() 0.6.0 additions (settings.publicVisibility)', () => {
       (e) => e.keyword === 'type' && e.pointer === '/settings/publicVisibility/careers',
     );
     expect(wrongType).toBeDefined();
+  });
+});
+
+describe('validate() 0.7.0 additions (per-item visibility)', () => {
+  const base = {
+    schemaVersion: '0.7.0',
+    profile: { displayName: { en: 'Test' } },
+    careers: [],
+    projects: [],
+    skills: [],
+    contact: {},
+    settings: { defaultLocale: 'en', availableLocales: ['en'] },
+    meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+  };
+
+  it("accepts items carrying visibility: 'public' | 'private'", () => {
+    const result = validate({
+      ...base,
+      links: [
+        { id: 'a', type: 'website', url: 'https://a.example', visibility: 'private' },
+        { id: 'b', type: 'website', url: 'https://b.example', visibility: 'public' },
+      ],
+      projects: [{ id: 'p', title: { en: 'P' }, visibility: 'private' }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.links[0]?.visibility).toBe('private');
+    expect(result.data.projects[0]?.visibility).toBe('private');
+  });
+
+  it('accepts items with no visibility (the field is optional)', () => {
+    const result = validate({
+      ...base,
+      links: [{ id: 'a', type: 'website', url: 'https://a.example' }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.links[0]?.visibility).toBeUndefined();
+  });
+
+  it('rejects an out-of-enum visibility value', () => {
+    const result = validate({
+      ...base,
+      links: [{ id: 'a', type: 'website', url: 'https://a.example', visibility: 'draft' }],
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const badEnum = result.errors.find(
+      (e) => e.keyword === 'enum' && e.pointer === '/links/0/visibility',
+    );
+    expect(badEnum).toBeDefined();
   });
 });
