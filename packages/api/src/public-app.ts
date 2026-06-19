@@ -105,14 +105,19 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     h.set('access-control-expose-headers', 'ETag');
   });
 
-  app.onError((err, c) =>
-    problemResponse(c, {
+  app.onError((err, c) => {
+    // This 500 body is public — and cross-origin readable once CORS is enabled —
+    // so it must not echo internal exception text (storage/render errors can
+    // carry implementation detail). Log the real error server-side and return a
+    // generic, non-revealing detail.
+    console.error('Public app request failed:', err);
+    return problemResponse(c, {
       slug: ERROR_SLUGS.internal,
       status: 500,
       title: 'Internal Error',
-      detail: err instanceof Error ? err.message : 'Unknown failure',
-    }),
-  );
+      detail: 'An unexpected error occurred while handling the request.',
+    });
+  });
 
   app.notFound((c) =>
     problemResponse(c, {
