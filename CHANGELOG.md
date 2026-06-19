@@ -6,6 +6,27 @@ This is a monorepo. Ten publishable artifacts release in lockstep at the same ve
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-06-20
+
+Minor release. Hardens and corrects the public read API and the `/admin` editor: the public surface now permits cross-origin reads (CORS), `500` responses no longer leak internal exception text, the admin editor edits the full stored document (not the privacy-filtered public mirror) behind a token, and optimistic-locking saves work behind a compressing CDN. All changes are in `@takuhon/api`. No `@takuhon/core` schema change (`schemaVersion` stays `0.6.0`). Per the lockstep release policy all ten publishable artifacts release at 0.21.0.
+
+### Added — `@takuhon/api`
+
+- **CORS on the public read API.** Every `createPublicApp` response carries `Access-Control-Allow-Origin: *` and `Access-Control-Expose-Headers: ETag`, and the `OPTIONS *` preflight returns `204` with `Access-Control-Allow-Methods: GET, HEAD, OPTIONS`, an echoed `Access-Control-Allow-Headers` (falling back to `*`), and `Access-Control-Max-Age: 86400`. The public data is unauthenticated, read-only, and privacy-filtered with no credentials, so `*` is safe and lets browser JS and AI tools read the profile, JSON-LD, and discovery document cross-origin. The admin app is a separate Hono app and is unchanged (no CORS). All adapters that mount `createPublicApp` (cloudflare / vercel / static) inherit it.
+
+### Changed — `@takuhon/api`
+
+- **The `/admin` editor edits the full document via the authenticated export.** It now loads from `GET /api/admin/export` — the full, unfiltered document plus its version as an `ETag` — instead of the public, privacy-filtered `/takuhon.json`, so the owner edits the true source of truth and fields the public profile omits are no longer dropped on Save. Loading is token-first: nothing about the profile is fetched until the admin token is entered and **Load** is pressed, and the editor stays empty until then. A `404` (no profile stored yet) starts an empty editor so the first Save creates the document.
+
+### Fixed — `@takuhon/api`
+
+- **Admin `If-Match` now accepts weak ETags.** Compressing CDNs (e.g. Cloudflare serving gzip/br) downgrade the strong ETag to a weak validator (`W/"<version>"`), and browsers echo it back as `If-Match`; the comparison stripped only the quotes, so the `W/` prefix survived and the stored opaque version never matched — every optimistic-locking save behind such a CDN failed with `409 Conflict`. The header is now normalized by stripping the `W/` prefix before comparison.
+- **Public `500` responses no longer leak internal exception text.** The public app's error handler returned the raw exception message in the problem-details `detail`; it now logs the error server-side and returns a generic message.
+
+### Lockstep version bump
+
+- All ten publishable artifacts bump from `0.20.0` to `0.21.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, `@takuhon/vercel`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/api` changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range advances to `^0.21.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
+
 ## [0.20.0] - 2026-06-15
 
 Minor release. Adds `create-takuhon --platform vercel`, so a profile can be scaffolded for Vercel with one command — the same onboarding Cloudflare already had — built on the `@takuhon/vercel` adapter shipped in 0.19.0. No `@takuhon/core` schema change (`schemaVersion` stays `0.6.0`). Per the lockstep release policy all ten publishable artifacts release at 0.20.0.
