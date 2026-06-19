@@ -80,6 +80,36 @@ describe('createAdminApiApp PUT /profile', () => {
     expect(body.meta.version).toBe('v2');
   });
 
+  it('accepts a weak If-Match (W/"v1") that a compressing CDN derived from the stored version', async () => {
+    // Cloudflare downgrades the strong ETag we emit to `W/"<version>"` when it
+    // compresses the response; the browser echoes that weakened value back as
+    // If-Match. The weak prefix must be normalized away or every save behind a
+    // CDN fails with 409 (regression guard for the weak-ETag bug).
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    const res = await fetchPath(app, '/profile', {
+      method: 'PUT',
+      headers: authHeaders('test-token', { 'if-match': 'W/"v1"' }),
+      body: JSON.stringify(makeSample()),
+    });
+    expect(res.status).toBe(200);
+    const body: any = await res.json();
+    expect(body.meta.version).toBe('v2');
+  });
+
+  it('returns 409 on a weak If-Match whose version is stale', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    const res = await fetchPath(app, '/profile', {
+      method: 'PUT',
+      headers: authHeaders('test-token', { 'if-match': 'W/"stale"' }),
+      body: JSON.stringify(makeSample()),
+    });
+    expect(res.status).toBe(409);
+    const body: any = await res.json();
+    expect(body.currentVersion).toBe('v1');
+  });
+
   it('returns 409 Conflict with currentVersion on If-Match mismatch', async () => {
     const { app, storage } = makeApp();
     await storage.saveProfile(makeSample());

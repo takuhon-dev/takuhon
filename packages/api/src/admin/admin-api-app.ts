@@ -57,9 +57,23 @@ function toFieldError(e: ValidationError): ProblemFieldError {
   return { path: `#${e.pointer}`, message: e.message };
 }
 
-/** Strip RFC 7232 double-quote delimiters from an `If-Match` header value. */
+/**
+ * Normalize an `If-Match` header value to the bare version token.
+ *
+ * Strips the optional `W/` weak-validator prefix before the RFC 7232
+ * double-quote delimiters. Compressing CDNs (e.g. Cloudflare serving gzip/br)
+ * downgrade the strong ETag we emit to a weak one (`W/"<version>"`), and a
+ * browser echoes that weakened value straight back as `If-Match`. Without
+ * stripping the prefix the comparison against the stored version never matches,
+ * so every optimistic-locking save behind such a CDN fails with 409. The
+ * weak/strong distinction is meaningless for our opaque version tokens, so
+ * collapsing both forms to the raw value is the correct comparison.
+ */
 function stripETag(raw: string): string {
-  const trimmed = raw.trim();
+  let trimmed = raw.trim();
+  if (trimmed.startsWith('W/')) {
+    trimmed = trimmed.slice(2).trim();
+  }
   if (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length >= 2) {
     return trimmed.slice(1, -1);
   }
