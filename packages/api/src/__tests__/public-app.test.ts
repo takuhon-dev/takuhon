@@ -80,6 +80,72 @@ describe('createPublicApp', () => {
     expect(body.status).toBe('ok');
   });
 
+  it('exposes permissive CORS headers on public reads (read-anywhere)', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+    const paths = [
+      '/',
+      '/api/profile',
+      '/api/jsonld',
+      '/takuhon.json',
+      '/api/schema',
+      '/.well-known/takuhon.json',
+    ];
+    for (const path of paths) {
+      const res = await fetchPath(app, path);
+      expect(res.headers.get('access-control-allow-origin'), path).toBe('*');
+      expect(res.headers.get('access-control-expose-headers'), path).toBe('ETag');
+    }
+  });
+
+  it('answers a CORS preflight (OPTIONS) with 204 and the allowed methods', async () => {
+    const { app } = makeApp();
+    const res = await fetchPath(app, '/api/profile', {
+      method: 'OPTIONS',
+      headers: { 'access-control-request-headers': 'x-custom' },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+    expect(res.headers.get('access-control-allow-methods')).toContain('GET');
+    // Requested headers are echoed back so any non-simple read is permitted.
+    expect(res.headers.get('access-control-allow-headers')).toBe('x-custom');
+    expect(res.headers.get('access-control-max-age')).toBe('86400');
+  });
+
+  it('keeps CORS headers on 404 / 405 / 500 responses', async () => {
+    const { app } = makeApp();
+
+    const notFound = await fetchPath(app, '/api/does-not-exist');
+    expect(notFound.status).toBe(404);
+    expect(notFound.headers.get('access-control-allow-origin')).toBe('*');
+
+    const methodNotAllowed = await fetchPath(app, '/api/profile', { method: 'POST' });
+    expect(methodNotAllowed.status).toBe(405);
+    expect(methodNotAllowed.headers.get('access-control-allow-origin')).toBe('*');
+
+    const errStorage = new FakeStorage();
+    errStorage.getProfile = (): never => {
+      throw new Error('storage is down');
+    };
+    const errApp = createPublicApp({ storage: errStorage });
+    const serverError = await fetchPath(errApp, '/api/profile');
+    expect(serverError.status).toBe(500);
+    expect(serverError.headers.get('access-control-allow-origin')).toBe('*');
+  });
+
+  it('sets CORS headers on HEAD and on a locale-prefixed preflight', async () => {
+    const { app, storage } = makeApp();
+    await storage.saveProfile(makeSample());
+
+    const head = await fetchPath(app, '/api/profile', { method: 'HEAD' });
+    expect(head.headers.get('access-control-allow-origin')).toBe('*');
+
+    const localePreflight = await fetchPath(app, '/ja/api/profile', { method: 'OPTIONS' });
+    expect(localePreflight.status).toBe(204);
+    expect(localePreflight.headers.get('access-control-allow-origin')).toBe('*');
+    expect(localePreflight.headers.get('access-control-allow-methods')).toContain('GET');
+  });
+
   it('GET /api/profile uses storage data when present', async () => {
     const { app, storage } = makeApp();
     await storage.saveProfile(makeSample());

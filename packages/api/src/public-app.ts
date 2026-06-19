@@ -94,6 +94,15 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     h.set('referrer-policy', 'strict-origin-when-cross-origin');
     h.set('permissions-policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
     h.set('content-security-policy', PUBLIC_CSP);
+    // Every route on this app is unauthenticated, read-only, and already
+    // privacy-filtered, so the responses are safe to expose to any origin. This
+    // is what lets browsers and AI tools fetch the profile / JSON-LD / discovery
+    // document cross-origin — the public API's "read anywhere" goal. No cookies
+    // or credentials are involved, so `*` is correct and `Vary: Origin` is not
+    // needed; preflights are answered by the OPTIONS handler below. The admin
+    // app (createAdminApiApp) is a separate Hono instance and is unaffected.
+    h.set('access-control-allow-origin', '*');
+    h.set('access-control-expose-headers', 'ETag');
   });
 
   app.onError((err, c) =>
@@ -259,6 +268,18 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       // Only advertised when the adapter serves MCP (see PublicAppDeps.mcpPath).
       ...(deps.mcpPath !== undefined ? { mcp: deps.mcpPath } : {}),
     });
+  });
+
+  // CORS preflight for cross-origin reads. The actual GET responses carry
+  // `Access-Control-Allow-Origin` via the middleware above; this answers the
+  // preflight a browser sends before a non-simple cross-origin request (a
+  // simple GET needs no preflight). Without this, OPTIONS would fall through to
+  // the 404 handler and the preflight would fail.
+  app.options('*', (c) => {
+    c.header('access-control-allow-methods', 'GET, HEAD, OPTIONS');
+    c.header('access-control-allow-headers', c.req.header('access-control-request-headers') ?? '*');
+    c.header('access-control-max-age', '86400');
+    return c.body(null, 204);
   });
 
   app.on(['POST', 'PUT', 'PATCH', 'DELETE'], '*', (c) =>
