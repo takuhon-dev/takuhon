@@ -1,9 +1,16 @@
 /**
  * Inline HTML for the minimal admin editor served at `GET /admin`.
  *
- * Single-page, no build step: a token input, a JSON textarea preloaded from
- * `/takuhon.json`, Save (PUT) and Delete (DELETE) buttons. The page operates
- * under a strict CSP (`script-src 'self' 'nonce-<n>'`,
+ * Single-page, no build step: a token input, a JSON textarea, and
+ * Load / Save (PUT) / Delete (DELETE) buttons. Nothing is loaded until the
+ * owner enters the admin token and presses Load, which fetches the *full*
+ * document from the authenticated `GET /api/admin/export` (the privacy filter
+ * is bypassed there, so fields and links the public profile omits are editable
+ * here and survive the next Save). The public `/takuhon.json` is deliberately
+ * not used as the editor source: it is privacy-filtered, so loading from it
+ * would silently drop non-public data the moment the owner saved.
+ *
+ * The page operates under a strict CSP (`script-src 'self' 'nonce-<n>'`,
  * `style-src 'self' 'nonce-<n>'`, `require-trusted-types-for 'script'`), so
  * both the inline `<script>` and `<style>` blocks carry the request-scoped
  * nonce. We avoid `innerHTML`/`eval` so Trusted Types is non-disruptive.
@@ -33,15 +40,15 @@ small.version { color: #555; }
 </head>
 <body>
 <h1>takuhon admin</h1>
-<p class="note">Edit the full <code>takuhon.json</code> document and Save. Optimistic locking via <code>If-Match</code> guards concurrent edits; the token is never sent over the URL.</p>
+<p class="note">Enter your admin token, then <strong>Load</strong> to fetch the full <code>takuhon.json</code> document &mdash; including fields the public profile omits &mdash; for editing. <strong>Save</strong> writes it back; optimistic locking via <code>If-Match</code> guards concurrent edits. Nothing is loaded until you provide the token, and the token is never sent over the URL.</p>
 <label for="token">Admin token</label>
 <input id="token" type="password" autocomplete="off" spellcheck="false">
 <label for="payload">takuhon.json <small class="version" id="versionLabel"></small></label>
 <textarea id="payload" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
 <div class="row">
+  <button id="reload" type="button">Load current</button>
   <button id="save" type="button">Save</button>
   <button id="delete" type="button" class="danger">Delete profile</button>
-  <button id="reload" type="button">Reload current</button>
 </div>
 <div id="status" hidden></div>
 <script nonce="${nonce}">
@@ -67,15 +74,33 @@ small.version { color: #555; }
     return t;
   }
   async function loadCurrent() {
+    var token = getToken();
+    if (!token) return;
     try {
-      var res = await fetch('/takuhon.json', { cache: 'no-store' });
-      if (!res.ok) { setStatus('Failed to load /takuhon.json: ' + res.status, false); return; }
+      // The authenticated full export, NOT the public /takuhon.json: the latter
+      // is privacy-filtered, so editing it would drop non-public data on Save.
+      var res = await fetch('/api/admin/export', {
+        cache: 'no-store',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.status === 404) {
+        // No profile stored yet. Start from an empty editor; Save creates it.
+        setVersion('');
+        payloadEl.value = '';
+        setStatus('No profile stored yet. Paste a takuhon.json document and Save to create it.', true);
+        return;
+      }
+      if (!res.ok) {
+        var err = await res.json().catch(function () { return null; });
+        setStatus('Failed to load profile (' + res.status + '): ' + (err ? JSON.stringify(err, null, 2) : 'check the admin token'), false);
+        return;
+      }
       setVersion(res.headers.get('etag'));
       var json = await res.json();
       payloadEl.value = JSON.stringify(json, null, 2);
-      setStatus('Loaded current profile.', true);
+      setStatus('Loaded the full profile for editing.', true);
     } catch (e) {
-      setStatus('Network error loading current profile: ' + (e && e.message ? e.message : String(e)), false);
+      setStatus('Network error loading profile: ' + (e && e.message ? e.message : String(e)), false);
     }
   }
   async function save() {
@@ -126,7 +151,8 @@ small.version { color: #555; }
   document.getElementById('save').addEventListener('click', save);
   document.getElementById('delete').addEventListener('click', deleteProfile);
   document.getElementById('reload').addEventListener('click', loadCurrent);
-  loadCurrent();
+  // No auto-load: the editor stays empty until the owner enters the admin token
+  // and presses Load. Nothing about the profile is fetched without the token.
 })();
 </script>
 </body>

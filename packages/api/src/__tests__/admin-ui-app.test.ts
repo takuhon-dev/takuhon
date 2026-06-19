@@ -51,6 +51,27 @@ describe('createAdminUiApp', () => {
     expect(res.headers.get('cache-control')).toBe('private, no-store');
   });
 
+  it('loads the editor from the authenticated full export, not the public profile', async () => {
+    // The editor must edit the true source. /api/admin/export returns the full
+    // unfiltered document (token-gated); the public /takuhon.json is privacy-
+    // filtered and would drop non-public data on Save, so it must not be the
+    // editor source.
+    const app = createAdminUiApp();
+    const html = await (await fetchPath(app, '/')).text();
+    expect(html).toContain("fetch('/api/admin/export'");
+    expect(html).not.toContain("fetch('/takuhon.json'");
+  });
+
+  it('does not auto-load profile data before the admin token is entered', async () => {
+    // Token-first: nothing about the profile is fetched on page open. The only
+    // call to loadCurrent() is the Load button listener, never a bare top-level
+    // invocation.
+    const app = createAdminUiApp();
+    const html = await (await fetchPath(app, '/')).text();
+    expect(html).toContain("addEventListener('click', loadCurrent)");
+    expect(html).not.toMatch(/\n\s*loadCurrent\(\);/);
+  });
+
   it('generates a fresh nonce per request', async () => {
     const app = createAdminUiApp();
     const r1 = await fetchPath(app, '/');
