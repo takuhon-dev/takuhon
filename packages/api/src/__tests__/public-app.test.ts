@@ -786,7 +786,7 @@ describe('public per-item visibility (<item>.visibility) parity', () => {
   it('drops a private link but keeps public links on GET /api/profile', async () => {
     const { app } = makeAppWith(withItems());
     const body: any = await (await fetchPath(app, '/api/profile')).json();
-    const urls = body.data.links.map((l: { url: string }) => l.url);
+    const urls = (body.data.links as { url: string }[]).map((l) => l.url);
     expect(urls).toContain(PUBLIC_URL);
     expect(urls).not.toContain(PRIVATE_URL);
     expect(body.data.careers).toEqual([]);
@@ -795,7 +795,7 @@ describe('public per-item visibility (<item>.visibility) parity', () => {
   it('drops a private item on GET /takuhon.json (raw shape)', async () => {
     const { app } = makeAppWith(withItems());
     const body: any = await (await fetchPath(app, '/takuhon.json')).json();
-    const urls = body.links.map((l: { url: string }) => l.url);
+    const urls = (body.links as { url: string }[]).map((l) => l.url);
     expect(urls).toContain(PUBLIC_URL);
     expect(urls).not.toContain(PRIVATE_URL);
     expect(body.careers).toEqual([]);
