@@ -84,6 +84,9 @@ export type { CvDocument, CvHeader, CvSection, CvSectionKind } from './cv.js';
 export { gravatarUrl } from './gravatar.js';
 export type { GravatarOptions } from './gravatar.js';
 
+export { formatDate } from './date-format.js';
+export { getPresentLabel } from './ui-labels.js';
+
 export {
   executeMcpTool,
   MCP_PROFILE_SECTIONS,

@@ -1,4 +1,15 @@
-import type { LanguageProficiency, LocaleTag, PatentStatus } from '@takuhon/core';
+import {
+  getPresentLabel,
+  type LanguageProficiency,
+  type LocaleTag,
+  type PatentStatus,
+} from '@takuhon/core';
+
+// The ongoing-role "Present" marker is the single label shared with the static
+// HTML / CV renderers in `@takuhon/api`, so it lives in `@takuhon/core` as the
+// one source of truth. Re-export it here and source the `timeline.present`
+// dictionary entries from it so the React UI never drifts from the HTML surface.
+export { getPresentLabel };
 
 /**
  * Keys for UI-generated fixed labels — text the UI emits itself, as opposed to
@@ -61,7 +72,7 @@ type LabelDictionary = Record<UILabelKey, string>;
  * the call site.
  */
 const EN: LabelDictionary = {
-  'timeline.present': 'Present',
+  'timeline.present': getPresentLabel('en'),
   'certification.noExpiration': 'No expiration',
   'patent.filed': 'Filed',
   'patent.granted': 'Granted',
@@ -111,7 +122,7 @@ const EN: LabelDictionary = {
  * rather than using the English preposition (`with A, B`).
  */
 const JA: LabelDictionary = {
-  'timeline.present': '現在',
+  'timeline.present': getPresentLabel('ja'),
   'certification.noExpiration': '無期限',
   'patent.filed': '出願',
   'patent.granted': '登録',
