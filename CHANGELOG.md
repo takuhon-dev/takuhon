@@ -6,6 +6,25 @@ This is a monorepo. Ten publishable artifacts release in lockstep at the same ve
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-06-20
+
+Minor release. Adds **per-item visibility** — an owner can hide a single content item (a link, project, career, …) from every public surface, the item-level analogue of the section-level `settings.publicVisibility` shipped in 0.18.0. This bumps the `@takuhon/core` schema **0.6.0 → 0.7.0** (additive, backwards-compatible). Per the lockstep release policy all ten publishable artifacts release at 0.22.0.
+
+### Added — `@takuhon/core`
+
+- **Per-item `visibility` (`'public' | 'private'`).** Every content item now accepts an optional `visibility` field. Marking an item `'private'` removes that single item from every public surface (`GET /`, `/api/profile`, `/api/jsonld`, `/takuhon.json`, the MCP endpoint, the derived CV); an absent value or `'public'` keeps it public, so the default is all-visible and older documents are unaffected. A private item is removed entirely — its existence and the section's count are not leaked.
+- Implemented as a third **item layer** in the single chokepoint `applyPublicPrivacyFilter`, composing with the section and field layers as a logical AND (section → item → field). Because every public surface funnels through that one filter, parity is automatic. The authenticated admin export (`GET /api/admin/export`) deliberately bypasses the filter, so the owner still sees and edits private items.
+- Applies uniformly to items in all 15 array sections (`links`, `careers`, `projects`, `skills`, `certifications`, `memberships`, `volunteering`, `honors`, `education`, `publications`, `languages`, `courses`, `patents`, `testScores`, `recommendations`).
+
+### Changed — schema 0.6.0 → 0.7.0
+
+- New `Visibility` definition and an optional `visibility` property on each of the 15 item definitions; the bundled validator is regenerated. `Link` is `additionalProperties: false`, so the property is declared there for acceptance, and the enum rejects out-of-range values (e.g. `"draft"` → validation error).
+- Migration `v0.6.0-to-v0.7.0` (additive version stamp) is registered; older documents migrate forward with no data change. The bundled examples and the `create-takuhon` scaffold now declare `schemaVersion` `0.7.0`.
+
+### Lockstep version bump
+
+- All ten publishable artifacts bump from `0.21.0` to `0.22.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, `@takuhon/vercel`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/core` changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range advances to `^0.22.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
+
 ## [0.21.0] - 2026-06-20
 
 Minor release. Hardens and corrects the public read API and the `/admin` editor: the public surface now permits cross-origin reads (CORS), `500` responses no longer leak internal exception text, the admin editor edits the full stored document (not the privacy-filtered public mirror) behind a token, and optimistic-locking saves work behind a compressing CDN. All changes are in `@takuhon/api`. No `@takuhon/core` schema change (`schemaVersion` stays `0.6.0`). Per the lockstep release policy all ten publishable artifacts release at 0.21.0.

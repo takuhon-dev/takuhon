@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/api",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Hono-based HTTP handlers, RFC 7807 error envelope, and response builders for takuhon",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",
