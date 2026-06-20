@@ -5,6 +5,8 @@
  * stay unit-testable and keep both renderers' escaping behavior identical.
  */
 
+import { formatDate, getPresentLabel, type LocaleTag } from '@takuhon/core';
+
 /** Escape text for use in HTML element content or double/single-quoted attributes. */
 export function escapeHtml(value: string): string {
   return value
@@ -30,10 +32,39 @@ export function safeUrl(url: string): string | undefined {
   return scheme === 'http' || scheme === 'https' || scheme === 'mailto' ? trimmed : undefined;
 }
 
-/** Format a YearMonth range; `null` end or `isCurrent` renders as "Present". */
-export function dateRange(start?: string, end?: string | null, isCurrent?: boolean): string {
-  const left = start ?? '';
-  const right = isCurrent === true || end === null ? 'Present' : (end ?? '');
+/**
+ * Wrap a single ISO date in a `<time>` element: the machine-readable ISO value
+ * stays verbatim in the `datetime` attribute while the visible text is the
+ * locale-formatted form from `@takuhon/core`'s {@link formatDate}. Both parts
+ * are escaped, so the returned fragment is already safe to insert raw — callers
+ * must NOT pass it back through {@link escapeHtml}.
+ */
+export function timeTag(iso: string, locale: LocaleTag): string {
+  return `<time datetime="${escapeHtml(iso)}">${escapeHtml(formatDate(iso, locale))}</time>`;
+}
+
+/** The localized ongoing-role marker (en `Present` / ja `現在`), escaped. */
+export function presentLabel(locale: LocaleTag): string {
+  return escapeHtml(getPresentLabel(locale));
+}
+
+/**
+ * Format a date range as an escaped HTML fragment: each bound becomes a
+ * localized `<time>` element ({@link timeTag}), and a `null` end or `isCurrent`
+ * renders as the localized "Present" marker ({@link presentLabel}). `locale` is
+ * required, so a call that forgets it is a compile error rather than a silently
+ * mis-formatted output. The result is fully escaped — callers insert it raw,
+ * without {@link escapeHtml}; the only non-escaped literals are the static
+ * en-dash separator and the `<time>` tags themselves.
+ */
+export function dateRange(
+  start: string | undefined,
+  opts: { end?: string | null; isCurrent?: boolean; locale: LocaleTag },
+): string {
+  const { end, isCurrent, locale } = opts;
+  const left = start ? timeTag(start, locale) : '';
+  const right =
+    isCurrent === true || end === null ? presentLabel(locale) : end ? timeTag(end, locale) : '';
   if (left && right) return `${left} – ${right}`;
   return left || right;
 }

@@ -1,4 +1,11 @@
-import { deriveCv, normalize, resolveLocale, validate, type LocalizedTakuhon } from '@takuhon/core';
+import {
+  deriveCv,
+  getPresentLabel,
+  normalize,
+  resolveLocale,
+  validate,
+  type LocalizedTakuhon,
+} from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import { renderCvHtml } from '../html/cv-html.js';
@@ -100,6 +107,13 @@ describe('renderCvHtml()', () => {
     expect(withEmail).toContain('mailto:pat@example.com');
   });
 
+  it('renders CV dates as localized <time> elements with the ISO preserved', () => {
+    const html = render();
+    expect(html).toContain('<time datetime="2020-01">Jan 2020</time>'); // experience start
+    expect(html).toContain('<time datetime="2016-09">Sep 2016</time>'); // education start
+    expect(html).toContain(`– ${getPresentLabel('en')}`); // isCurrent → "Present"
+  });
+
   it('localizes content and the lang attribute (ja)', () => {
     const html = render(
       {
@@ -110,5 +124,19 @@ describe('renderCvHtml()', () => {
     );
     expect(html).toContain('<html lang="ja">');
     expect(html).toContain('パット・リベラ');
+  });
+
+  it('localizes CV dates and the Present marker (ja)', () => {
+    const html = render(
+      {
+        profile: { displayName: { en: 'Pat Rivera', ja: 'パット・リベラ' } },
+        settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
+      },
+      'ja',
+    );
+    expect(html).toContain('<time datetime="2020-01">2020年1月</time>');
+    expect(html).toContain('<time datetime="2016-09">2016年9月</time>');
+    expect(html).toContain(`– ${getPresentLabel('ja')}`); // "現在"
+    expect(html).not.toContain('Present');
   });
 });

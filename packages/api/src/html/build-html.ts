@@ -107,7 +107,9 @@ function renderEntry(entry: EntryView): string {
     : escapeHtml(entry.heading);
   const parts = [`<h3>${heading}</h3>`];
   if (entry.sub) parts.push(`<p class="sub">${escapeHtml(entry.sub)}</p>`);
-  if (entry.dates) parts.push(`<p class="meta">${escapeHtml(entry.dates)}</p>`);
+  // `entry.dates` is already an escaped HTML fragment from `dateRange` (localized
+  // <time> elements), so it is inserted raw rather than re-escaped.
+  if (entry.dates) parts.push(`<p class="meta">${entry.dates}</p>`);
   if (entry.body) parts.push(`<p>${escapeHtml(entry.body)}</p>`);
   if (entry.tags && entry.tags.length > 0) {
     parts.push(
@@ -261,7 +263,11 @@ export function renderProfileHtml(input: RenderInput): string {
       d.careers.map((c) => ({
         heading: c.role,
         sub: c.organization,
-        dates: dateRange(c.startDate, c.endDate, c.isCurrent),
+        dates: dateRange(c.startDate, {
+          end: c.endDate,
+          isCurrent: c.isCurrent,
+          locale: d.resolvedLocale,
+        }),
         body: c.description,
         url: c.url,
       })),
@@ -270,7 +276,7 @@ export function renderProfileHtml(input: RenderInput): string {
       'Projects',
       d.projects.map((x) => ({
         heading: x.title,
-        dates: dateRange(x.startDate, x.endDate),
+        dates: dateRange(x.startDate, { end: x.endDate, locale: d.resolvedLocale }),
         body: x.description,
         url: x.url,
         tags: x.tags,
@@ -285,7 +291,11 @@ export function renderProfileHtml(input: RenderInput): string {
         return {
           heading: degree ?? e.institution,
           sub: degree ? e.institution : undefined,
-          dates: dateRange(e.startDate, e.endDate, e.isCurrent),
+          dates: dateRange(e.startDate, {
+            end: e.endDate,
+            isCurrent: e.isCurrent,
+            locale: d.resolvedLocale,
+          }),
           body: e.description,
           url: e.url,
         };
@@ -296,7 +306,7 @@ export function renderProfileHtml(input: RenderInput): string {
       d.certifications.map((c) => ({
         heading: c.title,
         sub: c.issuingOrganization,
-        dates: dateRange(c.issueDate, c.expirationDate),
+        dates: dateRange(c.issueDate, { end: c.expirationDate, locale: d.resolvedLocale }),
         url: c.url,
       })),
     ),
@@ -305,7 +315,7 @@ export function renderProfileHtml(input: RenderInput): string {
       d.publications.map((x) => ({
         heading: x.title,
         sub: nonEmpty([x.publisher, x.coAuthors?.join(', ')], ' · '),
-        dates: dateRange(x.date),
+        dates: dateRange(x.date, { locale: d.resolvedLocale }),
         body: x.description,
         url: x.url ?? (x.doi ? `https://doi.org/${x.doi}` : undefined),
       })),
@@ -315,7 +325,7 @@ export function renderProfileHtml(input: RenderInput): string {
       d.honors.map((x) => ({
         heading: x.title,
         sub: x.issuer,
-        dates: dateRange(x.date),
+        dates: dateRange(x.date, { locale: d.resolvedLocale }),
         body: x.description,
         url: x.url,
       })),
@@ -325,7 +335,11 @@ export function renderProfileHtml(input: RenderInput): string {
       d.memberships.map((x) => ({
         heading: x.role ?? x.organization,
         sub: x.role ? x.organization : undefined,
-        dates: dateRange(x.startDate, x.endDate, x.isCurrent),
+        dates: dateRange(x.startDate, {
+          end: x.endDate,
+          isCurrent: x.isCurrent,
+          locale: d.resolvedLocale,
+        }),
         body: x.description,
         url: x.url,
       })),
@@ -335,7 +349,11 @@ export function renderProfileHtml(input: RenderInput): string {
       d.volunteering.map((x) => ({
         heading: x.role,
         sub: nonEmpty([x.organization, x.cause], ' · '),
-        dates: dateRange(x.startDate, x.endDate, x.isCurrent),
+        dates: dateRange(x.startDate, {
+          end: x.endDate,
+          isCurrent: x.isCurrent,
+          locale: d.resolvedLocale,
+        }),
         body: x.description,
         url: x.url,
       })),
@@ -345,7 +363,7 @@ export function renderProfileHtml(input: RenderInput): string {
       d.courses.map((x) => ({
         heading: x.title,
         sub: x.provider,
-        dates: dateRange(x.completionDate),
+        dates: dateRange(x.completionDate, { locale: d.resolvedLocale }),
         body: x.description,
         url: x.certificateUrl,
       })),
@@ -355,7 +373,7 @@ export function renderProfileHtml(input: RenderInput): string {
       d.patents.map((x) => ({
         heading: x.title,
         sub: nonEmpty([x.patentNumber, x.office, x.status, x.coInventors?.join(', ')], ' · '),
-        dates: dateRange(x.filingDate ?? x.grantDate),
+        dates: dateRange(x.filingDate ?? x.grantDate, { locale: d.resolvedLocale }),
         body: x.description,
         url: x.url,
       })),
@@ -364,7 +382,7 @@ export function renderProfileHtml(input: RenderInput): string {
       'Test scores',
       d.testScores.map((x) => ({
         heading: `${x.title}: ${x.score}`,
-        dates: dateRange(x.date),
+        dates: dateRange(x.date, { locale: d.resolvedLocale }),
         body: x.description,
         url: x.url,
       })),
