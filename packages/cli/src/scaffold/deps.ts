@@ -8,4 +8,4 @@
  * platform scaffolds in step; the `scaffold.test.ts` pin-guard derives the
  * expected range from the CLI's own version, so a missed bump fails CI.
  */
-export const TAKUHON_DEP_RANGE = '^0.21.0';
+export const TAKUHON_DEP_RANGE = '^0.22.0';

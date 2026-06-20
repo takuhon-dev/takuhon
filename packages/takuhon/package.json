@@ -1,6 +1,6 @@
 {
   "name": "takuhon",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Takuhon — open-source portable profile server. This bare-name package is a thin redirect to @takuhon/cli; install it (`npm i -g takuhon`) to expose the `takuhon` CLI globally.",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",
