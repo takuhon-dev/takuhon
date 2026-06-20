@@ -218,6 +218,7 @@ function resolveLink(link: Link, candidates: LocaleTag[]): LocalizedLink {
     if (label !== undefined) out.label = label;
     if (link.featured !== undefined) out.featured = link.featured;
     if (link.order !== undefined) out.order = link.order;
+    if (link.visibility !== undefined) out.visibility = link.visibility;
     return out;
   }
   const out: LocalizedLink = {
@@ -229,6 +230,7 @@ function resolveLink(link: Link, candidates: LocaleTag[]): LocalizedLink {
   if (link.featured !== undefined) out.featured = link.featured;
   if (link.order !== undefined) out.order = link.order;
   if (link.iconUrl !== undefined) out.iconUrl = link.iconUrl;
+  if (link.visibility !== undefined) out.visibility = link.visibility;
   return out;
 }
 
@@ -245,6 +247,7 @@ function resolveCareer(career: Career, candidates: LocaleTag[]): LocalizedCareer
   if (career.isCurrent !== undefined) out.isCurrent = career.isCurrent;
   if (career.url !== undefined) out.url = career.url;
   if (career.order !== undefined) out.order = career.order;
+  if (career.visibility !== undefined) out.visibility = career.visibility;
   if (career.location) out.location = resolveAddress(career.location, candidates);
   return out;
 }
@@ -263,6 +266,7 @@ function resolveProject(project: Project, candidates: LocaleTag[]): LocalizedPro
   if (project.endDate !== undefined) out.endDate = project.endDate;
   if (project.highlighted !== undefined) out.highlighted = project.highlighted;
   if (project.order !== undefined) out.order = project.order;
+  if (project.visibility !== undefined) out.visibility = project.visibility;
   return out;
 }
 
@@ -280,6 +284,7 @@ function resolveCertification(
   if (cert.credentialId !== undefined) out.credentialId = cert.credentialId;
   if (cert.url !== undefined) out.url = cert.url;
   if (cert.order !== undefined) out.order = cert.order;
+  if (cert.visibility !== undefined) out.visibility = cert.visibility;
   return out;
 }
 
@@ -297,6 +302,7 @@ function resolveMembership(membership: Membership, candidates: LocaleTag[]): Loc
   if (membership.isCurrent !== undefined) out.isCurrent = membership.isCurrent;
   if (membership.url !== undefined) out.url = membership.url;
   if (membership.order !== undefined) out.order = membership.order;
+  if (membership.visibility !== undefined) out.visibility = membership.visibility;
   return out;
 }
 
@@ -315,6 +321,7 @@ function resolveVolunteering(v: Volunteering, candidates: LocaleTag[]): Localize
   if (v.isCurrent !== undefined) out.isCurrent = v.isCurrent;
   if (v.url !== undefined) out.url = v.url;
   if (v.order !== undefined) out.order = v.order;
+  if (v.visibility !== undefined) out.visibility = v.visibility;
   return out;
 }
 
@@ -329,6 +336,7 @@ function resolveHonor(honor: Honor, candidates: LocaleTag[]): LocalizedHonor {
   if (description !== undefined) out.description = description;
   if (honor.url !== undefined) out.url = honor.url;
   if (honor.order !== undefined) out.order = honor.order;
+  if (honor.visibility !== undefined) out.visibility = honor.visibility;
   return out;
 }
 
@@ -349,6 +357,7 @@ function resolveEducation(edu: Education, candidates: LocaleTag[]): LocalizedEdu
   if (edu.isCurrent !== undefined) out.isCurrent = edu.isCurrent;
   if (edu.url !== undefined) out.url = edu.url;
   if (edu.order !== undefined) out.order = edu.order;
+  if (edu.visibility !== undefined) out.visibility = edu.visibility;
   return out;
 }
 
@@ -366,6 +375,7 @@ function resolvePublication(pub: Publication, candidates: LocaleTag[]): Localize
   if (pub.doi !== undefined) out.doi = pub.doi;
   if (pub.coAuthors !== undefined) out.coAuthors = pub.coAuthors;
   if (pub.order !== undefined) out.order = pub.order;
+  if (pub.visibility !== undefined) out.visibility = pub.visibility;
   return out;
 }
 
@@ -378,6 +388,7 @@ function resolveLanguage(lang: Language, candidates: LocaleTag[]): LocalizedLang
   const displayName = pickLocalized(lang.displayName, candidates);
   if (displayName !== undefined) out.displayName = displayName;
   if (lang.order !== undefined) out.order = lang.order;
+  if (lang.visibility !== undefined) out.visibility = lang.visibility;
   return out;
 }
 
@@ -395,6 +406,7 @@ function resolveCourse(course: Course, candidates: LocaleTag[]): LocalizedCourse
   if (course.certificateUrl !== undefined) out.certificateUrl = course.certificateUrl;
   if (course.relatedEducationId !== undefined) out.relatedEducationId = course.relatedEducationId;
   if (course.order !== undefined) out.order = course.order;
+  if (course.visibility !== undefined) out.visibility = course.visibility;
   return out;
 }
 
@@ -413,6 +425,7 @@ function resolvePatent(patent: Patent, candidates: LocaleTag[]): LocalizedPatent
   if (patent.url !== undefined) out.url = patent.url;
   if (patent.coInventors !== undefined) out.coInventors = patent.coInventors;
   if (patent.order !== undefined) out.order = patent.order;
+  if (patent.visibility !== undefined) out.visibility = patent.visibility;
   return out;
 }
 
@@ -430,6 +443,7 @@ function resolveTestScore(testScore: TestScore, candidates: LocaleTag[]): Locali
   }
   if (testScore.url !== undefined) out.url = testScore.url;
   if (testScore.order !== undefined) out.order = testScore.order;
+  if (testScore.visibility !== undefined) out.visibility = testScore.visibility;
   return out;
 }
 
@@ -452,6 +466,7 @@ function resolveRecommendation(
     out.relatedEducationId = recommendation.relatedEducationId;
   }
   if (recommendation.order !== undefined) out.order = recommendation.order;
+  if (recommendation.visibility !== undefined) out.visibility = recommendation.visibility;
   return out;
 }
 

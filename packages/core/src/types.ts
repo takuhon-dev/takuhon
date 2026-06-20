@@ -58,6 +58,23 @@ export type LocalizedTitle = Record<LocaleTag, string>;
 /** Map from BCP-47 locale tag to a body-length localized string (≤5000 chars). */
 export type LocalizedBody = Record<LocaleTag, string>;
 
+/**
+ * Per-item public visibility (added in 0.7.0). A content item (a link, career,
+ * project, … — any element of a content-section array) set to `'private'` is
+ * stripped from every public surface (`GET /`, `/api/profile`, `/api/jsonld`,
+ * `/takuhon.json`, MCP, and the derived CV) by `applyPublicPrivacyFilter`, while
+ * remaining editable through the authenticated admin export. An absent value —
+ * or `'public'` — keeps the item public, so the default is all-visible and
+ * omitting it is fully backwards-compatible. This is the item-level analogue of
+ * the section-level {@link PublicVisibility}.
+ */
+export type Visibility = 'public' | 'private';
+
+/** Mixin for content items that support a per-item {@link Visibility} flag. */
+export interface VisibilityControlled {
+  visibility?: Visibility;
+}
+
 export type LinkType =
   | 'website'
   | 'blog'
@@ -95,7 +112,7 @@ export interface Profile {
   location?: Address;
 }
 
-interface LinkCommon {
+interface LinkCommon extends VisibilityControlled {
   id: Slug;
   label?: LocalizedTitle;
   url: string;
@@ -127,7 +144,7 @@ export interface LinkCustom extends LinkCommon {
 /** A profile link. Discriminated on `type`; see `LinkBuiltin` / `LinkCustom`. */
 export type Link = LinkBuiltin | LinkCustom;
 
-export interface Career {
+export interface Career extends VisibilityControlled {
   id: Slug;
   organization: LocalizedTitle;
   role: LocalizedTitle;
@@ -141,7 +158,7 @@ export interface Career {
   order?: number;
 }
 
-export interface Project {
+export interface Project extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   description?: LocalizedBody;
@@ -154,7 +171,7 @@ export interface Project {
   order?: number;
 }
 
-export interface Skill {
+export interface Skill extends VisibilityControlled {
   id: Slug;
   label: string;
   /**
@@ -165,7 +182,7 @@ export interface Skill {
   order?: number;
 }
 
-export interface Certification {
+export interface Certification extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   issuingOrganization: LocalizedTitle;
@@ -181,7 +198,7 @@ export interface Certification {
   order?: number;
 }
 
-export interface Membership {
+export interface Membership extends VisibilityControlled {
   id: Slug;
   organization: LocalizedTitle;
   role?: LocalizedTitle;
@@ -194,7 +211,7 @@ export interface Membership {
   order?: number;
 }
 
-export interface Volunteering {
+export interface Volunteering extends VisibilityControlled {
   id: Slug;
   organization: LocalizedTitle;
   role: LocalizedTitle;
@@ -207,7 +224,7 @@ export interface Volunteering {
   order?: number;
 }
 
-export interface Honor {
+export interface Honor extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   issuer: LocalizedTitle;
@@ -217,7 +234,7 @@ export interface Honor {
   order?: number;
 }
 
-export interface Education {
+export interface Education extends VisibilityControlled {
   id: Slug;
   institution: LocalizedTitle;
   degree?: LocalizedTitle;
@@ -236,7 +253,7 @@ export interface Education {
   order?: number;
 }
 
-export interface Publication {
+export interface Publication extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   publisher?: LocalizedTitle;
@@ -252,7 +269,7 @@ export interface Publication {
 
 export type LanguageProficiency = 'native' | 'fluent' | 'professional' | 'intermediate' | 'basic';
 
-export interface Language {
+export interface Language extends VisibilityControlled {
   id: Slug;
   /** BCP-47 tag (e.g. 'ja', 'en', 'fr-CA'). */
   language: LocaleTag;
@@ -262,7 +279,7 @@ export interface Language {
   order?: number;
 }
 
-export interface Course {
+export interface Course extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   provider?: LocalizedTitle;
@@ -277,7 +294,7 @@ export interface Course {
 
 export type PatentStatus = 'pending' | 'issued' | 'expired' | 'abandoned';
 
-export interface Patent {
+export interface Patent extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   patentNumber: string;
@@ -292,7 +309,7 @@ export interface Patent {
   order?: number;
 }
 
-export interface TestScore {
+export interface TestScore extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
   /**
@@ -318,7 +335,7 @@ export interface RecommendationAuthor {
   url?: string;
 }
 
-export interface Recommendation {
+export interface Recommendation extends VisibilityControlled {
   id: Slug;
   /** The recommendation text (testimonial body). */
   body: LocalizedBody;
@@ -525,7 +542,7 @@ export interface LocalizedProfile {
   location?: LocalizedAddress;
 }
 
-interface LocalizedLinkCommon {
+interface LocalizedLinkCommon extends VisibilityControlled {
   id: Slug;
   label?: string;
   url: string;
@@ -547,7 +564,7 @@ export interface LocalizedLinkCustom extends LocalizedLinkCommon {
 export type LocalizedLink = LocalizedLinkBuiltin | LocalizedLinkCustom;
 
 /** Career with `organization`, `role`, `description` collapsed to single strings. */
-export interface LocalizedCareer {
+export interface LocalizedCareer extends VisibilityControlled {
   id: Slug;
   organization: string;
   role: string;
@@ -561,7 +578,7 @@ export interface LocalizedCareer {
 }
 
 /** Project with `title`, `description` collapsed to single strings. */
-export interface LocalizedProject {
+export interface LocalizedProject extends VisibilityControlled {
   id: Slug;
   title: string;
   description?: string;
@@ -575,7 +592,7 @@ export interface LocalizedProject {
 }
 
 /** Certification with localized fields collapsed to single strings. */
-export interface LocalizedCertification {
+export interface LocalizedCertification extends VisibilityControlled {
   id: Slug;
   title: string;
   issuingOrganization: string;
@@ -587,7 +604,7 @@ export interface LocalizedCertification {
 }
 
 /** Membership with localized fields collapsed to single strings. */
-export interface LocalizedMembership {
+export interface LocalizedMembership extends VisibilityControlled {
   id: Slug;
   organization: string;
   role?: string;
@@ -600,7 +617,7 @@ export interface LocalizedMembership {
 }
 
 /** Volunteering with localized fields collapsed to single strings. */
-export interface LocalizedVolunteering {
+export interface LocalizedVolunteering extends VisibilityControlled {
   id: Slug;
   organization: string;
   role: string;
@@ -614,7 +631,7 @@ export interface LocalizedVolunteering {
 }
 
 /** Honor with localized fields collapsed to single strings. */
-export interface LocalizedHonor {
+export interface LocalizedHonor extends VisibilityControlled {
   id: Slug;
   title: string;
   issuer: string;
@@ -625,7 +642,7 @@ export interface LocalizedHonor {
 }
 
 /** Education with localized fields collapsed to single strings. */
-export interface LocalizedEducation {
+export interface LocalizedEducation extends VisibilityControlled {
   id: Slug;
   institution: string;
   degree?: string;
@@ -640,7 +657,7 @@ export interface LocalizedEducation {
 }
 
 /** Publication with localized fields collapsed to single strings. */
-export interface LocalizedPublication {
+export interface LocalizedPublication extends VisibilityControlled {
   id: Slug;
   title: string;
   publisher?: string;
@@ -653,7 +670,7 @@ export interface LocalizedPublication {
 }
 
 /** Language entry with `displayName` collapsed to a single string. */
-export interface LocalizedLanguage {
+export interface LocalizedLanguage extends VisibilityControlled {
   id: Slug;
   language: LocaleTag;
   displayName?: string;
@@ -662,7 +679,7 @@ export interface LocalizedLanguage {
 }
 
 /** Course with localized fields collapsed to single strings. */
-export interface LocalizedCourse {
+export interface LocalizedCourse extends VisibilityControlled {
   id: Slug;
   title: string;
   provider?: string;
@@ -675,7 +692,7 @@ export interface LocalizedCourse {
 }
 
 /** Patent with localized fields collapsed to single strings. */
-export interface LocalizedPatent {
+export interface LocalizedPatent extends VisibilityControlled {
   id: Slug;
   title: string;
   patentNumber: string;
@@ -690,7 +707,7 @@ export interface LocalizedPatent {
 }
 
 /** Test score with localized fields collapsed to single strings. */
-export interface LocalizedTestScore {
+export interface LocalizedTestScore extends VisibilityControlled {
   id: Slug;
   title: string;
   score: string;
@@ -709,7 +726,7 @@ export interface LocalizedRecommendationAuthor {
 }
 
 /** Recommendation with localized fields collapsed to single strings. */
-export interface LocalizedRecommendation {
+export interface LocalizedRecommendation extends VisibilityControlled {
   id: Slug;
   body: string;
   author: LocalizedRecommendationAuthor;

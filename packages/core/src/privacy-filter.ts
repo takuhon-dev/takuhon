@@ -3,22 +3,28 @@
  *
  * Strips content that the spec's privacy posture marks as opt-in for public
  * exposure, before the document reaches a public reader (a public API
- * response, a server-rendered page, a statically built page, …). Two layers
- * compose here, both conservative by default:
+ * response, a server-rendered page, a statically built page, …). Three layers
+ * compose here, all conservative by default:
  *
  * 1. **Section layer** (`settings.publicVisibility`, schema 0.6.0). Each
  *    content section the owner sets to `false` is emptied: array sections
  *    become `[]` and the `contact` section becomes `{}`. An absent key — or an
  *    absent `publicVisibility` block — means the section is public, so the
  *    default is all-visible and older documents are unaffected.
- * 2. **Field layer** (`meta.privacy.*`, `contact.showEmail`). Within a visible
- *    section, individual identifying fields are stripped unless the operator
- *    opts into disclosure.
+ * 2. **Item layer** (`<item>.visibility`, schema 0.7.0). Within a section that
+ *    survived the section layer, each array item the owner marks
+ *    `visibility: 'private'` is removed. An absent value — or `'public'` —
+ *    keeps the item, so the default is all-visible and older documents are
+ *    unaffected.
+ * 3. **Field layer** (`meta.privacy.*`, `contact.showEmail`). Within an item
+ *    that survived, individual identifying fields are stripped unless the
+ *    operator opts into disclosure.
  *
- * Visibility is the AND of the two layers (the surface-level `enable*` feature
- * toggles are a third, orthogonal layer enforced by the route / renderer, not
- * here): a field survives only when its section is visible *and* its field
- * flag allows it. Hiding a whole section short-circuits its field checks.
+ * Visibility is the AND of the layers (the surface-level `enable*` feature
+ * toggles are a further, orthogonal layer enforced by the route / renderer, not
+ * here): a field survives only when its section is visible, its item is not
+ * private, *and* its field flag allows it. Hiding a whole section short-circuits
+ * its item and field checks; removing an item short-circuits its field checks.
  *
  * This lives in `@takuhon/core` because it is a pure transform over the core
  * document types with no transport coupling, so every public surface — the
@@ -53,7 +59,7 @@
  *   callers.
  */
 
-import type { LocalizedTakuhon, PublicVisibility, Takuhon } from './types.js';
+import type { LocalizedTakuhon, PublicVisibility, Takuhon, VisibilityControlled } from './types.js';
 
 /**
  * Union of the two profile shapes that traverse the public path. The fields
@@ -104,6 +110,17 @@ export function applyPublicPrivacyFilter<T extends FilterableProfile>(profile: T
   const hiddenArrays: SectionArrayKey[] = visibility
     ? SECTION_ARRAY_KEYS.filter((key) => visibility[key] === false && p[key].length > 0)
     : [];
+
+  // Item layer: sections that survive the section layer but carry at least one
+  // item the owner marked `visibility: 'private'`. Those items are dropped from
+  // the public projection while the section itself stays.
+  const hiddenArraySet = new Set<SectionArrayKey>(hiddenArrays);
+  const itemFilterArrays: SectionArrayKey[] = SECTION_ARRAY_KEYS.filter(
+    (key) =>
+      !hiddenArraySet.has(key) &&
+      (p[key] as readonly VisibilityControlled[]).some((item) => item.visibility === 'private'),
+  );
+
   const hideContactSection = visibility?.contact === false && Object.keys(p.contact).length > 0;
   const certificationsHidden = visibility?.certifications === false;
   const educationHidden = visibility?.education === false;
@@ -120,6 +137,7 @@ export function applyPublicPrivacyFilter<T extends FilterableProfile>(profile: T
 
   if (
     hiddenArrays.length === 0 &&
+    itemFilterArrays.length === 0 &&
     !hideContactSection &&
     !stripCertifications &&
     !stripEducation &&
@@ -140,7 +158,14 @@ export function applyPublicPrivacyFilter<T extends FilterableProfile>(profile: T
     out.contact = {};
   }
 
-  // Field layer second, only on sections that survived the section layer.
+  // Item layer: drop private items from sections that survived the section
+  // layer. A field check below is moot for an item removed here.
+  const itemArrays = out as Record<SectionArrayKey, VisibilityControlled[]>;
+  for (const key of itemFilterArrays) {
+    itemArrays[key] = itemArrays[key].filter((item) => item.visibility !== 'private');
+  }
+
+  // Field layer last, only on items that survived the section and item layers.
   if (stripCertifications) {
     out.certifications = out.certifications.map(stripCredentialId) as T['certifications'];
   }

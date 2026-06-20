@@ -337,6 +337,26 @@ describe('migrateTakuhon', () => {
     expect(out.settings.publicVisibility).toEqual({ education: false });
   });
 
+  it('migrates a 0.6.0 input forward to 0.7.0 (version stamp; per-item visibility is optional)', () => {
+    const v060 = {
+      schemaVersion: '0.6.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [{ id: 'site', type: 'website', url: 'https://example.com' }],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v060, '0.7.0');
+    expect(out.schemaVersion).toBe('0.7.0');
+    // Additive, version-only: no item gains a visibility value (absent = public).
+    expect(out.links[0]!.visibility).toBeUndefined();
+    expect(validate(out).ok).toBe(true);
+  });
+
   it('chains 0.1.0 → 0.6.0 through all five registered migrations', () => {
     const v010 = {
       schemaVersion: '0.1.0',
@@ -376,12 +396,13 @@ describe('migrateTakuhon', () => {
 });
 
 describe('migrations registry', () => {
-  it('contains the v0.1.0 → … → v0.6.0 entries in chain order', () => {
-    expect(migrations).toHaveLength(5);
+  it('contains the v0.1.0 → … → v0.7.0 entries in chain order', () => {
+    expect(migrations).toHaveLength(6);
     expect(migrations[0]).toMatchObject({ from: '0.1.0', to: '0.2.0' });
     expect(migrations[1]).toMatchObject({ from: '0.2.0', to: '0.3.0' });
     expect(migrations[2]).toMatchObject({ from: '0.3.0', to: '0.4.0' });
     expect(migrations[3]).toMatchObject({ from: '0.4.0', to: '0.5.0' });
     expect(migrations[4]).toMatchObject({ from: '0.5.0', to: '0.6.0' });
+    expect(migrations[5]).toMatchObject({ from: '0.6.0', to: '0.7.0' });
   });
 });
