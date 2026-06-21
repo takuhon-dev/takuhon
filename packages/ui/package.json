@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/ui",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "React mobile-first profile UI and minimal admin editor components for takuhon",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",
