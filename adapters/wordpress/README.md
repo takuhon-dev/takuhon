@@ -111,3 +111,8 @@ distribution channel — unlike the other `@takuhon/*` packages, which are
 Apache-2.0. This adapter may still call the Apache-2.0 `@takuhon/core` /
 `@takuhon/api`: Apache-2.0 is one-way compatible with GPL-3.0+, and the "or
 later" clause lets the combination be treated as GPL-3.0+.
+
+The admin bundle (`takuhon/build/admin.js`) embeds compiled `@takuhon/core` and
+`@takuhon/api` code, so the plugin zip ships both `LICENSE` (GPL-2.0) and
+`LICENSE-APACHE-2.0.txt` (the Apache-2.0 text for that bundled code), with the
+required attribution in `NOTICE` — satisfying Apache-2.0 §4(a) and §4(d).

@@ -4,7 +4,7 @@ Tags: profile, linktree, json-ld, gutenberg, portfolio
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,11 @@ project repository for status.
 2. Activate the plugin through the Plugins screen.
 
 == Changelog ==
+
+= 0.1.1 =
+* Ship the Apache-2.0 license text (LICENSE-APACHE-2.0.txt) for the bundled
+  @takuhon/core and @takuhon/api code, satisfying Apache-2.0 attribution
+  requirements. No functional changes.
 
 = 0.1.0 =
 * Plugin skeleton.

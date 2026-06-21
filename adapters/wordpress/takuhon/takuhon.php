@@ -3,7 +3,7 @@
  * Plugin Name:       Takuhon
  * Plugin URI:        https://github.com/takuhon-dev/takuhon
  * Description:       Host a takuhon profile on WordPress — edit your takuhon.json and serve the public profile via a Gutenberg block and REST API.
- * Version:           0.1.0
+ * Version:           0.1.1
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Takuhon contributors
@@ -38,7 +38,7 @@ if ( defined( 'TAKUHON_VERSION' ) ) {
 	return;
 }
 
-define( 'TAKUHON_VERSION', '0.1.0' );
+define( 'TAKUHON_VERSION', '0.1.1' );
 define( 'TAKUHON_PLUGIN_FILE', __FILE__ );
 define( 'TAKUHON_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TAKUHON_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

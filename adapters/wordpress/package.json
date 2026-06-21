@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/wordpress",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "WordPress adapter for takuhon — a GPL-2.0-or-later plugin that stores takuhon.json and serves the public profile (Gutenberg block + REST API). Distributed as a plugin zip, not on npm.",
   "license": "GPL-2.0-or-later",
