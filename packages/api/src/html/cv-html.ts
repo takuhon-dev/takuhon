@@ -14,7 +14,7 @@
  * hostile document cannot smuggle a `javascript:` href into the résumé.
  */
 
-import type { CvDocument, CvSection, LocalizedLanguage } from '@takuhon/core';
+import type { CvDocument, CvSection, LocaleTag, LocalizedLanguage } from '@takuhon/core';
 
 import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
 
@@ -79,7 +79,9 @@ function renderEntry(entry: CvEntryView): string {
   const title = href
     ? `<a href="${escapeHtml(href)}">${escapeHtml(entry.heading)}</a>`
     : escapeHtml(entry.heading);
-  const dates = entry.dates ? `<span class="dates">${escapeHtml(entry.dates)}</span>` : '';
+  // `entry.dates` is already an escaped HTML fragment from `dateRange` (localized
+  // <time> elements), so it is inserted raw rather than re-escaped.
+  const dates = entry.dates ? `<span class="dates">${entry.dates}</span>` : '';
   const parts = [`<div class="row"><h3>${title}</h3>${dates}</div>`];
   if (entry.sub) parts.push(`<p class="sub">${escapeHtml(entry.sub)}</p>`);
   if (entry.body) parts.push(`<p>${escapeHtml(entry.body)}</p>`);
@@ -100,8 +102,13 @@ function languageLabel(l: LocalizedLanguage): string {
   return `${l.displayName ?? l.language} — ${l.proficiency}`;
 }
 
-/** Render one CV section to its `<section>` markup, dispatching on `kind`. */
-function renderSection(section: CvSection): string {
+/**
+ * Render one CV section to its `<section>` markup, dispatching on `kind`. The
+ * `locale` formats every date in the section (via {@link dateRange}); the
+ * per-entry helpers below receive their dates already formatted, so only this
+ * dispatcher needs the locale.
+ */
+function renderSection(section: CvSection, locale: LocaleTag): string {
   const title = SECTION_TITLES[section.kind];
   switch (section.kind) {
     case 'experience':
@@ -110,7 +117,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((c) => ({
           heading: c.role,
           sub: c.organization,
-          dates: dateRange(c.startDate, c.endDate, c.isCurrent),
+          dates: dateRange(c.startDate, { end: c.endDate, isCurrent: c.isCurrent, locale }),
           body: c.description,
           url: c.url,
         })),
@@ -123,7 +130,7 @@ function renderSection(section: CvSection): string {
           return {
             heading: degree ?? e.institution,
             sub: degree ? e.institution : undefined,
-            dates: dateRange(e.startDate, e.endDate, e.isCurrent),
+            dates: dateRange(e.startDate, { end: e.endDate, isCurrent: e.isCurrent, locale }),
             body: e.description,
             url: e.url,
           };
@@ -142,7 +149,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((c) => ({
           heading: c.title,
           sub: c.issuingOrganization,
-          dates: dateRange(c.issueDate, c.expirationDate),
+          dates: dateRange(c.issueDate, { end: c.expirationDate, locale }),
           url: c.url,
         })),
       );
@@ -152,7 +159,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((x) => ({
           heading: x.title,
           sub: nonEmpty([x.publisher, x.coAuthors?.join(', ')], ' · '),
-          dates: dateRange(x.date),
+          dates: dateRange(x.date, { locale }),
           body: x.description,
           url: x.url ?? (x.doi ? `https://doi.org/${x.doi}` : undefined),
         })),
@@ -163,7 +170,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((x) => ({
           heading: x.title,
           sub: x.issuer,
-          dates: dateRange(x.date),
+          dates: dateRange(x.date, { locale }),
           body: x.description,
           url: x.url,
         })),
@@ -174,7 +181,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((x) => ({
           heading: x.title,
           sub: x.provider,
-          dates: dateRange(x.completionDate),
+          dates: dateRange(x.completionDate, { locale }),
           body: x.description,
           url: x.certificateUrl,
         })),
@@ -185,7 +192,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((x) => ({
           heading: x.title,
           sub: nonEmpty([x.patentNumber, x.office, x.status], ' · '),
-          dates: dateRange(x.filingDate ?? x.grantDate),
+          dates: dateRange(x.filingDate ?? x.grantDate, { locale }),
           body: x.description,
           url: x.url,
         })),
@@ -196,7 +203,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((x) => ({
           heading: x.role,
           sub: nonEmpty([x.organization, x.cause], ' · '),
-          dates: dateRange(x.startDate, x.endDate, x.isCurrent),
+          dates: dateRange(x.startDate, { end: x.endDate, isCurrent: x.isCurrent, locale }),
           body: x.description,
           url: x.url,
         })),
@@ -207,7 +214,7 @@ function renderSection(section: CvSection): string {
         section.entries.map((x) => ({
           heading: x.role ?? x.organization,
           sub: x.role ? x.organization : undefined,
-          dates: dateRange(x.startDate, x.endDate, x.isCurrent),
+          dates: dateRange(x.startDate, { end: x.endDate, isCurrent: x.isCurrent, locale }),
           body: x.description,
           url: x.url,
         })),
@@ -236,7 +243,10 @@ function renderHeader(cv: CvDocument): string {
 /** Render a complete static HTML résumé document for one locale-resolved CV. */
 export function renderCvHtml(cv: CvDocument): string {
   const title = `${cv.header.displayName} — CV`;
-  const body = [renderHeader(cv), ...cv.sections.map(renderSection)].join('\n');
+  const body = [
+    renderHeader(cv),
+    ...cv.sections.map((s) => renderSection(s, cv.resolvedLocale)),
+  ].join('\n');
   return (
     `<!DOCTYPE html>\n<html lang="${escapeHtml(cv.resolvedLocale)}">\n<head>\n` +
     `  <meta charset="utf-8">\n` +

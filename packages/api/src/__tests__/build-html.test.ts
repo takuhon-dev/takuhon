@@ -1,4 +1,4 @@
-import { normalize, resolveLocale } from '@takuhon/core';
+import { getPresentLabel, normalize, resolveLocale } from '@takuhon/core';
 import type { ActivitySnapshot, LocalizedTakuhon, Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
@@ -61,6 +61,37 @@ describe('renderProfileHtml()', () => {
     );
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+  });
+
+  it('renders dates as localized <time> elements with the ISO value preserved', () => {
+    const html = render(localized());
+    expect(html).toContain('<time datetime="2020-01">Jan 2020</time>');
+  });
+
+  it('localizes dates and the Present marker for the resolved locale', () => {
+    const overrides = {
+      profile: { displayName: { en: 'Pat', ja: 'パット' }, tagline: { en: 'Maintainer' } },
+      careers: [
+        {
+          id: 'job',
+          organization: { en: 'Acme', ja: 'アクメ' },
+          role: { en: 'Engineer', ja: 'エンジニア' },
+          startDate: '2020-01',
+          isCurrent: true,
+        },
+      ],
+      settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
+    };
+
+    const en = render(localized(overrides, 'en'));
+    expect(en).toContain('<time datetime="2020-01">Jan 2020</time>');
+    expect(en).toContain(`– ${getPresentLabel('en')}`); // "Present"
+    expect(en).not.toContain('現在');
+
+    const ja = render(localized(overrides, 'ja'));
+    expect(ja).toContain('<time datetime="2020-01">2020年1月</time>');
+    expect(ja).toContain(`– ${getPresentLabel('ja')}`); // "現在"
+    expect(ja).not.toContain('Present');
   });
 
   it('unicode-escapes < in the JSON-LD payload so it cannot close the script tag', () => {
