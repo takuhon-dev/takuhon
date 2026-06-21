@@ -6,6 +6,35 @@ This is a monorepo. Ten publishable artifacts release in lockstep at the same ve
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-06-21
+
+Minor release. Localizes **human-facing dates**. The dates in the server-rendered profile page (`GET /`), the static build, and the derived CV now render in the resolved locale — `Nov 2024` / `2024年11月` for a month and `Dec 22, 2025` / `2025年12月22日` for a full date — instead of raw ISO with a hard-coded English `Present`. Every machine-readable surface (JSON-LD, `/api/profile`, `takuhon.json`, the MCP endpoint) keeps emitting raw ISO, and each visible date stays wrapped in a `<time datetime>` element carrying the verbatim ISO value, so machines read the canonical value while humans read their locale. No `@takuhon/core` schema change (`schemaVersion` stays `0.7.0`). Per the lockstep release policy all ten publishable artifacts release at 0.23.0.
+
+### Added — `@takuhon/core`
+
+- **`formatDate(value, locale)`.** A pure, fail-safe transform that formats a `YYYY-MM` or `YYYY-MM-DD` ISO date as locale-aware human text via `Intl.DateTimeFormat` (month precision → `Nov 2024` / `2024年11月`; full date → `Dec 22, 2025` / `2025年12月22日`). It pins the formatter to UTC and builds the date with `setUTCFullYear` — not `Date.UTC`, which coerces years 0-99 into 1900-1999 — so a month-precision value keeps its century and never slips to the previous month west of UTC. Every failure path is fail-safe and never throws: a value that is not a well-formed in-range date (wrong shape, out-of-range month/day, or a calendar-impossible date such as `2024-02-30`) is returned unchanged, and an empty or structurally invalid locale falls back to English. Keeping `Intl` here holds date formatting inside `@takuhon/core`, out of the renderers.
+- **`getPresentLabel(locale)`.** The single source for the ongoing-role timeline marker (en `Present`, ja `現在`), promoted here from `@takuhon/ui` so the React UI and the static HTML / CV renderers resolve it from one dictionary with no drift. It resolves the exact tag, then the base language subtag (so a resolved `ja-JP` still finds `ja`), then English.
+
+### Changed — `@takuhon/api`
+
+- **The static HTML and CV renderers localize every date.** The shared `dateRange` chokepoint in `html/html-helpers.ts` is now `dateRange(start, { end, isCurrent, locale })` — an options object with a **required** `locale`, so a call that forgets the locale is a compile error rather than a silently mis-formatted output. New `timeTag`/`presentLabel` helpers wrap each bound in `<time datetime="<ISO>">` with the locale-formatted text as the visible content. The server-rendered page (`GET /`), the static build, and the derived CV all funnel their date rendering through this one helper, so the three human-facing surfaces stay in step automatically. The helpers own the HTML-escape contract, so the prior double-escaping at the call sites (`escapeHtml(entry.dates)`) is removed.
+
+### Changed — `@takuhon/ui`
+
+- `getUILabel('timeline.present')` now derives from `@takuhon/core`'s `getPresentLabel` instead of its own `Present`/`現在` dictionary, so the React and HTML surfaces share one source and can never drift.
+
+### Fixed — `@takuhon/core`
+
+- `formatDate` rejects calendar-impossible full dates (`2024-02-30`, `2024-04-31`, non-leap `2023-02-29`) with a round-trip check and returns them raw, rather than letting `Date` silently overflow into the next month. Month-precision values always round-trip and are unaffected.
+
+### Tests
+
+- New machine-readable parity tests (`packages/{core,api}/src/__tests__/machine-readable-iso.test.ts`) assert, in both `en` and `ja`, that JSON-LD (including the free-text `award` interpolation, the most likely leak point), `/api/profile`, `takuhon.json`, and the MCP endpoint keep emitting raw ISO dates, and that `formatDate`/`getPresentLabel` appear only in `@takuhon/core` and the `@takuhon/api` HTML helpers — never on a machine-readable code path.
+
+### Lockstep version bump
+
+- All ten publishable artifacts bump from `0.22.0` to `0.23.0`: `@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, `@takuhon/vercel`, the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/core`, `@takuhon/api`, and `@takuhon/ui` changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range (`TAKUHON_DEP_RANGE`) advances to `^0.23.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
+
 ## [0.22.0] - 2026-06-20
 
 Minor release. Adds **per-item visibility** — an owner can hide a single content item (a link, project, career, …) from every public surface, the item-level analogue of the section-level `settings.publicVisibility` shipped in 0.18.0. This bumps the `@takuhon/core` schema **0.6.0 → 0.7.0** (additive, backwards-compatible). Per the lockstep release policy all ten publishable artifacts release at 0.22.0.
@@ -697,7 +726,10 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/takuhon-dev/takuhon/compare/v0.22.0...v0.23.0
+[0.22.0]: https://github.com/takuhon-dev/takuhon/compare/v0.21.0...v0.22.0
+[0.21.0]: https://github.com/takuhon-dev/takuhon/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/takuhon-dev/takuhon/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/takuhon-dev/takuhon/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/takuhon-dev/takuhon/compare/v0.17.0...v0.18.0
