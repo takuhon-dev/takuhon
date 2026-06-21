@@ -3,8 +3,9 @@ name: Release WordPress plugin
 # The WordPress adapter is a private, non-npm package versioned independently of
 # the lockstep @takuhon/* family, so it ships on its own tag namespace
 # (`wordpress-v*`) rather than the `v*.*.*` npm release. This builds the plugin,
-# packages it as an installable zip (with the admin bundle and the GPL LICENSE),
-# signs it with cosign keyless, and attaches it to a GitHub Release. No npm
+# packages it as an installable zip (with the admin bundle, the GPL LICENSE, and
+# the Apache-2.0 license text covering the bundled @takuhon/core and @takuhon/api
+# code), signs it with cosign keyless, and attaches it to a GitHub Release. No npm
 # package is published or re-published.
 #
 # workflow_dispatch is a dry-run only: it builds and packages the zip for a
@@ -85,6 +86,11 @@ jobs:
           cp -R adapters/wordpress/takuhon "$stage/takuhon"
           cp adapters/wordpress/LICENSE "$stage/takuhon/LICENSE"
           cp adapters/wordpress/NOTICE "$stage/takuhon/NOTICE"
+          # The admin bundle embeds compiled @takuhon/core and @takuhon/api code,
+          # which is Apache-2.0. Ship that license text too: Apache-2.0 §4(a)
+          # requires recipients of the redistributed work to receive a copy of
+          # the License. The repo-root LICENSE is the canonical Apache-2.0 text.
+          cp LICENSE "$stage/takuhon/LICENSE-APACHE-2.0.txt"
 
           # Never ship host-machine absolute paths (e.g. leaked into a bundle).
           if grep -r -E '/Users/|/home/[a-z]' "$stage/takuhon" 2>/dev/null | grep -v '/home/runner/'; then
