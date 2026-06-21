@@ -6,9 +6,8 @@ import type { LocaleTag } from './types.js';
  * one pass. Month (`01`-`12`) and day (`01`-`31`) digit ranges are enforced
  * here, so a value such as `2024-13`, `2024-00`, or a trailing `2024-` fails to
  * match and is returned raw. The pattern validates digit shape only, not
- * calendar validity (a schema-impossible `2024-02-30` would still match its
- * day group); schema-validated profile data is always month precision, so that
- * gap is unreachable in practice.
+ * calendar validity (`2024-02-30` matches its day group); {@link formatDate}
+ * rejects calendar-impossible dates separately with a round-trip check.
  */
 const ISO_DATE = /^(\d{4})-(0[1-9]|1[0-2])(?:-(0[1-9]|[12]\d|3[01]))?$/;
 
@@ -30,8 +29,9 @@ const ISO_DATE = /^(\d{4})-(0[1-9]|1[0-2])(?:-(0[1-9]|[12]\d|3[01]))?$/;
  * Date('2024-05')` parses as midnight UTC and would render as the prior month).
  *
  * Every failure path is fail-safe (this never throws):
- * - A value that is not a well-formed `YYYY-MM`/`YYYY-MM-DD` (wrong shape, or an
- *   out-of-range month/day digit) is returned unchanged, never `Invalid Date`.
+ * - A value that is not a well-formed `YYYY-MM`/`YYYY-MM-DD` (wrong shape, an
+ *   out-of-range month/day digit, or a calendar-impossible date such as
+ *   `2024-02-30`) is returned unchanged, never a shifted or `Invalid Date`.
  * - An empty `locale` is replaced with `en` before the call, because
  *   `Intl.DateTimeFormat('')` throws a `RangeError`. A structurally invalid
  *   BCP-47 tag also throws and is caught, again falling back to `en`. A
@@ -46,6 +46,16 @@ export function formatDate(value: string, locale: LocaleTag): string {
   const day = match[3] !== undefined ? Number(match[3]) : undefined;
   const date = new Date(0);
   date.setUTCFullYear(year, month - 1, day ?? 1);
+  // The pattern accepts any 01-31 day, so a calendar-impossible date such as
+  // 2024-02-30 would silently overflow into the next month. Reject it: if the
+  // constructed date does not round-trip to the input parts, return raw.
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== (day ?? 1)
+  ) {
+    return value;
+  }
   const options: Intl.DateTimeFormatOptions =
     day !== undefined
       ? { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }

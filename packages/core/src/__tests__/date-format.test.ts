@@ -50,6 +50,20 @@ describe('formatDate', () => {
     expect(formatDate('2024-01-00', 'ja')).toBe('2024-01-00');
   });
 
+  it('returns calendar-impossible dates unchanged (round-trip check, not just digit range)', () => {
+    // These pass the digit-range pattern (day 29-31) but are not real dates;
+    // without the round-trip guard they would silently shift into the next month.
+    expect(formatDate('2024-02-30', 'en')).toBe('2024-02-30');
+    expect(formatDate('2024-02-30', 'ja')).toBe('2024-02-30');
+    expect(formatDate('2024-04-31', 'en')).toBe('2024-04-31'); // April has 30 days
+    expect(formatDate('2023-02-29', 'en')).toBe('2023-02-29'); // 2023 is not a leap year
+  });
+
+  it('formats a valid leap day (Feb 29 in a leap year)', () => {
+    expect(formatDate('2024-02-29', 'en')).toBe('Feb 29, 2024');
+    expect(formatDate('2024-02-29', 'ja')).toBe('2024年2月29日');
+  });
+
   it('returns malformed values unchanged rather than risking an Invalid Date', () => {
     expect(formatDate('not-a-date', 'en')).toBe('not-a-date');
     expect(formatDate('2024', 'en')).toBe('2024'); // year only
