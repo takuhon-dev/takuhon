@@ -20,20 +20,24 @@
 .tkc-launcher {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.7em 1.1em;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: 50%;
   background: #1e1888;
   color: #fff;
-  font: inherit;
-  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
 }
 
 .tkc-launcher:hover {
   background: #2a23a8;
+  transform: scale(1.06);
 }
 
 .tkc-launcher:focus-visible,
