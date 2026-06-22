@@ -1,6 +1,6 @@
 {
   "name": "create-takuhon",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "Initializer for Takuhon — run `npm create takuhon` / `npx create-takuhon <dir>` to scaffold a Takuhon profile deployment. A thin redirect to @takuhon/cli's create-takuhon entry.",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",

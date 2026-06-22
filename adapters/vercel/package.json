@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/vercel",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "Vercel adapter for takuhon — read-only public profile page, API, and JSON-LD on the Vercel runtime",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",

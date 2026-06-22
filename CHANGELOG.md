@@ -2,9 +2,27 @@
 
 All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redirect package, the `create-takuhon` initializer, and the PyPI `takuhon` placeholder published from this repository are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This is a monorepo. Ten publishable artifacts release in lockstep at the same version: the eight scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
+This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
 ## [Unreleased]
+
+## [0.24.0] - 2026-06-22
+
+Minor release. Debuts a new publishable package, **`@takuhon/contact`** — a portable, framework-agnostic contact-form core — and ships its Cloudflare implementation inside `@takuhon/cloudflare`. A site embeds a self-contained, CSP-friendly chat-style widget and mounts one stateless `POST` handler; a submission is validated, challenge-verified, and delivered as a single email, with no database, queue, or stored history. No `@takuhon/core` schema change (`schemaVersion` stays `0.7.0`). With contact's debut the lockstep family grows to **eleven** publishable artifacts, all releasing at 0.24.0.
+
+### Added — `@takuhon/contact` (new package)
+
+- **Portable contact-form core.** Framework-agnostic `handleContact(request, deps)` runs the full pipeline — method / content-type / `Origin` guard, size-capped JSON parse, validation, challenge verification, then transport send — behind two injected seams, `ChallengeVerifier` and `EmailTransport`, so the core carries no host, framework, or vendor coupling. A tripped honeypot returns a forged `200` so a bot cannot distinguish rejection from a real send.
+- **Hardened validation (`validateSubmission`).** Pure validation rejects a reply-to address that contains a CR/LF or more than a single address (the email-header-injection vector), enforces body / email / message length caps (`DEFAULT_MAX_*`), drops honeypot hits, and normalizes the locale. The challenge verifier is invoked only after validation passes.
+- **Self-contained chat-style widget.** A separate Vite library build emits a single browser asset, `dist/contact-widget.js` (plus `contact-widget.css`), with no inline script or `eval` (CSP-friendly), DOM rendered via `textContent` (never `innerHTML`), `ja` / `en` i18n, and dialog accessibility. The package is dependency-free and Apache-2.0.
+
+### Added — `@takuhon/cloudflare`
+
+- **Cloudflare implementation of the two contact seams**, re-exported for host wiring: `createTurnstileVerifier` (server-side Turnstile `siteverify`), `createSendEmailTransport` (the `send_email` binding — `From` a no-reply label, `Reply-To` the visitor, `To` a verified recipient), and `buildInquiryEmail` (text + HTML, every field HTML-escaped, the subject CRLF-stripped). The adapter provides the building blocks only; mounting a `/api/contact` route stays a per-site concern.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump from `0.23.0` to `0.24.0`: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/contact` (new) and `@takuhon/cloudflare` changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range (`TAKUHON_DEP_RANGE`) advances to `^0.24.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
 
 ## [0.23.0] - 2026-06-21
 
@@ -726,7 +744,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.23.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.24.0...HEAD
+[0.24.0]: https://github.com/takuhon-dev/takuhon/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/takuhon-dev/takuhon/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/takuhon-dev/takuhon/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/takuhon-dev/takuhon/compare/v0.20.0...v0.21.0
