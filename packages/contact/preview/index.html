@@ -26,15 +26,22 @@
     <script>
       // Preview-only harness (NOT part of the shipped widget): configure the
       // widget and stub the POST so the chat can complete without a backend.
-      // Turnstile uses the public "always passes" test sitekey — no account.
+      // The Turnstile sitekey is chosen with ?turnstile=pass|interactive|block
+      // (Cloudflare public test keys — no account needed).
       const params = new URLSearchParams(location.search);
       const lang = params.get('lang') === 'en' ? 'en' : 'ja';
       document.documentElement.lang = lang;
-      window.TAKUHON_CONTACT = {
-        siteKey: '1x00000000000000000000AA',
-        endpoint: '/api/contact',
-        lang: lang,
+
+      const TURNSTILE_KEYS = {
+        pass: '1x00000000000000000000AA',
+        interactive: '3x00000000000000000000FF',
+        block: '2x00000000000000000000AB',
       };
+      const turnstileMode = params.get('turnstile') || 'pass';
+      const siteKey = TURNSTILE_KEYS[turnstileMode] || TURNSTILE_KEYS.pass;
+
+      window.TAKUHON_CONTACT = { siteKey: siteKey, endpoint: '/api/contact', lang: lang };
+
       const realFetch = window.fetch.bind(window);
       window.fetch = (input, init) => {
         const url = typeof input === 'string' ? input : input.url;
@@ -54,22 +61,45 @@
         }
         return realFetch(input, init);
       };
+
+      // Wire the switch links so each preserves the other query param.
+      function navHref(key, value) {
+        const next = new URLSearchParams(location.search);
+        next.set(key, value);
+        return '?' + next.toString();
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        const links = {
+          'lang-ja': ['lang', 'ja'],
+          'lang-en': ['lang', 'en'],
+          'ts-pass': ['turnstile', 'pass'],
+          'ts-interactive': ['turnstile', 'interactive'],
+          'ts-block': ['turnstile', 'block'],
+        };
+        for (const id in links) {
+          const el = document.getElementById(id);
+          if (el) el.setAttribute('href', navHref(links[id][0], links[id][1]));
+        }
+        const current = document.getElementById('ts-current');
+        if (current) current.textContent = turnstileMode;
+      });
     </script>
   </head>
   <body>
     <h1>@takuhon/contact — widget preview</h1>
     <p>
       A local harness to click through the chat widget. The launcher is in the bottom-right corner.
-      The submit endpoint is stubbed to return success, and Turnstile uses the public test sitekey
-      <code>1x00000000000000000000AA</code> (always passes).
+      The submit endpoint is stubbed to return success.
+    </p>
+    <p>Language: <a id="lang-ja">日本語</a> · <a id="lang-en">English</a></p>
+    <p>
+      Turnstile test key: <a id="ts-pass">pass</a> ·
+      <a id="ts-interactive">interactive challenge</a> · <a id="ts-block">block</a> — current:
+      <code id="ts-current"></code>
     </p>
     <p>
-      Switch language:
-      <a href="?lang=ja">日本語</a> · <a href="?lang=en">English</a>
-    </p>
-    <p>
-      Test sitekeys: <code>1x…AA</code> passes, <code>2x…AB</code> blocks, <code>3x…FF</code> forces
-      an interactive challenge.
+      Press <strong>Send</strong> to run the check. With <code>interactive</code> the challenge
+      appears on send (forced); with <code>pass</code> it is invisible and submits straight away.
     </p>
     <script src="../dist/contact-widget.js"></script>
   </body>
