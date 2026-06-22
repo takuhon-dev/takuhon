@@ -71,6 +71,26 @@ function make<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** A small, self-contained chat-bubble icon for the launcher (built without innerHTML). */
+function chatIcon(): SVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '26');
+  svg.setAttribute('height', '26');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('fill', 'currentColor');
+  path.setAttribute(
+    'd',
+    'M12 3C6.5 3 2 6.58 2 11c0 2.4 1.32 4.56 3.4 6.04L5 21l3.9-2.05c.98.26 2.02.4 3.1.4 5.5 0 10-3.58 10-8s-4.5-8-10-8z',
+  );
+  svg.appendChild(path);
+  return svg;
+}
+
 /** A mounted contact widget instance. */
 export class ContactWidget {
   private readonly cfg: ResolvedConfig;
@@ -110,9 +130,11 @@ export class ContactWidget {
   mount(parent: HTMLElement = document.body): void {
     this.root = make('div', 'tkc-root');
 
-    this.launcher = make('button', 'tkc-launcher', this.tr('launcher'));
+    this.launcher = make('button', 'tkc-launcher');
     this.launcher.type = 'button';
     this.launcher.setAttribute('aria-haspopup', 'dialog');
+    this.launcher.setAttribute('aria-label', this.tr('launcher'));
+    this.launcher.append(chatIcon());
     this.launcher.addEventListener('click', () => this.open());
 
     this.panel = make('div', 'tkc-panel tkc-hidden');
