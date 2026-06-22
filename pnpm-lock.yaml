@@ -74,6 +74,9 @@ importers:
       '@takuhon/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@takuhon/contact':
+        specifier: workspace:*
+        version: link:../../packages/contact
       '@takuhon/core':
         specifier: workspace:*
         version: link:../../packages/core
