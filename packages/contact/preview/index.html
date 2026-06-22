@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@takuhon/contact — widget preview</title>
+    <link rel="stylesheet" href="../dist/contact-widget.css" />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 40rem;
+        margin: 3rem auto;
+        padding: 0 1rem;
+        line-height: 1.6;
+        color: #1f2430;
+      }
+      code {
+        background: #eef0f6;
+        padding: 0.1em 0.3em;
+        border-radius: 4px;
+      }
+      a {
+        color: #1e1888;
+      }
+    </style>
+    <script>
+      // Preview-only harness (NOT part of the shipped widget): configure the
+      // widget and stub the POST so the chat can complete without a backend.
+      // Turnstile uses the public "always passes" test sitekey — no account.
+      const params = new URLSearchParams(location.search);
+      const lang = params.get('lang') === 'en' ? 'en' : 'ja';
+      document.documentElement.lang = lang;
+      window.TAKUHON_CONTACT = {
+        siteKey: '1x00000000000000000000AA',
+        endpoint: '/api/contact',
+        lang: lang,
+      };
+      const realFetch = window.fetch.bind(window);
+      window.fetch = (input, init) => {
+        const url = typeof input === 'string' ? input : input.url;
+        if (url.includes('/api/contact')) {
+          return new Promise((resolve) => {
+            setTimeout(
+              () =>
+                resolve(
+                  new Response(JSON.stringify({ ok: true }), {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' },
+                  }),
+                ),
+              500,
+            );
+          });
+        }
+        return realFetch(input, init);
+      };
+    </script>
+  </head>
+  <body>
+    <h1>@takuhon/contact — widget preview</h1>
+    <p>
+      A local harness to click through the chat widget. The launcher is in the bottom-right corner.
+      The submit endpoint is stubbed to return success, and Turnstile uses the public test sitekey
+      <code>1x00000000000000000000AA</code> (always passes).
+    </p>
+    <p>
+      Switch language:
+      <a href="?lang=ja">日本語</a> · <a href="?lang=en">English</a>
+    </p>
+    <p>
+      Test sitekeys: <code>1x…AA</code> passes, <code>2x…AB</code> blocks, <code>3x…FF</code> forces
+      an interactive challenge.
+    </p>
+    <script src="../dist/contact-widget.js"></script>
+  </body>
+</html>
