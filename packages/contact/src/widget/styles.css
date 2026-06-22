@@ -1,0 +1,182 @@
+/* Contact widget styles. Scoped under `.tkc-*` to avoid clashing with the host
+ * page. Shipped as an external file (loaded with `<link>`), so no inline styles
+ * are needed and a strict CSP `style-src 'self'` is satisfied. */
+
+.tkc-root {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2147483000;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tkc-launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.7em 1.1em;
+  border: none;
+  border-radius: 999px;
+  background: #1e1888;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.tkc-launcher:hover {
+  background: #2a23a8;
+}
+
+.tkc-launcher:focus-visible,
+.tkc-send:focus-visible,
+.tkc-input:focus-visible,
+.tkc-close:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+
+.tkc-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(22rem, calc(100vw - 2rem));
+  height: min(30rem, calc(100vh - 4rem));
+  background: #fff;
+  color: #1f2430;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.tkc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #1e1888;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tkc-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+.tkc-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f6f7fb;
+}
+
+.tkc-msg {
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tkc-msg-bot {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid #e4e6ef;
+}
+
+.tkc-msg-user {
+  align-self: flex-end;
+  background: #1e1888;
+  color: #fff;
+}
+
+.tkc-turnstile {
+  padding: 0 0.9rem;
+}
+
+.tkc-turnstile:empty {
+  display: none;
+}
+
+.tkc-form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid #e4e6ef;
+}
+
+.tkc-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #c8ccda;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.tkc-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.tkc-send {
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #1e1888;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tkc-send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.tkc-hidden {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tkc-panel {
+    background: #1a1d29;
+    color: #e6e8f0;
+  }
+  .tkc-log {
+    background: #11131c;
+  }
+  .tkc-msg-bot {
+    background: #232737;
+    border-color: #2f3550;
+    color: #e6e8f0;
+  }
+  .tkc-form {
+    border-top-color: #2f3550;
+  }
+  .tkc-input {
+    background: #232737;
+    border-color: #3a4060;
+    color: #e6e8f0;
+  }
+}

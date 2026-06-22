@@ -42,7 +42,7 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap && vite build",
     "test": "vitest run"
   }
 }
