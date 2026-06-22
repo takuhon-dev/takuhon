@@ -16,6 +16,7 @@ export type MessageKey =
   | 'confirm'
   | 'send'
   | 'sending'
+  | 'verifying'
   | 'done'
   | 'retry'
   | 'challengePrompt'
@@ -36,6 +37,7 @@ const STRINGS: Record<ContactLocale, Record<MessageKey, string>> = {
     confirm: '送信してよろしいですか？',
     send: '送信',
     sending: '送信中…',
+    verifying: '確認中…',
     done: 'お問い合わせを受け付けました。確認後、メールで返信します。',
     retry: 'もう一度送信する',
     challengePrompt: '送信前に確認にお答えください。',
@@ -55,6 +57,7 @@ const STRINGS: Record<ContactLocale, Record<MessageKey, string>> = {
     confirm: 'Ready to send?',
     send: 'Send',
     sending: 'Sending…',
+    verifying: 'Verifying…',
     done: "Got it — we'll review your message and reply by email.",
     retry: 'Try again',
     challengePrompt: 'Please complete the check before sending.',
