@@ -23,6 +23,14 @@ import { KvTakuhonStorage } from './kv-storage.js';
 import { serveMcp } from './mcp.js';
 import { ASSET_CACHE_CONTROL, R2TakuhonAssetStorage } from './r2-storage.js';
 
+export { buildInquiryEmail, createSendEmailTransport, createTurnstileVerifier } from './contact.js';
+export type {
+  InquiryEmail,
+  SendEmailBinding,
+  SendEmailTransportConfig,
+  TurnstileVerifierOptions,
+} from './contact.js';
+
 export interface Env {
   TAKUHON_KV: KVNamespace;
   /**
