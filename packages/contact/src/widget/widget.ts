@@ -21,6 +21,7 @@ interface TurnstileRenderOptions {
   'expired-callback'?: () => void;
   theme?: 'light' | 'dark' | 'auto';
   language?: string;
+  appearance?: 'always' | 'execute' | 'interaction-only';
 }
 
 interface TurnstileApi {
@@ -99,6 +100,7 @@ export class ContactWidget {
   private opened = false;
   private greeted = false;
   private turnstileRendered = false;
+  private pendingSubmit = false;
 
   private root!: HTMLDivElement;
   private launcher!: HTMLButtonElement;
@@ -261,15 +263,20 @@ export class ContactWidget {
         this.appendMessage('tkc-msg-user', value);
         this.botSay('confirm');
         this.setStep('confirm');
-        this.renderTurnstile();
         return;
       }
       case 'confirm': {
-        if (!this.state.token) {
-          this.botSay('challengePrompt');
+        if (this.state.token) {
+          await this.submitInquiry();
           return;
         }
-        await this.submitInquiry();
+        // First send click: run the (often invisible) Turnstile check now, then
+        // auto-submit when it passes — so its "success" never stands alone and
+        // gets mistaken for a completed submission.
+        this.pendingSubmit = true;
+        this.send.disabled = true;
+        this.send.textContent = this.tr('verifying');
+        this.renderTurnstile();
         return;
       }
       default:
@@ -286,20 +293,37 @@ export class ContactWidget {
           sitekey: this.cfg.siteKey,
           theme: 'auto',
           language: this.cfg.locale,
+          appearance: 'interaction-only',
           callback: (token) => {
             this.state.token = token;
+            if (this.pendingSubmit) {
+              this.pendingSubmit = false;
+              void this.submitInquiry();
+            }
           },
           'expired-callback': () => {
             this.state.token = '';
           },
           'error-callback': () => {
             this.state.token = '';
+            if (this.pendingSubmit) {
+              this.botSay('errorChallenge');
+              this.resetSendButton();
+            }
           },
         });
       })
       .catch(() => {
         this.botSay('errorGeneric');
+        this.resetSendButton();
       });
+  }
+
+  /** Re-enable the send button (labeled retry) after a failed challenge. */
+  private resetSendButton(): void {
+    this.pendingSubmit = false;
+    this.send.disabled = false;
+    this.send.textContent = this.tr('retry');
   }
 
   private async submitInquiry(): Promise<void> {
