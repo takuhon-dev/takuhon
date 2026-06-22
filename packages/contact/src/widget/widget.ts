@@ -180,6 +180,19 @@ export class ContactWidget {
     this.panel.append(header, this.log, this.turnstileHost, this.form);
     this.root.append(this.launcher, this.panel);
     parent.append(this.root);
+
+    // Dismiss on an outside click/tap or Escape. Clicks inside the widget are
+    // contained by `root`, so the click that opens the panel never self-closes
+    // it, and interacting with the chat itself does not close it either.
+    document.addEventListener('click', (event) => {
+      if (!this.opened) return;
+      const target = event.target;
+      if (target instanceof Node && this.root.contains(target)) return;
+      this.close(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (this.opened && event.key === 'Escape') this.close();
+    });
   }
 
   private open(): void {
@@ -196,11 +209,11 @@ export class ContactWidget {
     this.input.focus();
   }
 
-  private close(): void {
+  private close(returnFocus = true): void {
     this.opened = false;
     this.panel.classList.add('tkc-hidden');
     this.launcher.classList.remove('tkc-hidden');
-    this.launcher.focus();
+    if (returnFocus) this.launcher.focus();
   }
 
   private botSay(key: MessageKey): void {
