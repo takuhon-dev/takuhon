@@ -1,0 +1,48 @@
+{
+  "name": "@takuhon/contact",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portable, framework-agnostic contact-form core for takuhon — validation, a stateless inquiry pipeline, and challenge/email transport interfaces. Host wiring (e.g. Cloudflare Turnstile + send_email) lives in the adapters.",
+  "license": "Apache-2.0",
+  "author": "Takuhon contributors",
+  "homepage": "https://github.com/takuhon-dev/takuhon/tree/main/packages/contact#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takuhon-dev/takuhon.git",
+    "directory": "packages/contact"
+  },
+  "bugs": {
+    "url": "https://github.com/takuhon-dev/takuhon/issues"
+  },
+  "keywords": [
+    "takuhon",
+    "contact",
+    "form",
+    "turnstile",
+    "portable"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "test": "vitest run"
+  }
+}

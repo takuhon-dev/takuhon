@@ -224,6 +224,8 @@ importers:
         specifier: workspace:*
         version: link:../../apps/admin
 
+  packages/contact: {}
+
   packages/core:
     dependencies:
       ajv:
