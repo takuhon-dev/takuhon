@@ -1,9 +1,9 @@
-import { validate, type LocaleTag, type Takuhon } from '@takuhon/core';
+import { schema, validate, type LocaleTag, type Takuhon } from '@takuhon/core';
 import { useRef, useState } from 'react';
 
 import styles from './AdminEditor.module.css';
 import { RawJsonEditor } from './RawJsonEditor.js';
-import { getAdminLabel } from './admin-labels.js';
+import { getAdminLabel, type AdminLabelKey } from './admin-labels.js';
 import {
   indexErrors,
   indexValidationErrors,
@@ -12,6 +12,9 @@ import {
   type FieldErrorLike,
 } from './errors.js';
 import { type UploadAsset } from './primitives/ImageField.js';
+import { SchemaForm } from './schema-form/SchemaForm.js';
+import { sectionFieldKind, type SchemaNode } from './schema-form/field-classification.js';
+import { type FieldRegistry } from './schema-form/field-registry.js';
 import { CareersForm } from './sections/CareersForm.js';
 import { LinksForm } from './sections/LinksForm.js';
 import { ProfileForm } from './sections/ProfileForm.js';
@@ -55,6 +58,46 @@ type Tone = 'info' | 'success' | 'error';
 interface Status {
   tone: Tone;
   message: string;
+}
+
+const schemaRoot = schema as unknown as SchemaNode;
+
+/**
+ * Sections without a bespoke form: rendered by the schema-driven
+ * {@link SchemaForm} engine so every section is editable as a form rather than
+ * only as raw JSON (spec §14.2 Phase 5). The hand-written forms above stay
+ * until they are migrated onto the engine.
+ */
+const SCHEMA_SECTIONS = [
+  { key: 'education', label: 'section.education' },
+  { key: 'certifications', label: 'section.certifications' },
+  { key: 'publications', label: 'section.publications' },
+  { key: 'honors', label: 'section.honors' },
+  { key: 'volunteering', label: 'section.volunteering' },
+  { key: 'memberships', label: 'section.memberships' },
+  { key: 'languages', label: 'section.languages' },
+  { key: 'courses', label: 'section.courses' },
+  { key: 'patents', label: 'section.patents' },
+  { key: 'testScores', label: 'section.testScores' },
+  { key: 'recommendations', label: 'section.recommendations' },
+  { key: 'contact', label: 'section.contact' },
+  { key: 'meta', label: 'section.meta' },
+] as const satisfies readonly { key: keyof Takuhon; label: AdminLabelKey }[];
+
+/**
+ * UI hints for the schema-driven sections (decision A1): hide meta's
+ * auto-managed fields, and clarify a label that would otherwise collide with
+ * the profile's "Display name". The data schema itself stays UI-free.
+ */
+const SECTION_REGISTRY: FieldRegistry = {
+  'meta.createdAt': { hidden: true },
+  'meta.updatedAt': { hidden: true },
+  'meta.generator': { hidden: true },
+  'languages.displayName': { label: 'Language name' },
+};
+
+function setSection(doc: Takuhon, key: keyof Takuhon, value: unknown): Takuhon {
+  return { ...doc, [key]: value };
 }
 
 /**
@@ -333,6 +376,22 @@ export function AdminEditor({
             errors={errors}
             formatLocale={formatLocale}
           />
+          {SCHEMA_SECTIONS.map(({ key, label }) => (
+            <SchemaForm
+              key={key}
+              kind={sectionFieldKind(schemaRoot, key)}
+              value={draft[key]}
+              onChange={(next) => {
+                updateDraft(setSection(draft, key, next));
+              }}
+              pointer={`/${key}`}
+              label={getAdminLabel(label)}
+              locales={locales}
+              errors={errors}
+              registry={SECTION_REGISTRY}
+              formatLocale={formatLocale}
+            />
+          ))}
         </div>
       ) : (
         <RawJsonEditor key={loadGen} value={draft} onChange={updateDraft} />
