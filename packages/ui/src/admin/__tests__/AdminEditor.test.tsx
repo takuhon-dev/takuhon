@@ -147,10 +147,12 @@ describe('AdminEditor', () => {
     expect(screen.getByLabelText(/^Display name \(/)).toHaveValue('Pat Rivera');
   });
 
+  // The form renders all 19 sections at once, so axe scans a large tree; give it
+  // a generous timeout (the default 5s is marginal on slower CI runners).
   it('has no detectable a11y violations in form mode', async () => {
     const { container } = render(
       <AdminEditor initialDocument={sample()} onSave={vi.fn().mockResolvedValue(saved)} />,
     );
     expect(await axe.run(container)).toHaveNoViolations();
-  });
+  }, 30000);
 });
