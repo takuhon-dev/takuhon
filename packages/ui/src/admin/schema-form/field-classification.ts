@@ -31,6 +31,7 @@ export interface SchemaNode {
   maxLength?: number;
   minimum?: number;
   description?: string;
+  default?: unknown;
 }
 
 /** The widget the admin form should render for a classified schema node. */
@@ -42,7 +43,7 @@ export type FieldKind =
   | { widget: 'date' }
   | { widget: 'datetime' }
   | { widget: 'integer'; minimum?: number }
-  | { widget: 'checkbox' }
+  | { widget: 'checkbox'; default?: boolean }
   | { widget: 'select'; options: readonly string[] }
   | { widget: 'localeTag' }
   | { widget: 'localizedTitle' }
@@ -146,7 +147,15 @@ export function classifyNode(root: SchemaNode, node: SchemaNode): FieldKind {
           : { widget: 'text', maxLength: resolved.maxLength };
     }
   }
-  if (type === 'boolean') return { widget: 'checkbox' };
+  if (type === 'boolean') {
+    // Carry the schema `default` so the checkbox can reflect it: a field with a
+    // default (e.g. settings flags default true) shows that state when absent
+    // and stores its value explicitly, while a default-less boolean stays
+    // sparse (unchecked when absent, dropped when false).
+    return typeof resolved.default === 'boolean'
+      ? { widget: 'checkbox', default: resolved.default }
+      : { widget: 'checkbox' };
+  }
   if (type === 'integer' || type === 'number') {
     return resolved.minimum === undefined
       ? { widget: 'integer' }

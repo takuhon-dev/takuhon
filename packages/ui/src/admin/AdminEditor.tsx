@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 
 import styles from './AdminEditor.module.css';
 import { RawJsonEditor } from './RawJsonEditor.js';
-import { getAdminLabel, type AdminLabelKey } from './admin-labels.js';
+import { getAdminLabel } from './admin-labels.js';
 import {
   indexErrors,
   indexValidationErrors,
@@ -14,13 +14,7 @@ import {
 import { type UploadAsset } from './primitives/ImageField.js';
 import { SchemaForm } from './schema-form/SchemaForm.js';
 import { sectionFieldKind, type SchemaNode } from './schema-form/field-classification.js';
-import { type FieldRegistry } from './schema-form/field-registry.js';
-import { CareersForm } from './sections/CareersForm.js';
-import { LinksForm } from './sections/LinksForm.js';
-import { ProfileForm } from './sections/ProfileForm.js';
-import { ProjectsForm } from './sections/ProjectsForm.js';
-import { SettingsForm } from './sections/SettingsForm.js';
-import { SkillsForm } from './sections/SkillsForm.js';
+import { ADMIN_SECTIONS, SECTION_REGISTRY } from './schema-form/section-registry.js';
 
 /** Result of a save attempt, reported by the host's transport layer. */
 export type AdminSaveOutcome =
@@ -61,40 +55,6 @@ interface Status {
 }
 
 const schemaRoot = schema as unknown as SchemaNode;
-
-/**
- * Sections without a bespoke form: rendered by the schema-driven
- * {@link SchemaForm} engine so every section is editable as a form rather than
- * only as raw JSON (spec §14.2 Phase 5). The hand-written forms above stay
- * until they are migrated onto the engine.
- */
-const SCHEMA_SECTIONS = [
-  { key: 'education', label: 'section.education' },
-  { key: 'certifications', label: 'section.certifications' },
-  { key: 'publications', label: 'section.publications' },
-  { key: 'honors', label: 'section.honors' },
-  { key: 'volunteering', label: 'section.volunteering' },
-  { key: 'memberships', label: 'section.memberships' },
-  { key: 'languages', label: 'section.languages' },
-  { key: 'courses', label: 'section.courses' },
-  { key: 'patents', label: 'section.patents' },
-  { key: 'testScores', label: 'section.testScores' },
-  { key: 'recommendations', label: 'section.recommendations' },
-  { key: 'contact', label: 'section.contact' },
-  { key: 'meta', label: 'section.meta' },
-] as const satisfies readonly { key: keyof Takuhon; label: AdminLabelKey }[];
-
-/**
- * UI hints for the schema-driven sections (decision A1): hide meta's
- * auto-managed fields, and clarify a label that would otherwise collide with
- * the profile's "Display name". The data schema itself stays UI-free.
- */
-const SECTION_REGISTRY: FieldRegistry = {
-  'meta.createdAt': { hidden: true },
-  'meta.updatedAt': { hidden: true },
-  'meta.generator': { hidden: true },
-  'languages.displayName': { label: 'Language name' },
-};
 
 function setSection(doc: Takuhon, key: keyof Takuhon, value: unknown): Takuhon {
   return { ...doc, [key]: value };
@@ -324,59 +284,7 @@ export function AdminEditor({
 
       {mode === 'form' ? (
         <div className={styles.sections}>
-          <ProfileForm
-            value={draft.profile}
-            onChange={(profile) => {
-              updateDraft({ ...draft, profile });
-            }}
-            locales={locales}
-            errors={errors}
-            formatLocale={formatLocale}
-            uploadAsset={uploadAsset}
-          />
-          <LinksForm
-            value={draft.links}
-            onChange={(links) => {
-              updateDraft({ ...draft, links });
-            }}
-            locales={locales}
-            errors={errors}
-            formatLocale={formatLocale}
-          />
-          <CareersForm
-            value={draft.careers}
-            onChange={(careers) => {
-              updateDraft({ ...draft, careers });
-            }}
-            locales={locales}
-            errors={errors}
-            formatLocale={formatLocale}
-          />
-          <ProjectsForm
-            value={draft.projects}
-            onChange={(projects) => {
-              updateDraft({ ...draft, projects });
-            }}
-            locales={locales}
-            errors={errors}
-            formatLocale={formatLocale}
-          />
-          <SkillsForm
-            value={draft.skills}
-            onChange={(skills) => {
-              updateDraft({ ...draft, skills });
-            }}
-            errors={errors}
-          />
-          <SettingsForm
-            value={draft.settings}
-            onChange={(settings) => {
-              updateDraft({ ...draft, settings });
-            }}
-            errors={errors}
-            formatLocale={formatLocale}
-          />
-          {SCHEMA_SECTIONS.map(({ key, label }) => (
+          {ADMIN_SECTIONS.map(({ key, label }) => (
             <SchemaForm
               key={key}
               kind={sectionFieldKind(schemaRoot, key)}
@@ -390,6 +298,7 @@ export function AdminEditor({
               errors={errors}
               registry={SECTION_REGISTRY}
               formatLocale={formatLocale}
+              uploadAsset={uploadAsset}
             />
           ))}
         </div>
