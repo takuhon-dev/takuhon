@@ -10,7 +10,39 @@
  * `schemaVersion`.
  */
 
+import type { LocaleTag } from '@takuhon/core';
+
+import type { FieldErrorIndex } from '../errors.js';
+import type { UploadAsset } from '../primitives/ImageField.js';
+
 import type { FieldKind } from './field-classification.js';
+
+/**
+ * Everything a custom field renderer needs. The engine builds this as it walks,
+ * so a bespoke widget (avatar, comma-separated list, visibility matrix) plugs in
+ * without re-deriving its pointer/path or re-threading locales and errors. This
+ * is the escape hatch for the handful of fields a generic widget cannot capture
+ * (design §8 "generic default + targeted craft").
+ */
+export interface CustomFieldContext {
+  /** Current value at this path. */
+  value: unknown;
+  /** Write the next value for this field back into the document. */
+  onChange: (next: unknown) => void;
+  /** RFC 6901 pointer (with array indices) for error lookup. */
+  pointer: string;
+  /** Registry path (no array indices). */
+  path: string;
+  /** Resolved label (registry override or humanized field name). */
+  label: string;
+  /** Listed in the parent object's `required`. */
+  required: boolean;
+  locales: readonly LocaleTag[];
+  errors: FieldErrorIndex;
+  formatLocale?: (locale: LocaleTag) => string;
+  /** Avatar upload, threaded from the host; absent means URL-only. */
+  uploadAsset?: UploadAsset;
+}
 
 /** Presentation overrides for a single field, looked up by its schema path. */
 export interface FieldHint {
@@ -24,6 +56,12 @@ export interface FieldHint {
   widget?: FieldKind['widget'];
   /** Force multiline for a localized/text field. */
   multiline?: boolean;
+  /**
+   * Render a bespoke control for this field instead of the schema-derived
+   * widget. Used for the few fields no generic widget captures (avatar,
+   * comma-separated lists, the public-visibility matrix).
+   */
+  render?: (ctx: CustomFieldContext) => React.ReactNode;
 }
 
 /** Schema-path → hint. Paths use dots and never include array indices. */

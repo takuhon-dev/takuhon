@@ -43,12 +43,28 @@ export { Repeater, type RepeaterProps } from './primitives/Repeater.js';
 
 export { getAdminLabel, type AdminLabelKey } from './admin-labels.js';
 
-export { ProfileForm, type ProfileFormProps } from './sections/ProfileForm.js';
-export { LinksForm, type LinksFormProps } from './sections/LinksForm.js';
-export { CareersForm, type CareersFormProps } from './sections/CareersForm.js';
-export { ProjectsForm, type ProjectsFormProps } from './sections/ProjectsForm.js';
-export { SkillsForm, type SkillsFormProps } from './sections/SkillsForm.js';
-export { SettingsForm, type SettingsFormProps } from './sections/SettingsForm.js';
+// The schema-driven form engine renders every section straight from the JSON
+// Schema; the former per-section forms (ProfileForm, LinksForm, …) are gone.
+export { SchemaForm, type SchemaFormProps } from './schema-form/SchemaForm.js';
+export {
+  sectionFieldKind,
+  classifyNode,
+  type FieldKind,
+  type SchemaNode,
+} from './schema-form/field-classification.js';
+export {
+  EMPTY_REGISTRY,
+  humanize,
+  hintAt,
+  type FieldHint,
+  type FieldRegistry,
+  type CustomFieldContext,
+} from './schema-form/field-registry.js';
+export {
+  ADMIN_SECTIONS,
+  SECTION_REGISTRY,
+  type AdminSection,
+} from './schema-form/section-registry.js';
 
 export { RawJsonEditor, type RawJsonEditorProps } from './RawJsonEditor.js';
 export { AdminEditor, type AdminEditorProps, type AdminSaveOutcome } from './AdminEditor.js';

@@ -84,6 +84,17 @@ describe('classifyNode — scalar refs and formats', () => {
     });
   });
 
+  it('carries a boolean default so the checkbox can reflect it', () => {
+    expect(classifyNode(root, { type: 'boolean', default: true })).toEqual({
+      widget: 'checkbox',
+      default: true,
+    });
+    expect(classifyNode(root, { type: 'boolean', default: false })).toEqual({
+      widget: 'checkbox',
+      default: false,
+    });
+  });
+
   it('carries maxLength on a plain string', () => {
     expect(classifyNode(root, { type: 'string', maxLength: 50 })).toEqual({
       widget: 'text',

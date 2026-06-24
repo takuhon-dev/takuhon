@@ -20,13 +20,20 @@ import { errorsAt, NO_FIELD_ERRORS, type FieldErrorIndex } from '../errors.js';
 import { makeId } from '../ids.js';
 import { firstLocalized } from '../localized.js';
 import { CheckboxField } from '../primitives/CheckboxField.js';
+import { type UploadAsset } from '../primitives/ImageField.js';
 import { LocaleTabs } from '../primitives/LocaleTabs.js';
 import { Repeater } from '../primitives/Repeater.js';
 import { SelectField, type SelectOption } from '../primitives/SelectField.js';
 import { TextField } from '../primitives/TextField.js';
 
 import { type FieldEntry, type FieldKind } from './field-classification.js';
-import { EMPTY_REGISTRY, hintAt, humanize, type FieldRegistry } from './field-registry.js';
+import {
+  EMPTY_REGISTRY,
+  hintAt,
+  humanize,
+  type CustomFieldContext,
+  type FieldRegistry,
+} from './field-registry.js';
 
 export interface SchemaFormProps {
   /** Classified shape of the section (from `sectionFieldKind`). */
@@ -45,18 +52,23 @@ export interface SchemaFormProps {
   errors?: FieldErrorIndex;
   registry?: FieldRegistry;
   formatLocale?: (locale: LocaleTag) => string;
+  /** Avatar upload, threaded to the avatar field's custom renderer. */
+  uploadAsset?: UploadAsset;
 }
 
 interface RenderCtx {
   pointer: string;
   path: string;
   label: string;
+  /** Help text shown under the control (registry hint), if any. */
+  hint?: string;
   required: boolean;
   multiline: boolean;
   locales: readonly LocaleTag[];
   errors: FieldErrorIndex;
   registry: FieldRegistry;
   formatLocale?: (locale: LocaleTag) => string;
+  uploadAsset?: UploadAsset;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -165,25 +177,36 @@ function renderScalar(
           formatLocale={ctx.formatLocale}
         />
       );
-    case 'checkbox':
+    case 'checkbox': {
+      // A boolean with a schema default reflects that default when absent and is
+      // stored explicitly (so `false` persists). A default-less boolean stays
+      // sparse: unchecked when absent, dropped from the document when false.
+      const hasDefault = kind.default !== undefined;
+      const checked = value === undefined ? (kind.default ?? false) : value === true;
       return (
         <CheckboxField
           label={ctx.label}
-          checked={value === true}
-          onChange={(checked) => {
-            onChange(checked || undefined);
+          checked={checked}
+          onChange={(next) => {
+            onChange(hasDefault ? next : next || undefined);
           }}
         />
       );
+    }
     case 'select':
     case 'localeTag': {
+      // An optional locale select offers an explicit "(none)" so it can be
+      // cleared; a required one (e.g. defaultLocale) does not.
+      const localeOptions: readonly SelectOption[] = ctx.locales.map((locale) => ({
+        value: locale,
+        label: ctx.formatLocale ? ctx.formatLocale(locale) : locale,
+      }));
       const options: readonly SelectOption[] =
         kind.widget === 'select'
           ? kind.options.map((option) => ({ value: option, label: option }))
-          : ctx.locales.map((locale) => ({
-              value: locale,
-              label: ctx.formatLocale ? ctx.formatLocale(locale) : locale,
-            }));
+          : ctx.required
+            ? localeOptions
+            : [{ value: '', label: getAdminLabel('option.none') }, ...localeOptions];
       return (
         <SelectField
           label={ctx.label}
@@ -208,6 +231,7 @@ function renderScalar(
             onChange(next === '' ? undefined : Number(next));
           }}
           required={ctx.required}
+          hint={ctx.hint}
           errors={errors}
         />
       );
@@ -231,6 +255,7 @@ function renderScalar(
             onChange(next || undefined);
           }}
           required={ctx.required}
+          hint={ctx.hint}
           errors={errors}
         />
       );
@@ -252,19 +277,43 @@ function renderEntry(
     pointer: `${ctx.pointer}/${entry.name}`,
     path,
     label: hint.label ?? humanize(entry.name),
+    hint: hint.hint,
     required: entry.required,
     multiline: hint.multiline ?? false,
   };
   const update = (next: unknown): void => {
     onChange(withKey(obj, entry.name, next));
   };
+  if (hint.render) {
+    const customCtx: CustomFieldContext = {
+      value: obj[entry.name],
+      onChange: update,
+      pointer: childCtx.pointer,
+      path: childCtx.path,
+      label: childCtx.label,
+      required: childCtx.required,
+      locales: childCtx.locales,
+      errors: childCtx.errors,
+      formatLocale: childCtx.formatLocale,
+      uploadAsset: childCtx.uploadAsset,
+    };
+    return <div key={entry.name}>{hint.render(customCtx)}</div>;
+  }
   return (
     <div key={entry.name}>
-      {entry.kind.widget === 'object'
-        ? renderObjectFields(entry.kind, asRecord(obj[entry.name]), update, childCtx)
-        : entry.kind.widget === 'array'
-          ? renderArray(entry.kind, obj[entry.name], update, childCtx)
-          : renderScalar(entry.kind, obj[entry.name], update, childCtx)}
+      {entry.kind.widget === 'object' ? (
+        // Nested objects (location, the activity providers, meta.privacy) become
+        // their own labelled fieldset, so same-named children (github.username
+        // vs wakatime.username) stay distinguishable.
+        <fieldset>
+          <legend>{childCtx.label}</legend>
+          {renderObjectFields(entry.kind, asRecord(obj[entry.name]), update, childCtx)}
+        </fieldset>
+      ) : entry.kind.widget === 'array' ? (
+        renderArray(entry.kind, obj[entry.name], update, childCtx)
+      ) : (
+        renderScalar(entry.kind, obj[entry.name], update, childCtx)
+      )}
     </div>
   );
 }
@@ -332,6 +381,7 @@ export function SchemaForm(props: SchemaFormProps): React.JSX.Element {
     errors: props.errors ?? NO_FIELD_ERRORS,
     registry: props.registry ?? EMPTY_REGISTRY,
     formatLocale: props.formatLocale,
+    uploadAsset: props.uploadAsset,
   };
 
   if (props.kind.widget === 'array') {

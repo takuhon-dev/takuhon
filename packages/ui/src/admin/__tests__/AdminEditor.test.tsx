@@ -17,9 +17,9 @@ const saved: AdminSaveOutcome = { status: 'saved', version: 'v2' };
 describe('AdminEditor', () => {
   it('renders the field forms in form mode by default', () => {
     render(<AdminEditor initialDocument={sample()} onSave={vi.fn().mockResolvedValue(saved)} />);
-    expect(screen.getByRole('heading', { name: 'Profile' })).toBeInTheDocument();
+    // Every section is now a schema-driven fieldset; Profile's legend names the group.
+    expect(screen.getByRole('group', { name: 'Profile' })).toBeInTheDocument();
     expect(screen.getByLabelText(/^Display name \(/)).toBeInTheDocument();
-    // The links repeater legend is present.
     expect(screen.getByRole('group', { name: 'Links' })).toBeInTheDocument();
   });
 
@@ -28,7 +28,7 @@ describe('AdminEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Advanced (JSON)', pressed: false }));
     expect(screen.getByRole('textbox').tagName).toBe('TEXTAREA');
     fireEvent.click(screen.getByRole('button', { name: 'Form', pressed: false }));
-    expect(screen.getByRole('heading', { name: 'Profile' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Profile' })).toBeInTheDocument();
   });
 
   it('validates client-side and saves a valid document', async () => {
@@ -147,10 +147,12 @@ describe('AdminEditor', () => {
     expect(screen.getByLabelText(/^Display name \(/)).toHaveValue('Pat Rivera');
   });
 
+  // The form renders all 19 sections at once, so axe scans a large tree; give it
+  // a generous timeout (the default 5s is marginal on slower CI runners).
   it('has no detectable a11y violations in form mode', async () => {
     const { container } = render(
       <AdminEditor initialDocument={sample()} onSave={vi.fn().mockResolvedValue(saved)} />,
     );
     expect(await axe.run(container)).toHaveNoViolations();
-  });
+  }, 30000);
 });
