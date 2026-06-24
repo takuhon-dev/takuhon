@@ -53,6 +53,17 @@ describe('AdminEditor', () => {
     expect(screen.getByLabelText(/^Display name \(/)).toHaveAttribute('aria-invalid', 'true');
   });
 
+  it('moves focus to the error summary when a save fails validation', async () => {
+    const onSave = vi.fn<(d: Takuhon) => Promise<AdminSaveOutcome>>().mockResolvedValue(saved);
+    const invalid: Takuhon = { ...sample(), profile: { ...sample().profile, displayName: {} } };
+    render(<AdminEditor initialDocument={invalid} onSave={onSave} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    const summary = await screen.findByRole('heading', { name: 'Please fix the following:' });
+    await waitFor(() => {
+      expect(summary).toHaveFocus();
+    });
+  });
+
   it('maps server validation errors (RFC 7807) onto the fields', async () => {
     const onSave = vi.fn<(d: Takuhon) => Promise<AdminSaveOutcome>>().mockResolvedValue({
       status: 'invalid',

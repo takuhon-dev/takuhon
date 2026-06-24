@@ -76,13 +76,32 @@ export type FieldRegistry = Readonly<Record<string, FieldHint>>;
 export const EMPTY_REGISTRY: FieldRegistry = {};
 
 /**
+ * Acronyms that read poorly when title-cased: a humanized `url` should be `URL`,
+ * not `Url`, and `credentialId` should end in `ID`, not `id`. Matched per word
+ * (after camelCase splitting), so only a whole segment is uppercased. Extend as
+ * the schema grows; the registry can still override any label outright.
+ */
+const ACRONYMS = new Set(['url', 'id', 'doi']);
+
+/**
  * Humanize a property name for a default label: `fieldOfStudy` → `Field of
- * study`, `url` → `Url`. The registry overrides this where a better label is
- * needed.
+ * study`, `credentialId` → `Credential ID`, `url` → `URL`. Known acronyms stay
+ * uppercased. The registry overrides this where a better label is needed.
  */
 export function humanize(name: string): string {
-  const spaced = name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  const words = name
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .split(' ');
+  return words
+    .map((word, index) =>
+      ACRONYMS.has(word)
+        ? word.toUpperCase()
+        : index === 0
+          ? word.charAt(0).toUpperCase() + word.slice(1)
+          : word,
+    )
+    .join(' ');
 }
 
 /** The hint at `path`, or an empty hint when none is registered. */
