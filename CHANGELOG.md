@@ -6,6 +6,26 @@ This is a monorepo. Eleven publishable artifacts release in lockstep at the same
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-06-24
+
+Minor release. Completes the **Phase 5 admin form**: every one of the 19 top-level profile sections is now editable as a form. This closes the gap where only six sections (`profile`, `links`, `careers`, `projects`, `skills`, `settings`) had bespoke forms and the other thirteen (`education`, `certifications`, `publications`, `honors`, `volunteering`, `memberships`, `languages`, `courses`, `patents`, `testScores`, `recommendations`, `contact`, `meta`) could only be edited as raw JSON. Rather than hand-write thirteen more forms, the admin now derives every field straight from the canonical JSON Schema through a schema-driven form engine, so future schema growth stays in step automatically and the coverage gap cannot recur. No `@takuhon/core` schema change (`schemaVersion` stays `0.7.0`); only `@takuhon/ui` changes functionally, and the rest bump for lockstep alignment.
+
+### Added — `@takuhon/ui`
+
+- **Schema-driven admin form engine (`SchemaForm`).** A section's editable form is derived from its schema-classified shape: array sections render as repeaters, object sections as labelled fieldsets, and scalars via the matching primitive (text / URL / email / month / select / checkbox / localized tabs). The RFC 6901 error pointer and the registry path are derived as the engine walks, so client (`validate`) and server (RFC 7807) validation errors map to the right field with no hand-wired plumbing.
+- **All 19 sections are forms.** The thirteen sections that were previously raw-JSON-only are now first-class forms in `/admin` and the local `takuhon admin` editor; raw JSON remains as the `advanced` escape hatch.
+- **Cross-section reference selectors.** Fields that reference another section (`projects.relatedCareerId`, and `courses` / `testScores` / `recommendations` `*.relatedEducationId` / `relatedCareerId`) render as dropdowns of the target section's entries, labelled by caption and id; a dangling reference (no matching entry) is preserved as its own option rather than silently dropped.
+- **Field-spec registry (UI-hint layer).** Presentation the data schema deliberately omits — labels, help text, hidden auto-managed fields, and the bespoke widgets a generic control cannot capture (avatar, comma-separated lists, the public-visibility matrix) — lives in a registry inside `@takuhon/ui`, keyed by schema path, so `takuhon.json` and its schema stay UI-free and `schemaVersion` is unchanged.
+
+### Changed — `@takuhon/ui`
+
+- **The six bespoke section forms were migrated onto the engine and deleted**, so all 19 sections share one paradigm; render-parity tests guard their special widgets, ordering, and field sets.
+- **Label, hint, and accessibility polish.** Default field labels keep known acronyms uppercased (`URL` / `Credential ID` / `DOI`); year-month fields show the `YYYY-MM` format hint by default; and a save that fails validation moves focus to the error summary (the GOV.UK error-summary pattern) so keyboard and screen-reader users land on the list of problems.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump from `0.24.0` to `0.25.0`: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. Only `@takuhon/ui` changed functionally; the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range (`TAKUHON_DEP_RANGE`) advances to `^0.25.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
+
 ## [0.24.0] - 2026-06-22
 
 Minor release. Debuts a new publishable package, **`@takuhon/contact`** — a portable, framework-agnostic contact-form core — and ships its Cloudflare implementation inside `@takuhon/cloudflare`. A site embeds a self-contained, CSP-friendly chat-style widget and mounts one stateless `POST` handler; a submission is validated, challenge-verified, and delivered as a single email, with no database, queue, or stored history. No `@takuhon/core` schema change (`schemaVersion` stays `0.7.0`). With contact's debut the lockstep family grows to **eleven** publishable artifacts, all releasing at 0.24.0.
@@ -744,7 +764,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.24.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.25.0...HEAD
+[0.25.0]: https://github.com/takuhon-dev/takuhon/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/takuhon-dev/takuhon/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/takuhon-dev/takuhon/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/takuhon-dev/takuhon/compare/v0.21.0...v0.22.0
