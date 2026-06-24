@@ -249,6 +249,10 @@ function renderScalar(
             : kind.widget === 'month'
               ? 'month'
               : 'text';
+      // Year-month fields advertise the `YYYY-MM` format by default, the way the
+      // bespoke career/project forms did, so every section stays consistent. A
+      // registry hint still wins where one is set.
+      const hint = ctx.hint ?? (kind.widget === 'month' ? getAdminLabel('hint.month') : undefined);
       return (
         <TextField
           label={ctx.label}
@@ -258,7 +262,7 @@ function renderScalar(
             onChange(next || undefined);
           }}
           required={ctx.required}
-          hint={ctx.hint}
+          hint={hint}
           errors={errors}
         />
       );

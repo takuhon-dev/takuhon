@@ -1,5 +1,5 @@
 import { schema, validate, type LocaleTag, type Takuhon } from '@takuhon/core';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styles from './AdminEditor.module.css';
 import { RawJsonEditor } from './RawJsonEditor.js';
@@ -87,8 +87,21 @@ export function AdminEditor({
   // and discards its outcome if an edit (which bumps the counter) landed
   // meanwhile — preventing a stale "Saved." or stale server errors.
   const intentRef = useRef(0);
+  // When a save fails validation, move focus to the error summary so keyboard
+  // and screen-reader users land on the list of problems (the GOV.UK error
+  // summary pattern). Set just before the failing `setErrors`; consumed by the
+  // effect once the summary has rendered.
+  const summaryRef = useRef<HTMLHeadingElement>(null);
+  const focusSummaryRef = useRef(false);
 
   const locales = draft.settings.availableLocales;
+
+  useEffect(() => {
+    if (focusSummaryRef.current && summaryRef.current) {
+      summaryRef.current.focus();
+    }
+    focusSummaryRef.current = false;
+  }, [errors]);
 
   // Any edit clears the previous validation snapshot so resolved errors do not
   // linger while the operator works through them, and invalidates any in-flight
@@ -111,6 +124,7 @@ export function AdminEditor({
   const handleSave = async (): Promise<void> => {
     const result = validate(draft);
     if (!result.ok) {
+      focusSummaryRef.current = true;
       setErrors(indexValidationErrors(result.errors));
       setStatus({ tone: 'error', message: getAdminLabel('status.invalid') });
       return;
@@ -131,6 +145,7 @@ export function AdminEditor({
           setStatus({ tone: 'error', message: getAdminLabel('status.conflict') });
           break;
         case 'invalid':
+          focusSummaryRef.current = true;
           setErrors(indexErrors(outcome.errors));
           setStatus({ tone: 'error', message: getAdminLabel('status.invalid') });
           break;
@@ -267,7 +282,12 @@ export function AdminEditor({
 
       {errorEntries.length > 0 ? (
         <section className={styles.summary} aria-labelledby="admin-error-summary">
-          <h2 className={styles.summaryHeading} id="admin-error-summary">
+          <h2
+            className={styles.summaryHeading}
+            id="admin-error-summary"
+            tabIndex={-1}
+            ref={summaryRef}
+          >
             {getAdminLabel('status.fixSummary')}
           </h2>
           <ul>

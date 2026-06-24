@@ -9,6 +9,7 @@ import {
   type FieldKind,
   type SchemaNode,
 } from '../schema-form/field-classification.js';
+import { humanize } from '../schema-form/field-registry.js';
 
 const root = schema as unknown as SchemaNode;
 const locales = ['en', 'ja'] as const;
@@ -46,6 +47,22 @@ describe('SchemaForm — array section (education)', () => {
     // Scalars → labelled inputs.
     expect(screen.getByLabelText('Start date', { exact: false })).toBeTruthy();
     expect(screen.getByLabelText('Grade')).toBeTruthy();
+  });
+
+  it('shows the YYYY-MM format hint on a year-month field by default', () => {
+    render(
+      <SchemaForm
+        kind={educationKind()}
+        value={[item]}
+        onChange={vi.fn()}
+        pointer="/education"
+        label="Education"
+        locales={locales}
+      />,
+    );
+    // startDate / endDate are YearMonth fields with no registry hint, so the
+    // engine supplies the same format hint the bespoke career/project forms had.
+    expect(screen.getAllByText(/YYYY-MM/).length).toBeGreaterThan(0);
   });
 
   it('propagates an edit back through onChange as the updated array', () => {
@@ -135,5 +152,20 @@ describe('SchemaForm — object section (contact)', () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
     const next = onChange.mock.calls.at(-1)?.[0];
     expect(record(next).email).toBe('a@b.co');
+  });
+});
+
+describe('humanize — default field labels', () => {
+  it('title-cases multi-word names', () => {
+    expect(humanize('fieldOfStudy')).toBe('Field of study');
+    expect(humanize('courseNumber')).toBe('Course number');
+  });
+
+  it('keeps known acronyms uppercased', () => {
+    expect(humanize('url')).toBe('URL');
+    expect(humanize('doi')).toBe('DOI');
+    expect(humanize('credentialId')).toBe('Credential ID');
+    expect(humanize('certificateUrl')).toBe('Certificate URL');
+    expect(humanize('relatedCareerId')).toBe('Related career ID');
   });
 });
