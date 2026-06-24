@@ -3,6 +3,8 @@
  * the schema-driven engine (PR4). Each asserts the behavior the hand-written
  * form had still holds when rendered by {@link SchemaForm} + {@link SECTION_REGISTRY}:
  * the avatar trio, comma-separated lists, and the inverted visibility matrix.
+ *
+ * Also covers the cross-section reference selectors added in PR5 (decision C).
  */
 
 import { gravatarUrl, schema, type Settings } from '@takuhon/core';
@@ -22,6 +24,8 @@ interface SectionOptions {
   onChange?: (next: unknown) => void;
   errors?: FieldErrorIndex;
   uploadAsset?: UploadAsset;
+  /** Whole document, so reference selectors can list sibling-section ids. */
+  document?: unknown;
 }
 
 function renderSection(key: string, value: unknown, options: SectionOptions = {}): void {
@@ -36,6 +40,7 @@ function renderSection(key: string, value: unknown, options: SectionOptions = {}
       registry={SECTION_REGISTRY}
       errors={options.errors}
       uploadAsset={options.uploadAsset}
+      document={options.document}
     />,
   );
 }
@@ -175,5 +180,67 @@ describe('settings', () => {
     expect(onChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ publicVisibility: undefined }),
     );
+  });
+});
+
+describe('reference selectors (PR5, decision C)', () => {
+  const careers = [
+    { id: 'stellar-ux', organization: { en: 'Stellar UX Studio' } },
+    { id: 'harbor-labs', organization: { en: 'Harbor Labs' } },
+  ];
+
+  function refSelect(): HTMLSelectElement {
+    return screen.getByLabelText<HTMLSelectElement>(/^Related career/);
+  }
+
+  it('lists sibling-section items as caption + id options, with the current one selected', () => {
+    renderSection(
+      'projects',
+      [{ id: 'p1', title: { en: 'Demo' }, relatedCareerId: 'harbor-labs' }],
+      {
+        document: { careers, projects: [] },
+      },
+    );
+    const select = refSelect();
+    expect(select.value).toBe('harbor-labs');
+    const optionTexts = [...select.options].map((o) => o.textContent);
+    expect(optionTexts).toContain('Stellar UX Studio (stellar-ux)');
+    expect(optionTexts).toContain('Harbor Labs (harbor-labs)');
+    // Optional reference → an explicit "(none)" choice.
+    expect(select.options[0]!.value).toBe('');
+  });
+
+  it('stores the chosen id, and clears to undefined via "(none)"', () => {
+    const onChange = vi.fn();
+    renderSection(
+      'projects',
+      [{ id: 'p1', title: { en: 'Demo' }, relatedCareerId: 'harbor-labs' }],
+      {
+        onChange,
+        document: { careers, projects: [] },
+      },
+    );
+    fireEvent.change(refSelect(), { target: { value: 'stellar-ux' } });
+    expect(onChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ relatedCareerId: 'stellar-ux' }),
+    ]);
+
+    fireEvent.change(refSelect(), { target: { value: '' } });
+    const cleared = onChange.mock.calls.at(-1)?.[0] as Record<string, unknown>[];
+    expect(cleared[0]!.relatedCareerId).toBeUndefined();
+  });
+
+  it('preserves a dangling reference as its own option rather than dropping it', () => {
+    renderSection(
+      'projects',
+      [{ id: 'p1', title: { en: 'Demo' }, relatedCareerId: 'deleted-id' }],
+      {
+        document: { careers, projects: [] },
+      },
+    );
+    const select = refSelect();
+    // The stale id is still the selected value and appears as an option.
+    expect(select.value).toBe('deleted-id');
+    expect([...select.options].map((o) => o.value)).toContain('deleted-id');
   });
 });

@@ -13,10 +13,12 @@ import type { LocaleTag, PublicVisibility } from '@takuhon/core';
 
 import { getAdminLabel, type AdminLabelKey } from '../admin-labels.js';
 import { collectErrorsUnder, errorsAt } from '../errors.js';
+import { firstLocalized } from '../localized.js';
 import { CheckboxField } from '../primitives/CheckboxField.js';
 import { GravatarField } from '../primitives/GravatarField.js';
 import { ImageField } from '../primitives/ImageField.js';
 import { LocaleTabs } from '../primitives/LocaleTabs.js';
+import { SelectField, type SelectOption } from '../primitives/SelectField.js';
 import { TextField } from '../primitives/TextField.js';
 
 import styles from './custom-fields.module.css';
@@ -32,6 +34,15 @@ function asLocalized(value: unknown): Record<LocaleTag, string> | undefined {
 
 function isEmptyRecord(record: Record<LocaleTag, string> | undefined): boolean {
   return !record || Object.keys(record).length === 0;
+}
+
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+function idOf(item: unknown): string {
+  const id = asRecord(item).id;
+  return typeof id === 'string' ? id : '';
 }
 
 /**
@@ -178,4 +189,56 @@ export function renderVisibilityMatrix(ctx: CustomFieldContext): React.ReactNode
       ))}
     </>
   );
+}
+
+/**
+ * A cross-section reference selector (decision C): a dropdown of a sibling
+ * section's items (e.g. `projects.relatedCareerId` → `careers[]`), each option
+ * labelled by the item's caption and id. The stored value is the referenced
+ * `id`. An optional reference offers "(none)"; a value with no matching item
+ * (a dangling reference) is preserved as its own option rather than silently
+ * dropped, so a stale id stays visible until the owner fixes it.
+ */
+export function referenceSelect(spec: {
+  /** Sibling section to draw candidates from, e.g. `'careers'`. */
+  section: string;
+  /** Localized field used as the option caption, e.g. `'organization'`. */
+  captionField: string;
+}): (ctx: CustomFieldContext) => React.ReactNode {
+  return function renderReferenceSelect(ctx: CustomFieldContext): React.ReactNode {
+    const value = asString(ctx.value);
+    const items = (() => {
+      const list = asRecord(ctx.document)[spec.section];
+      return Array.isArray(list) ? (list as readonly unknown[]) : [];
+    })();
+
+    const candidates: SelectOption[] = items
+      .map((item) => {
+        const id = idOf(item);
+        const caption = firstLocalized(asLocalized(asRecord(item)[spec.captionField]), ctx.locales);
+        return { value: id, label: caption ? `${caption} (${id})` : id };
+      })
+      .filter((option) => option.value !== '');
+
+    const danglingId = value !== '' && !candidates.some((option) => option.value === value);
+    const options: SelectOption[] = [
+      ...(ctx.required ? [] : [{ value: '', label: getAdminLabel('option.none') }]),
+      ...candidates,
+      // Keep an unrecognized current value selectable so it is never dropped.
+      ...(danglingId ? [{ value, label: value }] : []),
+    ];
+
+    return (
+      <SelectField
+        label={ctx.label}
+        value={value}
+        options={options}
+        onChange={(next) => {
+          ctx.onChange(next || undefined);
+        }}
+        required={ctx.required}
+        errors={errorsAt(ctx.errors, ctx.pointer)}
+      />
+    );
+  };
 }

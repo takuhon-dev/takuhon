@@ -299,6 +299,7 @@ export function AdminEditor({
               registry={SECTION_REGISTRY}
               formatLocale={formatLocale}
               uploadAsset={uploadAsset}
+              document={draft}
             />
           ))}
         </div>
