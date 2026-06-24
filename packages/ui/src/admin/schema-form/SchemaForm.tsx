@@ -54,6 +54,8 @@ export interface SchemaFormProps {
   formatLocale?: (locale: LocaleTag) => string;
   /** Avatar upload, threaded to the avatar field's custom renderer. */
   uploadAsset?: UploadAsset;
+  /** Whole document, so reference fields can list sibling-section ids. */
+  document?: unknown;
 }
 
 interface RenderCtx {
@@ -69,6 +71,7 @@ interface RenderCtx {
   registry: FieldRegistry;
   formatLocale?: (locale: LocaleTag) => string;
   uploadAsset?: UploadAsset;
+  document?: unknown;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -296,6 +299,7 @@ function renderEntry(
       errors: childCtx.errors,
       formatLocale: childCtx.formatLocale,
       uploadAsset: childCtx.uploadAsset,
+      document: childCtx.document,
     };
     return <div key={entry.name}>{hint.render(customCtx)}</div>;
   }
@@ -382,6 +386,7 @@ export function SchemaForm(props: SchemaFormProps): React.JSX.Element {
     registry: props.registry ?? EMPTY_REGISTRY,
     formatLocale: props.formatLocale,
     uploadAsset: props.uploadAsset,
+    document: props.document,
   };
 
   if (props.kind.widget === 'array') {

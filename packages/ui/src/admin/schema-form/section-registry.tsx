@@ -12,7 +12,12 @@ import { type Takuhon } from '@takuhon/core';
 
 import { getAdminLabel, type AdminLabelKey } from '../admin-labels.js';
 
-import { csvListRenderer, renderAvatar, renderVisibilityMatrix } from './custom-fields.js';
+import {
+  csvListRenderer,
+  referenceSelect,
+  renderAvatar,
+  renderVisibilityMatrix,
+} from './custom-fields.js';
 import { type FieldRegistry } from './field-registry.js';
 
 export interface AdminSection {
@@ -49,8 +54,10 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
 
 /**
  * UI hints keyed by section-relative dot path (no array indices). Covers the
- * three bespoke widgets, curated labels for fields whose humanized name reads
- * poorly, help text, and the auto-managed meta fields that stay hidden.
+ * bespoke widgets (avatar, comma-separated lists, visibility matrix, and
+ * cross-section reference selectors), curated labels for fields whose humanized
+ * name reads poorly, help text, and the auto-managed meta fields that stay
+ * hidden.
  */
 export const SECTION_REGISTRY: FieldRegistry = {
   // Profile — avatar is the URL/upload/Gravatar trio.
@@ -74,8 +81,11 @@ export const SECTION_REGISTRY: FieldRegistry = {
   'careers.isCurrent': { label: getAdminLabel('field.career.isCurrent') },
   'careers.url': { label: getAdminLabel('field.career.url') },
 
-  // Projects — tags are a comma-separated list.
+  // Projects — tags are a comma-separated list; relatedCareerId is a reference.
   'projects.tags': { render: csvListRenderer({ hint: 'hint.tags', emptyToUndefined: true }) },
+  'projects.relatedCareerId': {
+    render: referenceSelect({ section: 'careers', captionField: 'organization' }),
+  },
   'projects.url': { label: getAdminLabel('field.project.url') },
   'projects.startDate': { hint: getAdminLabel('hint.month') },
   'projects.endDate': { hint: getAdminLabel('hint.month') },
@@ -92,6 +102,21 @@ export const SECTION_REGISTRY: FieldRegistry = {
   'settings.activity.github': { label: 'GitHub' },
   'settings.activity.wakatime': { label: 'WakaTime' },
   'settings.publicVisibility': { render: renderVisibilityMatrix },
+
+  // Cross-section reference selectors (decision C): dropdowns of sibling-section
+  // ids. courses / testScores / recommendations point at education / careers.
+  'courses.relatedEducationId': {
+    render: referenceSelect({ section: 'education', captionField: 'institution' }),
+  },
+  'testScores.relatedEducationId': {
+    render: referenceSelect({ section: 'education', captionField: 'institution' }),
+  },
+  'recommendations.relatedCareerId': {
+    render: referenceSelect({ section: 'careers', captionField: 'organization' }),
+  },
+  'recommendations.relatedEducationId': {
+    render: referenceSelect({ section: 'education', captionField: 'institution' }),
+  },
 
   // Languages — disambiguate from the profile's "Display name".
   'languages.displayName': { label: 'Language name' },

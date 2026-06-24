@@ -42,6 +42,12 @@ export interface CustomFieldContext {
   formatLocale?: (locale: LocaleTag) => string;
   /** Avatar upload, threaded from the host; absent means URL-only. */
   uploadAsset?: UploadAsset;
+  /**
+   * The whole document (root value), so a field can read sibling sections —
+   * e.g. a reference selector listing `careers[]` / `education[]` ids. Typed
+   * `unknown` to keep the engine schema-generic; renderers narrow it.
+   */
+  document?: unknown;
 }
 
 /** Presentation overrides for a single field, looked up by its schema path. */
