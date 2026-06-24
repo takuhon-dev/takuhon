@@ -112,11 +112,16 @@ function TokenGate({
         type="url"
         placeholder="https://me.example"
         autoComplete="off"
+        aria-describedby="base-url-hint"
         value={baseUrl}
         onChange={(event) => {
           setBaseUrl(event.target.value);
         }}
       />
+      <p id="base-url-hint" className="muted">
+        Leave blank to manage this site. Set it only when this admin UI is hosted on a different
+        origin than your takuhon API.
+      </p>
       {error ? (
         <p className="error" role="alert">
           {error}
