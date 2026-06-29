@@ -2,25 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import { schema, SCHEMA_VERSION } from '../index.js';
 
-// Root `required` list — unchanged from 0.1.x for back-compat. The nine
-// 0.2.0 arrays, the 0.3.0 `testScores` array, and the 0.4.0 `recommendations`
-// array are added as optional properties so existing 0.1.x / 0.2.x / 0.3.x
-// documents continue to validate against the current schema (Spec §24-15,
-// §24-18, §24-19).
-const expectedRequiredKeys = [
-  'schemaVersion',
-  'profile',
+// Root `required` list — schema 1.0.0 narrowed this to the structural
+// essentials. Every content array is optional (absent = empty), so a profile
+// with no links or an artist with no formal careers validates without being
+// forced to carry empty arrays (Spec §6 / §24).
+const expectedRequiredKeys = ['schemaVersion', 'profile', 'contact', 'settings', 'meta'] as const;
+
+// Every declared top-level property: the five required structural keys plus
+// the fifteen optional content arrays.
+const expectedPropertyKeys = [
+  ...expectedRequiredKeys,
   'links',
   'careers',
   'projects',
   'skills',
-  'contact',
-  'settings',
-  'meta',
-] as const;
-
-const expectedPropertyKeys = [
-  ...expectedRequiredKeys,
   'certifications',
   'memberships',
   'volunteering',
@@ -80,11 +75,11 @@ describe('takuhon.schema.json structural shape', () => {
     expect(schema.$id).toContain(`/schemas/${SCHEMA_VERSION}/`);
   });
 
-  it('requires the original nine top-level fields (0.2.0 additions are optional)', () => {
+  it('requires only the structural top-level fields (every content array is optional in 1.0.0)', () => {
     expect(schema.required).toEqual([...expectedRequiredKeys]);
   });
 
-  it('declares all expected top-level properties (original nine + nine 0.2.0 arrays + 0.3.0 testScores + 0.4.0 recommendations)', () => {
+  it('declares all expected top-level properties (five structural keys + fifteen optional content arrays)', () => {
     expect(Object.keys(schema.properties).sort()).toEqual([...expectedPropertyKeys].sort());
   });
 
@@ -119,9 +114,9 @@ describe('takuhon.schema.json structural shape', () => {
     expect(schema.$defs.Recommendation.required).toEqual(
       expect.arrayContaining(['id', 'body', 'author']),
     );
-    expect(schema.$defs.Recommendation.additionalProperties).toBe(true);
+    expect(schema.$defs.Recommendation.additionalProperties).toBe(false);
     expect(schema.$defs.RecommendationAuthor.required).toEqual(['name']);
-    expect(schema.$defs.RecommendationAuthor.additionalProperties).toBe(true);
+    expect(schema.$defs.RecommendationAuthor.additionalProperties).toBe(false);
     expect(schema.$defs.RecommendationAuthor.properties.name.maxLength).toBe(100);
   });
 
@@ -161,12 +156,39 @@ describe('takuhon.schema.json structural shape', () => {
     expect(customRule.then.required).toContain('iconUrl');
   });
 
-  it('keeps structural object types open for forward-compatible extensions', () => {
-    expect(schema.$defs.Profile.additionalProperties).toBe(true);
-    expect(schema.$defs.Settings.additionalProperties).toBe(true);
-    expect(schema.$defs.Meta.additionalProperties).toBe(true);
-    expect(schema.$defs.Career.additionalProperties).toBe(true);
-    expect(schema.$defs.Project.additionalProperties).toBe(true);
+  it('closes every content and structural object for the precise 1.0.0 contract', () => {
+    // Schema 1.0.0 reverses the pre-1.0 hybrid strategy: every object is
+    // closed so an undeclared/misspelled key is a validation error rather than
+    // silently dropped data. The only intentionally open shapes are the
+    // locale-keyed maps (LocalizedTitle / LocalizedBody), which accept
+    // arbitrary BCP-47 keys via propertyNames.
+    const closedDefs = [
+      'Profile',
+      'Avatar',
+      'Address',
+      'Career',
+      'Project',
+      'Skill',
+      'Contact',
+      'Settings',
+      'Meta',
+      'MetaPrivacy',
+      'Certification',
+      'Membership',
+      'Volunteering',
+      'Honor',
+      'Education',
+      'Publication',
+      'Language',
+      'Course',
+      'Patent',
+      'TestScore',
+      'Recommendation',
+      'RecommendationAuthor',
+    ] as const;
+    for (const name of closedDefs) {
+      expect(schema.$defs[name].additionalProperties).toBe(false);
+    }
   });
 
   it('declares every Settings flag from Spec §6.11', () => {

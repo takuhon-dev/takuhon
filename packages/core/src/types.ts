@@ -3,8 +3,8 @@
  *
  * These mirror the canonical contract defined in `takuhon.schema.json`. The
  * published shape is sanity-checked at commit 1 by `__tests__/schema.test.ts`
- * (top-level keys, `$defs`, required fields, hybrid `additionalProperties`
- * splits, Spec §6 invariants) and by `__tests__/example.test.ts` (the bundled
+ * (top-level keys, `$defs`, required fields, the closed `additionalProperties`
+ * contract, Spec §6 invariants) and by `__tests__/example.test.ts` (the bundled
  * fixture is assigned to `Takuhon` via a boundary cast, and per-Spec invariants
  * are asserted at runtime). Those tests catch the kind of drift that changes
  * the published shape, but they do not enforce field-by-field parity between
@@ -14,27 +14,31 @@
  * When the schema changes, update these types accordingly and add a migration
  * entry under `src/migrations/` for the next minor version.
  *
- * Public surface scope (hybrid `additionalProperties` strategy):
+ * `additionalProperties` policy (schema 1.0.0 — precise contract):
  *
- * - **Closed** in the schema (no forward-compatible extras): the document
- *   root, `ContentLicense`, and every `Link` variant.
- * - **Open** in the schema (`additionalProperties: true`): `Profile`,
- *   `Settings`, `Meta`, `Career`, `Project`, `Skill`, `Contact`, `Avatar`,
- *   `Address`, and the locale-keyed map shapes `LocalizedTitle` /
- *   `LocalizedBody`.
+ * Every object in the contract is **closed** (`additionalProperties: false`):
+ * the document root, `ContentLicense`, every `Link` variant, `PublicVisibility`,
+ * `ActivitySettings`, and — reversing the pre-1.0 hybrid strategy — every
+ * content entity (`Profile`, `Career`, `Project`, `Skill`, `Education`, …)
+ * plus `Settings`, `Meta`, and `MetaPrivacy`. An undeclared property (a
+ * misspelled `tittle`) is therefore a validation error rather than silently
+ * dropped data. The only intentionally open shapes are the locale-keyed maps
+ * `LocalizedTitle` / `LocalizedBody`, whose keys are arbitrary BCP-47 tags
+ * constrained by `propertyNames` with the value schema bounding each entry.
  *
- * The public TypeScript surface intentionally omits an `[key: string]: unknown`
- * index signature on the open containers. Declared properties stay accurately
- * typed regardless of the choice — what such a signature would change is
- * access to *undeclared* keys: it would let consumers spell arbitrary property
- * names without an error and force `unknown` narrowing for those reads, and it
- * would dilute IDE autocomplete on every dotted access. Keeping the types
- * focused on the canonical members preserves that ergonomics. Consumers that
- * need to attach custom fields should extend the relevant interface locally:
+ * This is the canonical "precise contract" stance: the schema fully defines the
+ * accepted shape, so the JSON-LD and MCP surfaces that AI agents and search
+ * engines read are trustworthy. The closure is deliberate and, for the 1.x
+ * line, treated as irreversible-by-default — a future minor can re-open
+ * extension space *non-breakingly* via `patternProperties: { "^x-": {} }` (the
+ * OpenAPI `x-` convention) should adopter demand appear, without ever loosening
+ * the contract retroactively.
  *
- *     interface MyProfile extends Profile {
- *       customField: string;
- *     }
+ * The public TypeScript surface therefore omits any `[key: string]: unknown`
+ * index signature: declared properties stay accurately typed and IDE
+ * autocomplete is not diluted. Consumers that need to carry their own data
+ * alongside a profile should keep it in a sibling structure rather than
+ * smuggling undeclared keys into the contract — schema 1.0.0 now rejects them.
  */
 
 /** BCP-47 language tag, e.g. 'en', 'ja', 'zh-Hant', 'pt-BR'. */

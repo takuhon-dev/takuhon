@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('0.7.0');
+      expect(result.data.schemaVersion).toBe('1.0.0');
     }
   });
 
@@ -345,6 +345,71 @@ describe('validate() 0.2.0 additions', () => {
     };
     const result = validate(profile);
     expect(result.ok).toBe(true);
+  });
+});
+
+describe('validate() 1.0.0 freeze contract', () => {
+  it('rejects an undeclared key on a content entity (closed reversal — ①)', () => {
+    // Pre-1.0 the content entities were open (additionalProperties: true).
+    // 1.0.0 closes them, so a misspelled/undeclared key on e.g. a Career is a
+    // validation error rather than silently dropped data.
+    const broken = cloneExample();
+    (broken.careers[0] as unknown as Record<string, unknown>).tittle = { en: 'typo' };
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'additionalProperties' && e.pointer === '/careers/0/tittle',
+    );
+  });
+
+  it('rejects an undeclared key on the Profile object (closed reversal — ①)', () => {
+    const broken = cloneExample();
+    (broken.profile as unknown as Record<string, unknown>).pronouns = 'they/them';
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'additionalProperties' && e.pointer === '/profile/pronouns',
+    );
+  });
+
+  it('rejects a whitespace-only localized value (non-whitespace pattern — ②)', () => {
+    const broken = cloneExample();
+    (broken.profile as unknown as { displayName: Record<string, string> }).displayName = {
+      en: '   ',
+    };
+    const result = validate(broken);
+    expectError(result, (e) => e.keyword === 'pattern');
+  });
+
+  it('rejects a duplicate id within an array (id uniqueness invariant — ③)', () => {
+    const broken = cloneExample();
+    (broken as unknown as { links: unknown[] }).links = [
+      { id: 'dup', type: 'website', url: 'https://a.example' },
+      { id: 'dup', type: 'blog', url: 'https://b.example' },
+    ];
+    const result = validate(broken);
+    const err = expectError(
+      result,
+      (e) => e.keyword === 'uniqueItems' && e.pointer === '/links/1/id',
+    );
+    expect(err.message).toContain('links');
+  });
+
+  it('accepts a document omitting links/careers/projects/skills and coerces them to [] (optional arrays — ⑤)', () => {
+    const minimal = {
+      schemaVersion: '1.0.0',
+      profile: { displayName: { en: 'Test' } },
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    };
+    const result = validate(minimal);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.links).toEqual([]);
+    expect(result.data.careers).toEqual([]);
+    expect(result.data.projects).toEqual([]);
+    expect(result.data.skills).toEqual([]);
   });
 });
 

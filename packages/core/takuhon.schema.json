@@ -1,21 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/0.7.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/1.0.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "schemaVersion",
-    "profile",
-    "links",
-    "careers",
-    "projects",
-    "skills",
-    "contact",
-    "settings",
-    "meta"
-  ],
+  "required": ["schemaVersion", "profile", "contact", "settings", "meta"],
   "properties": {
     "schemaVersion": {
       "type": "string",
@@ -157,9 +147,10 @@
       "additionalProperties": {
         "type": "string",
         "minLength": 1,
-        "maxLength": 200
+        "maxLength": 200,
+        "pattern": "\\S"
       },
-      "description": "Map of BCP-47 locale tag to short title-like string (max 200 chars per value)."
+      "description": "Map of BCP-47 locale tag to short title-like string (max 200 chars per value). Each value must contain at least one non-whitespace character."
     },
     "LocalizedBody": {
       "type": "object",
@@ -171,9 +162,10 @@
       "additionalProperties": {
         "type": "string",
         "minLength": 1,
-        "maxLength": 5000
+        "maxLength": 5000,
+        "pattern": "\\S"
       },
-      "description": "Map of BCP-47 locale tag to body-length string (max 5000 chars per value)."
+      "description": "Map of BCP-47 locale tag to body-length string (max 5000 chars per value). Each value must contain at least one non-whitespace character."
     },
     "LinkType": {
       "type": "string",
@@ -198,7 +190,7 @@
     },
     "Profile": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["displayName"],
       "properties": {
         "displayName": { "$ref": "#/$defs/LocalizedTitle" },
@@ -210,7 +202,7 @@
     },
     "Avatar": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["url"],
       "properties": {
         "url": {
@@ -224,7 +216,7 @@
     },
     "Address": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "country": { "$ref": "#/$defs/Iso3166Alpha2" },
         "region": { "type": "string", "maxLength": 100 },
@@ -261,7 +253,7 @@
     },
     "Career": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "organization", "role", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -281,7 +273,7 @@
     },
     "Project": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -305,7 +297,7 @@
     },
     "Skill": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "label"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -322,7 +314,7 @@
     },
     "Contact": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "email": { "$ref": "#/$defs/Email" },
         "showEmail": { "type": "boolean", "default": false },
@@ -331,7 +323,7 @@
     },
     "Settings": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["defaultLocale", "availableLocales"],
       "properties": {
         "defaultLocale": { "$ref": "#/$defs/LocaleTag" },
@@ -498,7 +490,7 @@
     },
     "Meta": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["contentLicense"],
       "properties": {
         "createdAt": { "$ref": "#/$defs/IsoDateTime" },
@@ -543,7 +535,7 @@
     },
     "MetaPrivacy": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "description": "Opt-out flags that strip personally identifying fields from public API output (GET /api/profile, /api/jsonld, /takuhon.json). Admin endpoints (PUT /api/admin/*, GET /api/admin/export) ignore these flags. Privacy-by-default: omitting the object or individual flags is equivalent to true.",
       "properties": {
         "hideCredentialIds": {
@@ -560,7 +552,7 @@
     },
     "Certification": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title", "issuingOrganization", "issueDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -584,7 +576,7 @@
     },
     "Membership": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "organization", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -604,7 +596,7 @@
     },
     "Volunteering": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "organization", "role", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -624,7 +616,7 @@
     },
     "Honor": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title", "issuer", "date"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -639,7 +631,7 @@
     },
     "Education": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "institution", "startDate"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -666,7 +658,7 @@
     },
     "Publication": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title", "date"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -693,7 +685,7 @@
     },
     "Language": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "language", "proficiency"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -710,7 +702,7 @@
     },
     "Course": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -730,7 +722,7 @@
     },
     "Patent": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title", "patentNumber", "status"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -760,7 +752,7 @@
     },
     "TestScore": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "title", "score", "date"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -784,7 +776,7 @@
     },
     "Recommendation": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["id", "body", "author"],
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
@@ -809,7 +801,7 @@
     },
     "RecommendationAuthor": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["name"],
       "properties": {
         "name": {

@@ -48,13 +48,14 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   // `lib.es2022.d.ts` and `lib.dom.d.ts` across TypeScript major releases).
   const out = JSON.parse(JSON.stringify(data)) as Takuhon;
 
-  // Defensive: the schema marks several top-level arrays as optional for
-  // back-compat (the nine added in 0.2.0, `testScores` in 0.3.0, and
-  // `recommendations` in 0.4.0), so a stored older profile read from KV after
-  // an upgrade may arrive here without them. The TypeScript `Takuhon` shape
-  // requires them; coerce missing values to `[]` so downstream iteration
-  // never trips on `undefined`. Idempotent: arrays already present are left
-  // untouched.
+  // Defensive: the schema marks every top-level content array as optional
+  // (schema 1.0.0 made `links` / `careers` / `projects` / `skills` optional
+  // too, joining the nine 0.2.0 arrays, `testScores`, and `recommendations`),
+  // so a stored older profile read from KV after an upgrade — or a minimal
+  // 1.0.0 document that omits them — may arrive here without them. The
+  // TypeScript `Takuhon` shape requires them; coerce missing values to `[]`
+  // so downstream iteration never trips on `undefined`. Idempotent: arrays
+  // already present are left untouched.
   const bag = out as unknown as Record<string, unknown>;
   for (const key of NORMALIZED_ARRAYS) {
     if (!Array.isArray(bag[key])) {
@@ -217,6 +218,10 @@ function stableSortByOrder<T extends { order?: number }>(items: T[]): T[] {
 }
 
 const NORMALIZED_ARRAYS = [
+  'links',
+  'careers',
+  'projects',
+  'skills',
   'certifications',
   'memberships',
   'volunteering',
