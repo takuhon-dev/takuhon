@@ -357,6 +357,29 @@ describe('migrateTakuhon', () => {
     expect(validate(out).ok).toBe(true);
   });
 
+  it('migrates a 0.7.0 input forward to 1.0.0 (version stamp; freeze tightens validation only)', () => {
+    const v070 = {
+      schemaVersion: '0.7.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [{ id: 'site', type: 'website', url: 'https://example.com' }],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v070, '1.0.0');
+    expect(out.schemaVersion).toBe('1.0.0');
+    // Pure version stamp: the freeze only tightens validation, it never
+    // rewrites a conforming value.
+    expect(out.profile.displayName).toEqual({ en: 'Test' });
+    expect(out.links[0]!.id).toBe('site');
+    // A closed-safe 0.7.0 document validates unchanged against the 1.0.0 schema.
+    expect(validate(out).ok).toBe(true);
+  });
+
   it('chains 0.1.0 → 0.6.0 through all five registered migrations', () => {
     const v010 = {
       schemaVersion: '0.1.0',
@@ -380,6 +403,28 @@ describe('migrateTakuhon', () => {
     expect(validate(out).ok).toBe(true);
   });
 
+  it('chains 0.1.0 → 1.0.0 through all seven registered migrations', () => {
+    const v010 = {
+      schemaVersion: '0.1.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v010, '1.0.0');
+    expect(out.schemaVersion).toBe('1.0.0');
+    // All seven hops applied through to the 1.0.0 freeze.
+    expect(out.certifications).toEqual([]);
+    expect(out.testScores).toEqual([]);
+    expect(out.recommendations).toEqual([]);
+    expect(validate(out).ok).toBe(true);
+  });
+
   it('MigrationError is an Error with the right name', () => {
     const err = new MigrationError('boom');
     expect(err).toBeInstanceOf(Error);
@@ -396,13 +441,14 @@ describe('migrateTakuhon', () => {
 });
 
 describe('migrations registry', () => {
-  it('contains the v0.1.0 → … → v0.7.0 entries in chain order', () => {
-    expect(migrations).toHaveLength(6);
+  it('contains the v0.1.0 → … → v1.0.0 entries in chain order', () => {
+    expect(migrations).toHaveLength(7);
     expect(migrations[0]).toMatchObject({ from: '0.1.0', to: '0.2.0' });
     expect(migrations[1]).toMatchObject({ from: '0.2.0', to: '0.3.0' });
     expect(migrations[2]).toMatchObject({ from: '0.3.0', to: '0.4.0' });
     expect(migrations[3]).toMatchObject({ from: '0.4.0', to: '0.5.0' });
     expect(migrations[4]).toMatchObject({ from: '0.5.0', to: '0.6.0' });
     expect(migrations[5]).toMatchObject({ from: '0.6.0', to: '0.7.0' });
+    expect(migrations[6]).toMatchObject({ from: '0.7.0', to: '1.0.0' });
   });
 });

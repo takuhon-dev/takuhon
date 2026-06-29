@@ -46,6 +46,7 @@ export const SUPPORTED_SCHEMA_VERSIONS = [
   '0.5.0',
   '0.6.0',
   '0.7.0',
+  '1.0.0',
 ] as const;
 
 /**
@@ -122,17 +123,37 @@ export function validate(data: unknown): ValidationResult {
   }
 
   if (validateTakuhon(data)) {
-    // The schema marks several top-level arrays as optional for back-compat
-    // (the nine added in 0.2.0, `testScores` in 0.3.0, and `recommendations`
-    // in 0.4.0). The TypeScript `Takuhon` shape requires them so
-    // downstream code never has to check for `undefined`. We clone the
-    // caller's input before coercing so a successful validate() never
-    // mutates the original — callers can keep referencing the value they
-    // passed in. JS preserves insertion order, so new keys land at the end
-    // of the cloned object; `normalize()` is responsible for canonical
-    // field order.
+    // The schema marks every top-level content array as optional (schema
+    // 1.0.0 made `links` / `careers` / `projects` / `skills` optional too,
+    // joining the nine 0.2.0 arrays, `testScores`, and `recommendations`).
+    // The TypeScript `Takuhon` shape requires them so downstream code never
+    // has to check for `undefined`. We clone the caller's input before
+    // coercing so a successful validate() never mutates the original —
+    // callers can keep referencing the value they passed in. JS preserves
+    // insertion order, so new keys land at the end of the cloned object;
+    // `normalize()` is responsible for canonical field order.
     const cloned = JSON.parse(JSON.stringify(data)) as Takuhon;
     coerceMissingArrays(cloned);
+
+    // Post-Ajv check: per-array `id` uniqueness (schema 1.0.0 contract
+    // invariant). Every content item declares an `id` (Slug) and the
+    // reference fields (`relatedCareerId`, `relatedEducationId`) assume those
+    // ids are unique within their array. JSON Schema `uniqueItems` only
+    // catches whole-object duplicates, so we walk each array here and reject
+    // duplicate ids as a synthetic ValidationError.
+    const duplicateId = findDuplicateId(cloned);
+    if (duplicateId !== undefined) {
+      return {
+        ok: false,
+        errors: [
+          {
+            pointer: `/${duplicateId.key}/${duplicateId.index}/id`,
+            message: `Duplicate ${duplicateId.key}[].id value "${duplicateId.id}" — each entry must declare an id that is unique within its array.`,
+            keyword: 'uniqueItems',
+          },
+        ],
+      };
+    }
 
     // Post-Ajv check: `languages[].language` uniqueness. JSON Schema
     // `uniqueItems` only catches whole-object duplicates and cannot enforce
@@ -162,6 +183,10 @@ export function validate(data: unknown): ValidationResult {
 }
 
 const COERCED_ARRAY_KEYS = [
+  'links',
+  'careers',
+  'projects',
+  'skills',
   'certifications',
   'memberships',
   'volunteering',
@@ -182,6 +207,47 @@ function coerceMissingArrays(data: Takuhon): void {
       bag[key] = [];
     }
   }
+}
+
+/**
+ * Top-level content arrays whose items carry a `id` (Slug). Schema 1.0.0
+ * promotes "id is unique within its array" to a contract invariant; this list
+ * drives the post-Ajv {@link findDuplicateId} walk. `languages` additionally
+ * enforces `language` (BCP-47) uniqueness via {@link findDuplicateLanguage}.
+ */
+const ID_ARRAY_KEYS = [
+  'links',
+  'careers',
+  'projects',
+  'skills',
+  'certifications',
+  'memberships',
+  'volunteering',
+  'honors',
+  'education',
+  'publications',
+  'languages',
+  'courses',
+  'patents',
+  'testScores',
+  'recommendations',
+] as const;
+
+function findDuplicateId(data: Takuhon): { key: string; index: number; id: string } | undefined {
+  const bag = data as unknown as Record<string, unknown>;
+  for (const key of ID_ARRAY_KEYS) {
+    const items = bag[key];
+    if (!Array.isArray(items)) continue;
+    const seen = new Set<string>();
+    for (let i = 0; i < items.length; i++) {
+      const entry = items[i] as { id?: unknown } | undefined;
+      const id = entry !== undefined && typeof entry.id === 'string' ? entry.id : undefined;
+      if (id === undefined) continue;
+      if (seen.has(id)) return { key, index: i, id };
+      seen.add(id);
+    }
+  }
+  return undefined;
 }
 
 function findDuplicateLanguage(
