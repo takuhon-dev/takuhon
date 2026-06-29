@@ -6,6 +6,10 @@ This is a monorepo. Eleven publishable artifacts release in lockstep at the same
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-30
+
+First **major** release — the profile schema is frozen as a stable contract.
+
 ### Changed — `@takuhon/core` (schema 0.7.0 → 1.0.0, **breaking**)
 
 Freeze the profile schema at **1.0.0** — a stable-contract commitment. From here, any field removal, type change, required promotion, or acceptance-set narrowing is a major bump. Applies the operator-approved v1.0.0 schema-freeze audit. `$id` advances to `/schemas/1.0.0/`, `SCHEMA_VERSION` becomes `1.0.0`, and a `v0.7.0-to-v1.0.0` migration (a pure version stamp) is added. A conforming, closed-safe 0.7.0 document is a valid 1.0.0 document unchanged.
@@ -15,6 +19,10 @@ Freeze the profile schema at **1.0.0** — a stable-contract commitment. From he
 - **Per-array `id` uniqueness (breaking).** "`id` is unique within its array" is now a contract invariant, enforced by a post-Ajv walk in `validate()` (the reference fields `relatedCareerId` / `relatedEducationId` assume it). A duplicate id is rejected with a `uniqueItems` error.
 - **Top-level `required` narrowed (non-breaking, loosening).** Required is now just the structural essentials (`schemaVersion`, `profile`, `contact`, `settings`, `meta`); every content array — including `links` / `careers` / `projects` / `skills` — is optional (absent = empty, coerced in `validate()` and `normalize()`). A profile with no links or an artist with no formal careers no longer has to carry empty arrays.
 - **`order` sort semantics documented.** The canonical ordering ("ascending `order`; missing or equal sorts stable by array position") was already implemented in `normalize`; it is now part of the frozen 1.0.0 contract.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump from `0.25.0` to `1.0.0` — the first **major** release: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The breaking change lives in `@takuhon/core` (schema freeze); the rest bump for lockstep alignment. The scaffold's pinned `@takuhon/*` caret range (`TAKUHON_DEP_RANGE`) advances to `^1.0.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
 
 ## [0.25.0] - 2026-06-24
 
