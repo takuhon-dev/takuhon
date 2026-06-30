@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveConfig } from './config.js';
+import { resolveConfig, resolveWidgetConfig } from './config.js';
 import { t } from './i18n.js';
 import { buildSubmission, messageKeyForError, type SubmissionState } from './protocol.js';
 
@@ -39,6 +39,43 @@ describe('resolveConfig', () => {
   it('omits pageUrl when not provided', () => {
     expect(resolveConfig({ siteKey: 'k' }).pageUrl).toBeUndefined();
     expect(resolveConfig({ siteKey: 'k', pageUrl: 'https://x/' }).pageUrl).toBe('https://x/');
+  });
+});
+
+describe('resolveWidgetConfig (auto-mount source resolution)', () => {
+  it('prefers the global config when it carries a site key', () => {
+    const config = resolveWidgetConfig(
+      { siteKey: 'global-key', endpoint: '/g' },
+      { siteKey: 'ds' },
+    );
+    expect(config).toEqual({ siteKey: 'global-key', endpoint: '/g' });
+  });
+
+  it('falls back to data-* attributes when the global has no site key', () => {
+    const config = resolveWidgetConfig(undefined, {
+      siteKey: 'ds-key',
+      endpoint: '/api/contact',
+      locale: 'en',
+      lang: 'en-US',
+      pageUrl: 'https://x/',
+    });
+    expect(config).toEqual({
+      siteKey: 'ds-key',
+      endpoint: '/api/contact',
+      locale: 'en',
+      lang: 'en-US',
+      pageUrl: 'https://x/',
+    });
+  });
+
+  it('reads only the site key from data-* when the optional attributes are absent', () => {
+    expect(resolveWidgetConfig(undefined, { siteKey: 'ds-key' })).toEqual({ siteKey: 'ds-key' });
+  });
+
+  it('returns undefined when neither source names a site key', () => {
+    expect(resolveWidgetConfig(undefined, undefined)).toBeUndefined();
+    expect(resolveWidgetConfig(undefined, {})).toBeUndefined();
+    expect(resolveWidgetConfig({ siteKey: '' }, {})).toBeUndefined();
   });
 });
 
