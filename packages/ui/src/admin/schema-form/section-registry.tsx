@@ -102,6 +102,17 @@ export const SECTION_REGISTRY: FieldRegistry = {
   'settings.activity.github': { label: 'GitHub' },
   'settings.activity.wakatime': { label: 'WakaTime' },
   'settings.publicVisibility': { render: renderVisibilityMatrix },
+  // Contact form (1.1.0) — labelled "Contact form" so its group legend does not
+  // collide with the profile "Contact" section. Only public config lives here;
+  // the Turnstile secret and recipient are environment configuration.
+  'settings.contact': { label: getAdminLabel('field.settings.contact') },
+  'settings.contact.enabled': { label: getAdminLabel('field.contactSettings.enabled') },
+  'settings.contact.turnstileSiteKey': {
+    label: getAdminLabel('field.contactSettings.turnstileSiteKey'),
+  },
+  'settings.contact.subjectPrefix': {
+    label: getAdminLabel('field.contactSettings.subjectPrefix'),
+  },
 
   // Cross-section reference selectors (decision C): dropdowns of sibling-section
   // ids. courses / testScores / recommendations point at education / careers.

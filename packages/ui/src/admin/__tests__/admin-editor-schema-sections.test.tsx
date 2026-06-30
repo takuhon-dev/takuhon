@@ -32,6 +32,14 @@ describe('AdminEditor — schema-driven sections (PR3)', () => {
     }
   });
 
+  it('renders the settings.contact group as "Contact form" (distinct from the profile Contact section)', () => {
+    render(<AdminEditor initialDocument={sample()} onSave={noop} />);
+    // settings.contact (1.1.0) gets a "Contact form" legend so it does not
+    // collide with the profile "Contact" section, which stays a single group.
+    expect(screen.getByRole('group', { name: 'Contact form' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Contact' })).toBeTruthy();
+  });
+
   it('exposes a typed control for a field that was raw-JSON-only (contact email)', () => {
     render(<AdminEditor initialDocument={sample()} onSave={noop} />);
     // contact.email from the fixture now shows in an <input type=email>.

@@ -104,6 +104,10 @@ const EN = {
   'field.settings.enableJsonLd': 'Emit Schema.org JSON-LD',
   'field.settings.enableApi': 'Expose the public read API',
   'field.settings.enableAnalytics': 'Enable first-party analytics',
+  'field.settings.contact': 'Contact form',
+  'field.contactSettings.enabled': 'Enable contact form',
+  'field.contactSettings.turnstileSiteKey': 'Turnstile site key (public)',
+  'field.contactSettings.subjectPrefix': 'Email subject prefix',
 
   'field.settings.publicVisibility': 'Public sections',
   'field.publicVisibility.links': 'Links',
