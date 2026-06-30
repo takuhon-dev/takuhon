@@ -147,6 +147,39 @@ The card carries an opaque background, so it stays readable on either GitHub the
 
 GitHub proxies the image through Camo and caches it for a few hours, so a fresh sync can take a little while to appear in your README.
 
+### Contact form (optional)
+
+Add a chat-style contact widget to your profile page. It is gated by [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) and delivers each message to your inbox via [Cloudflare Email Sending](https://developers.cloudflare.com/email-routing/email-workers/send-email-workers/) — no database, no third-party form service.
+
+1. Opt in by adding \`settings.contact\` to \`takuhon.json\` with your **public** Turnstile site key (the secret stays out of the document):
+
+   \`\`\`jsonc
+   "settings": {
+     "contact": {
+       "enabled": true,
+       "turnstileSiteKey": "0xYOUR_PUBLIC_SITE_KEY",
+       "subjectPrefix": "[${projectName} contact]"
+     }
+   }
+   \`\`\`
+
+2. Set the recipient and From in \`wrangler.toml\` \`[vars]\`. The recipient **must** be a verified [Cloudflare Email Routing](https://developers.cloudflare.com/email-routing/) destination, and the From domain one you control:
+
+   \`\`\`toml
+   TAKUHON_CONTACT_TO = "you@example.com"
+   TAKUHON_CONTACT_FROM = "noreply@example.com"
+   \`\`\`
+
+3. Provision the Turnstile secret (never in \`wrangler.toml\`):
+
+   \`\`\`sh
+   npx wrangler secret put TAKUHON_TURNSTILE_SECRET
+   \`\`\`
+
+4. Uncomment the \`[[send_email]]\` binding in \`wrangler.toml\` (named \`TAKUHON_CONTACT_EMAIL\`) and deploy.
+
+The widget loads from \`/contact-widget.{js,css}\` (served by the Worker) and POSTs to \`POST /api/contact\`, which mounts only when the \`send_email\` binding is bound **and** \`settings.contact.enabled\` is true. Submissions are same-origin only and stateless; a missing secret degrades to a rejected challenge (422) and a missing recipient/From to a failed delivery (502), never a crash.
+
 ## Résumé / CV (optional)
 
 Generate a print-ready CV from the same \`takuhon.json\` — no re-entry:

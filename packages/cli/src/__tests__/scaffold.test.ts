@@ -240,6 +240,45 @@ describe('writeProject() — Phase 3.5 MVP scaffold', () => {
     expect(toml).not.toMatch(/^\[\[r2_buckets\]\]/m);
   });
 
+  it('includes an opt-in contact send_email binding (commented out by default)', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const toml = await readFile(join(targetDir, 'wrangler.toml'), 'utf8');
+    // The contact form is optional: the [[send_email]] block ships commented
+    // out so the default `wrangler deploy` works without Email Sending wired up.
+    expect(toml).toContain('# [[send_email]]');
+    expect(toml).toContain('# name = "TAKUHON_CONTACT_EMAIL"');
+    // Recipient / From guidance and the secret provisioning step are present.
+    expect(toml).toContain('TAKUHON_CONTACT_TO');
+    expect(toml).toContain('TAKUHON_CONTACT_FROM');
+    expect(toml).toContain('wrangler secret put TAKUHON_TURNSTILE_SECRET');
+    // It must NOT be active by default (an active binding without verified
+    // Email Sending would break the first deploy).
+    expect(toml).not.toMatch(/^\[\[send_email\]\]/m);
+  });
+
+  it('documents enabling the contact form in the README and .env.example', async () => {
+    await writeProject({
+      targetDir,
+      projectName: 'my-profile',
+      license: { spdxId: 'CC0-1.0' },
+    });
+
+    const readme = await readFile(join(targetDir, 'README.md'), 'utf8');
+    expect(readme).toContain('### Contact form (optional)');
+    expect(readme).toContain('"turnstileSiteKey"');
+    expect(readme).toContain('TAKUHON_CONTACT_TO');
+    expect(readme).toContain('wrangler secret put TAKUHON_TURNSTILE_SECRET');
+
+    const envExample = await readFile(join(targetDir, '.env.example'), 'utf8');
+    expect(envExample).toContain('TAKUHON_TURNSTILE_SECRET=');
+    expect(envExample).toContain('TAKUHON_CONTACT_TO=');
+  });
+
   it('writes a package.json with takuhon-monorepo dependencies and the project name', async () => {
     await writeProject({
       targetDir,

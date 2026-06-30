@@ -42,6 +42,17 @@ TAKUHON_GITHUB_TOKEN=
 # coding time.
 TAKUHON_WAKATIME_KEY=
 
+# Contact form (optional; only when settings.contact is enabled in takuhon.json
+# with a public turnstileSiteKey). The recipient and From are plain vars — set
+# them in wrangler.toml [vars] for a deployed Worker — while the Turnstile secret
+# is a Wrangler secret:
+#   wrangler secret put TAKUHON_TURNSTILE_SECRET
+# The recipient MUST be a verified Cloudflare Email Routing destination, and the
+# send_email binding (TAKUHON_CONTACT_EMAIL) is declared in wrangler.toml.
+TAKUHON_CONTACT_TO=
+TAKUHON_CONTACT_FROM=
+TAKUHON_TURNSTILE_SECRET=
+
 # Cloudflare account id (look up via \`wrangler whoami\`). Only needed if you
 # script Cloudflare API calls outside Wrangler itself.
 CLOUDFLARE_ACCOUNT_ID=
