@@ -102,5 +102,25 @@ TAKUHON_ADMIN_ORIGIN = ""
 #   wrangler secret put TAKUHON_WAKATIME_KEY   # required for WakaTime
 # [triggers]
 # crons = ["17 3 * * *"]
+
+# Contact form (optional). Enable settings.contact in your takuhon.json with a
+# public Turnstile site key (settings.contact.turnstileSiteKey); the chat-style
+# widget then loads on your profile page and POSTs to /api/contact. To deliver
+# the mail, wire Cloudflare Email Sending and the secret:
+#
+#   1. Recipient + From — add to [vars] above. The recipient MUST be a verified
+#      Cloudflare Email Routing destination (send_email only delivers to verified
+#      addresses); the From domain must be one you control:
+#        TAKUHON_CONTACT_TO = "you@example.com"
+#        TAKUHON_CONTACT_FROM = "noreply@example.com"
+#   2. Turnstile secret (never in this file):
+#        wrangler secret put TAKUHON_TURNSTILE_SECRET
+#   3. Uncomment the send_email binding below. Optionally lock it to one inbox
+#      by adding \`destination_address = "you@example.com"\`.
+#
+# The endpoint mounts only when this binding is bound AND settings.contact is
+# enabled; a missing secret degrades to a 422, a missing recipient/From to a 502.
+# [[send_email]]
+# name = "TAKUHON_CONTACT_EMAIL"
 `;
 }
