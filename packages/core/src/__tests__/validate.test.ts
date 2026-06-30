@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('1.0.0');
+      expect(result.data.schemaVersion).toBe('1.1.0');
     }
   });
 
@@ -733,5 +733,36 @@ describe('validate() 0.7.0 additions (per-item visibility)', () => {
       (e) => e.keyword === 'enum' && e.pointer === '/links/0/visibility',
     );
     expect(badEnum).toBeDefined();
+  });
+});
+
+describe('settings.contact (1.1.0)', () => {
+  it('accepts a settings.contact block', () => {
+    const doc = cloneExample();
+    (doc.settings as Record<string, unknown>).contact = {
+      enabled: true,
+      turnstileSiteKey: '0xAAAAExampleSiteKey',
+      subjectPrefix: '[example contact]',
+    };
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('accepts an absent settings.contact (optional, backwards-compatible)', () => {
+    const doc = cloneExample();
+    delete (doc.settings as Record<string, unknown>).contact;
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('rejects an unknown key inside settings.contact (closed object)', () => {
+    const doc = cloneExample();
+    (doc.settings as Record<string, unknown>).contact = {
+      enabled: true,
+      recipient: 'x@example.com',
+    };
+    const result = validate(doc);
+    expectError(
+      result,
+      (e) => e.keyword === 'additionalProperties' && e.pointer === '/settings/contact/recipient',
+    );
   });
 });

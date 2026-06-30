@@ -117,7 +117,7 @@ describe('AdminEditor', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Export' }));
     expect(onExport).toHaveBeenCalledTimes(1);
-    expect(onExport.mock.calls[0]![0].schemaVersion).toBe('1.0.0');
+    expect(onExport.mock.calls[0]![0].schemaVersion).toBe('1.1.0');
   });
 
   it('loads an imported document into the editor', async () => {

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/1.0.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/1.1.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -362,7 +362,38 @@
           "description": "Opt-in flag for first-party analytics. Default is false to keep takuhon privacy-respecting by default."
         },
         "activity": { "$ref": "#/$defs/ActivitySettings" },
-        "publicVisibility": { "$ref": "#/$defs/PublicVisibility" }
+        "publicVisibility": { "$ref": "#/$defs/PublicVisibility" },
+        "contact": { "$ref": "#/$defs/ContactSettings" }
+      }
+    },
+    "ContactSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opt-in contact form configuration (added in 1.1.0). Only public values live here; the Turnstile site key is safe to embed in the page. The Turnstile secret, the recipient address, and the From label are provisioned out of band as environment configuration and are never stored in takuhon.json. Adapters that support the form mount the widget and a POST endpoint when 'enabled' is true.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Master switch. When false (the default), no contact form is mounted even if a site key is present."
+        },
+        "turnstileSiteKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Public Cloudflare Turnstile site key, safe to embed in the page. Without it the widget is not mounted."
+        },
+        "endpoint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Override the POST endpoint the widget submits to. Defaults to /api/contact on the same origin."
+        },
+        "subjectPrefix": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Subject prefix for the delivered email, e.g. '[example.com contact]'."
+        }
       }
     },
     "PublicVisibility": {

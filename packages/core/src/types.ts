@@ -379,6 +379,27 @@ export interface Settings {
   activity?: ActivitySettings;
   /** Per-section public visibility (added in 0.6.0). Absent = all sections visible. */
   publicVisibility?: PublicVisibility;
+  /** Opt-in contact form (added in 1.1.0). Absent = no contact form. */
+  contact?: ContactSettings;
+}
+
+/**
+ * Owner-curated configuration for the opt-in contact form (added in 1.1.0).
+ * Only public values live here: the Turnstile **site key** is safe to embed in
+ * the page. The Turnstile secret, the recipient address, and the From label are
+ * provisioned out of band as environment configuration and are never stored in
+ * `takuhon.json`. Adapters that support the form mount the widget and a POST
+ * endpoint when {@link enabled} is true; adapters that do not simply ignore it.
+ */
+export interface ContactSettings {
+  /** Master switch; no contact form is mounted when false (the default). */
+  enabled?: boolean;
+  /** Public Cloudflare Turnstile site key, safe to embed; required to mount the widget. */
+  turnstileSiteKey?: string;
+  /** Override the POST endpoint the widget submits to. Defaults to `/api/contact` (same origin). */
+  endpoint?: string;
+  /** Subject prefix for the delivered email, e.g. `"[example.com contact]"`. */
+  subjectPrefix?: string;
 }
 
 /**

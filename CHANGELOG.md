@@ -6,6 +6,10 @@ This is a monorepo. Eleven publishable artifacts release in lockstep at the same
 
 ## [Unreleased]
 
+### Added — `@takuhon/core` (schema 1.0.0 → 1.1.0, non-breaking)
+
+- **`settings.contact` (opt-in contact form).** New optional block that turns the published `@takuhon/contact` widget into a config-only feature instead of a custom-Worker integration. Adding an optional field is a minor bump: a valid 1.0.0 document is a valid 1.1.0 document unchanged, and a `v1.0.0-to-v1.1.0` migration (a pure version stamp) is added. Only public values live in the document — `enabled`, the public `turnstileSiteKey`, an optional `endpoint`, and `subjectPrefix`; the Turnstile secret, recipient, and From label stay as environment configuration. `SCHEMA_VERSION` becomes `1.1.0`, `$id` advances to `/schemas/1.1.0/`, and the validator is regenerated. The schema-driven admin form (`@takuhon/ui`) surfaces it as a "Contact form" group. (First step of the contact turnkey track; the renderer, adapter, and scaffold wiring follow in subsequent changes.)
+
 ## [1.0.0] - 2026-06-30
 
 First **major** release — the profile schema is frozen as a stable contract.
