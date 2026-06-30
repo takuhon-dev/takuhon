@@ -26,6 +26,7 @@ export default tseslint.config(
       '**/admin-bundle/**',
       'packages/core/scripts/**',
       'packages/cli/scripts/**',
+      'packages/contact/scripts/**',
       'packages/takuhon/**',
       'packages/create-takuhon/**',
     ],
