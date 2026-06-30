@@ -265,6 +265,67 @@ describe('createPublicApp', () => {
   });
 });
 
+describe('contact widget turnkey (settings.contact)', () => {
+  function appWithContact(contact: Record<string, unknown>): ReturnType<typeof createPublicApp> {
+    const base = makeSample();
+    const profile = { ...base, settings: { ...base.settings, contact } } as Takuhon;
+    return createPublicApp({ storage: new FakeStorage(), fallback: () => profile });
+  }
+
+  it('embeds the widget and relaxes the CSP for Turnstile on / when enabled with a site key', async () => {
+    const app = appWithContact({ enabled: true, turnstileSiteKey: '0xSITEKEY' });
+    const res = await fetchPath(app, '/');
+    const body = await res.text();
+    expect(body).toContain('<link rel="stylesheet" href="/contact-widget.css">');
+    expect(body).toContain('<script src="/contact-widget.js" data-site-key="0xSITEKEY" defer>');
+
+    const csp = res.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("script-src 'self' https://challenges.cloudflare.com");
+    expect(csp).toContain('frame-src https://challenges.cloudflare.com');
+    expect(csp).toContain("connect-src 'self' https://challenges.cloudflare.com");
+    // The Turnstile origin is added, but script-src gains no 'unsafe-inline'
+    // (config travels as data-* attributes, not an inline bootstrap script).
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-inline/);
+  });
+
+  it('passes a custom endpoint through as data-endpoint', async () => {
+    const app = appWithContact({
+      enabled: true,
+      turnstileSiteKey: '0xSITEKEY',
+      endpoint: 'https://forms.example/submit',
+    });
+    const body = await (await fetchPath(app, '/')).text();
+    expect(body).toContain('data-endpoint="https://forms.example/submit"');
+  });
+
+  it('does not embed the widget — and keeps the strict CSP — when enabled without a site key', async () => {
+    const app = appWithContact({ enabled: true });
+    const res = await fetchPath(app, '/');
+    const body = await res.text();
+    expect(body).not.toContain('contact-widget.js');
+    expect(res.headers.get('content-security-policy')).not.toContain('challenges.cloudflare.com');
+  });
+
+  it('does not embed the widget when a site key is present but the form is disabled', async () => {
+    const app = appWithContact({ enabled: false, turnstileSiteKey: '0xSITEKEY' });
+    const res = await fetchPath(app, '/');
+    expect(await res.text()).not.toContain('contact-widget.js');
+    expect(res.headers.get('content-security-policy')).not.toContain('challenges.cloudflare.com');
+  });
+
+  it('keeps the strict CSP on non-HTML routes even when the contact form is enabled', async () => {
+    const app = appWithContact({ enabled: true, turnstileSiteKey: '0xSITEKEY' });
+    // The CSP relaxation is scoped to the page that embeds the widget; JSON
+    // routes never set the per-request flag, so they stay 'self'-only.
+    for (const path of ['/api/schema', '/api/profile', '/takuhon.json']) {
+      const res = await fetchPath(app, path);
+      expect(res.headers.get('content-security-policy'), path).not.toContain(
+        'challenges.cloudflare.com',
+      );
+    }
+  });
+});
+
 describe('locale resolution priority', () => {
   // Fixture availableLocales: ["en", "ja"], defaultLocale: "en".
   // Assertions exercise the request-side priority chain: query (?lang=),

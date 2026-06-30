@@ -17,6 +17,17 @@ import { renderProfileHtml } from './html/build-html.js';
 import { localePrefixGetPath, pathLocaleFromUrl } from './locale-prefix.js';
 import { resolveRequestLocales } from './locale-resolution.js';
 
+declare module 'hono' {
+  interface ContextVariableMap {
+    /**
+     * Set by the `/` handler when it embeds the contact widget, so the
+     * security-headers middleware serves the Turnstile-allowing CSP variant for
+     * that one response and the strict default everywhere else.
+     */
+    contactEnabled?: boolean;
+  }
+}
+
 export interface PublicAppDeps {
   storage: TakuhonStorage;
   /**
@@ -47,21 +58,41 @@ export interface PublicAppDeps {
 
 const FALLBACK_VERSION = 'bundled-fixture';
 
-const PUBLIC_CSP = [
-  "default-src 'self'",
-  // `https:` lets the server-rendered profile page load remote avatar images
-  // (the schema permits any https avatar URL, and `safeUrl` in the renderer
-  // already blocks non-http(s) schemes); `data:` covers inline placeholders.
-  "img-src 'self' https: data:",
-  "style-src 'self' 'unsafe-inline'",
-  "script-src 'self'",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  'upgrade-insecure-requests',
-].join('; ');
+// Cloudflare Turnstile (the contact widget's challenge) loads its script from,
+// renders its iframe on, and reports back to this single origin.
+const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
+
+/**
+ * Build the public Content-Security-Policy. With `contact` the `@takuhon/contact`
+ * widget is embedded, so the Turnstile origin is added to `script-src` (its
+ * api.js), `frame-src` (its challenge iframe), and `connect-src` (its
+ * verification XHR). The widget's config travels as `data-*` attributes on the
+ * external script, so `script-src` still needs no `'unsafe-inline'`. This
+ * relaxation is applied ONLY to the HTML page that actually embeds the widget
+ * (gated per-request in the `/` handler); every other route keeps the strict,
+ * `'self'`-only policy below.
+ */
+function buildPublicCsp(contact: boolean): string {
+  return [
+    "default-src 'self'",
+    // `https:` lets the server-rendered profile page load remote avatar images
+    // (the schema permits any https avatar URL, and `safeUrl` in the renderer
+    // already blocks non-http(s) schemes); `data:` covers inline placeholders.
+    "img-src 'self' https: data:",
+    "style-src 'self' 'unsafe-inline'",
+    contact ? `script-src 'self' ${TURNSTILE_ORIGIN}` : "script-src 'self'",
+    "font-src 'self'",
+    contact ? `connect-src 'self' ${TURNSTILE_ORIGIN}` : "connect-src 'self'",
+    ...(contact ? [`frame-src ${TURNSTILE_ORIGIN}`] : []),
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    'upgrade-insecure-requests',
+  ].join('; ');
+}
+
+const PUBLIC_CSP = buildPublicCsp(false);
+const PUBLIC_CSP_WITH_CONTACT = buildPublicCsp(true);
 
 async function loadProfile(deps: PublicAppDeps): Promise<{ data: Takuhon; version: string }> {
   try {
@@ -93,7 +124,13 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     h.set('x-frame-options', 'DENY');
     h.set('referrer-policy', 'strict-origin-when-cross-origin');
     h.set('permissions-policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
-    h.set('content-security-policy', PUBLIC_CSP);
+    // The `/` handler sets `contactEnabled` only when it embeds the contact
+    // widget, so the relaxed (Turnstile-allowing) policy is scoped to that one
+    // page; every other route falls through to the strict default.
+    h.set(
+      'content-security-policy',
+      c.get('contactEnabled') ? PUBLIC_CSP_WITH_CONTACT : PUBLIC_CSP,
+    );
     // Every route on this app is unauthenticated, read-only, and already
     // privacy-filtered, so the responses are safe to expose to any origin. This
     // is what lets browsers and AI tools fetch the profile / JSON-LD / discovery
@@ -157,6 +194,22 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
         ? await deps.activityStorage.getActivitySnapshot()
         : null;
 
+    // Embed the contact widget only when the owner has enabled it AND provided
+    // the public Turnstile site key (without the key the widget cannot mount).
+    // The secret / recipient / From live in adapter env and gate the POST
+    // endpoint separately; the page only needs the public key. Setting the
+    // context flag relaxes this response's CSP for the Turnstile origin.
+    const contactSettings = profile.settings.contact;
+    const contactSiteKey = contactSettings?.turnstileSiteKey?.trim();
+    const contact =
+      contactSettings?.enabled === true && contactSiteKey
+        ? {
+            siteKey: contactSiteKey,
+            ...(contactSettings.endpoint ? { endpoint: contactSettings.endpoint } : {}),
+          }
+        : undefined;
+    if (contact) c.set('contactEnabled', true);
+
     const html = renderProfileHtml({
       localized,
       canonicalUrl: `${origin}${localePath(current)}`,
@@ -167,6 +220,7 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       localeNav: locales.map((l) => ({ locale: l, href: localePath(l), current: l === current })),
       jsonLd: profile.settings.enableJsonLd !== false,
       activitySnapshot: snapshot ?? undefined,
+      contact,
     });
 
     c.header('etag', `"${version}"`);

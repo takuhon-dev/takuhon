@@ -58,6 +58,15 @@ export interface RenderInput {
    * metric-less) snapshot omits the section entirely.
    */
   activitySnapshot?: ActivitySnapshot;
+  /**
+   * When set, embed the `@takuhon/contact` widget: a `<link>` to its stylesheet
+   * in `<head>` and a deferred `<script>` whose config travels as `data-*`
+   * attributes (no inline script, so the page CSP needs no `'unsafe-inline'`).
+   * The caller gates it on `settings.contact.enabled` and a present site key;
+   * the adapter is responsible for serving `/contact-widget.{js,css}` and for
+   * relaxing its CSP to allow the Turnstile origin.
+   */
+  contact?: { siteKey: string; endpoint?: string };
 }
 
 /** Unicode-escape `<`, `>`, `&` so a JSON-LD payload cannot break out of `<script>`. */
@@ -249,6 +258,7 @@ export function renderProfileHtml(input: RenderInput): string {
         `<link rel="alternate" hreflang="${escapeHtml(a.hreflang)}" href="${escapeHtml(a.href)}">`,
     ),
     input.jsonLd ? renderJsonLdScript(d) : '',
+    input.contact ? '<link rel="stylesheet" href="/contact-widget.css">' : '',
     `<style>${CSS}</style>`,
   ]
     .filter(Boolean)
@@ -397,8 +407,17 @@ export function renderProfileHtml(input: RenderInput): string {
   const footer =
     d.settings.showPoweredBy === true ? '<footer class="powered">Powered by takuhon</footer>' : '';
 
+  // The widget reads its config from these data-* attributes (see
+  // @takuhon/contact's browser entry); `defer` lets it mount after parsing
+  // without an inline bootstrap script.
+  const contactScript = input.contact
+    ? `<script src="/contact-widget.js" data-site-key="${escapeHtml(input.contact.siteKey)}"` +
+      (input.contact.endpoint ? ` data-endpoint="${escapeHtml(input.contact.endpoint)}"` : '') +
+      ' defer></script>\n'
+    : '';
+
   return (
     `<!DOCTYPE html>\n<html lang="${escapeHtml(d.resolvedLocale)}">\n<head>\n  ${head}\n</head>\n` +
-    `<body>\n<main>\n${body}\n</main>\n${footer ? `${footer}\n` : ''}</body>\n</html>\n`
+    `<body>\n<main>\n${body}\n</main>\n${footer ? `${footer}\n` : ''}${contactScript}</body>\n</html>\n`
   );
 }

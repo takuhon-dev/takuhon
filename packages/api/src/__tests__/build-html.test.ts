@@ -162,4 +162,36 @@ describe('renderProfileHtml()', () => {
     });
     expect(empty).not.toContain('class="activity"');
   });
+
+  it('embeds the contact widget (stylesheet + data-attribute script, no inline script) when configured', () => {
+    const html = render(localized(), { contact: { siteKey: '0xABC' } });
+    expect(html).toContain('<link rel="stylesheet" href="/contact-widget.css">');
+    expect(html).toContain(
+      '<script src="/contact-widget.js" data-site-key="0xABC" defer></script>',
+    );
+    // The config travels as a data attribute — never as an inline bootstrap
+    // script — so the page CSP needs no 'unsafe-inline'.
+    expect(html).not.toContain('TAKUHON_CONTACT');
+  });
+
+  it('adds data-endpoint only when a custom endpoint is given', () => {
+    const withEndpoint = render(localized(), {
+      contact: { siteKey: '0xABC', endpoint: '/api/contact' },
+    });
+    expect(withEndpoint).toContain('data-endpoint="/api/contact"');
+    const withoutEndpoint = render(localized(), { contact: { siteKey: '0xABC' } });
+    expect(withoutEndpoint).not.toContain('data-endpoint');
+  });
+
+  it('escapes the site key in the data attribute', () => {
+    const html = render(localized(), { contact: { siteKey: '"><img src=x>' } });
+    expect(html).not.toContain('"><img src=x>');
+    expect(html).toContain('data-site-key="&quot;&gt;&lt;img src=x&gt;"');
+  });
+
+  it('omits the contact widget when not configured', () => {
+    const html = render(localized());
+    expect(html).not.toContain('contact-widget.js');
+    expect(html).not.toContain('contact-widget.css');
+  });
 });
