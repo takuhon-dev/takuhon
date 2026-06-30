@@ -28,6 +28,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./assets": {
+      "types": "./dist/assets.d.ts",
+      "import": "./dist/assets.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -45,7 +49,7 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap && vite build",
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap && vite build && node scripts/emit-asset-strings.mjs",
     "test": "vitest run"
   }
 }

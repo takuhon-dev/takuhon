@@ -9,6 +9,8 @@ import {
   type AuditLogger,
   type CachePurger,
 } from '@takuhon/api';
+import { handleContact } from '@takuhon/contact';
+import { contactWidgetCss, contactWidgetJs } from '@takuhon/contact/assets';
 import { validate, type Takuhon } from '@takuhon/core';
 import { Hono } from 'hono';
 
@@ -18,6 +20,11 @@ import { serveActivitySvg } from './activity-svg.js';
 import { syncActivity } from './activity-sync.js';
 import { CloudflareCachePurger } from './admin/cloudflare-cache-purger.js';
 import { consoleAuditLogger } from './admin/console-audit-logger.js';
+import {
+  createSendEmailTransport,
+  createTurnstileVerifier,
+  type SendEmailBinding,
+} from './contact.js';
 import { KvActivityStorage } from './kv-activity-storage.js';
 import { KvTakuhonStorage } from './kv-storage.js';
 import { serveMcp } from './mcp.js';
@@ -72,6 +79,34 @@ export interface Env {
    * Only flows through the sync step; never persisted.
    */
   TAKUHON_WAKATIME_KEY?: string;
+  /**
+   * Cloudflare `send_email` binding that delivers contact-form submissions.
+   * Optional, like {@link ASSETS} / {@link TAKUHON_R2}: when bound, `POST
+   * /api/contact` is mounted (and additionally requires `settings.contact`
+   * `.enabled`); when absent the endpoint stays unmounted, so a stray POST
+   * 405s and the contact form is effectively off regardless of the profile.
+   * Provision with a `[[send_email]]` block in `wrangler.toml`.
+   */
+  TAKUHON_CONTACT_EMAIL?: SendEmailBinding;
+  /**
+   * Verified destination inbox for contact submissions (must be a
+   * Cloudflare Email Routing-verified address). A missing value degrades to a
+   * failed delivery (502), never a crash.
+   */
+  TAKUHON_CONTACT_TO?: string;
+  /**
+   * From address for contact emails; must be on a domain you control
+   * (e.g. `noreply@example.com`). A missing value degrades to a 502.
+   */
+  TAKUHON_CONTACT_FROM?: string;
+  /**
+   * Turnstile secret key for server-side `siteverify`. Provision via
+   * `wrangler secret put TAKUHON_TURNSTILE_SECRET` — never in `wrangler.toml`.
+   * A missing secret degrades to a rejected challenge (422), never a crash.
+   * The public site key is not here — it lives in `settings.contact`
+   * `.turnstileSiteKey` because it is embedded in the page.
+   */
+  TAKUHON_TURNSTILE_SECRET?: string;
 }
 
 /** Options accepted by {@link createTakuhonWorker}. */
@@ -126,6 +161,86 @@ function isMcpPath(pathname: string): boolean {
  */
 function isActivitySvgPath(pathname: string): boolean {
   return pathname === '/activity.svg';
+}
+
+/**
+ * The bundled contact-widget assets. Matches only the literal
+ * `/contact-widget.{js,css}` (locale-agnostic, like `/mcp` and `/activity.svg`);
+ * these are the URLs the server-rendered page references when the profile
+ * enables the contact form.
+ */
+function isContactWidgetPath(pathname: string): boolean {
+  return pathname === '/contact-widget.js' || pathname === '/contact-widget.css';
+}
+
+/**
+ * Serve a bundled contact-widget asset (`GET`/`HEAD /contact-widget.{js,css}`).
+ * The content is inlined into the Worker from `@takuhon/contact/assets`, so no
+ * asset-hosting binding is needed; `nosniff` keeps the served type honest and a
+ * moderate cache lets it refresh on the next deploy.
+ */
+function serveContactWidget(request: Request, url: URL): Response {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
+  const isJs = url.pathname === '/contact-widget.js';
+  const headers = new Headers();
+  headers.set('content-type', isJs ? 'text/javascript; charset=utf-8' : 'text/css; charset=utf-8');
+  headers.set('x-content-type-options', 'nosniff');
+  headers.set('cache-control', 'public, max-age=3600');
+  const body = request.method === 'HEAD' ? null : isJs ? contactWidgetJs : contactWidgetCss;
+  return new Response(body, { status: 200, headers });
+}
+
+/**
+ * Handle a contact-form submission (`POST /api/contact`). The caller has
+ * already confirmed the `send_email` binding is bound; this additionally
+ * requires `settings.contact.enabled` (so disabling the form turns off the
+ * endpoint too) and then runs the portable `handleContact` pipeline with the
+ * Cloudflare Turnstile + `send_email` seams. Stateless and never throws: a
+ * missing secret / recipient degrades to a 422 / 502 inside the pipeline.
+ */
+async function serveContact(
+  request: Request,
+  env: Env,
+  fallback: () => Takuhon,
+  url: URL,
+): Promise<Response> {
+  const storage = new KvTakuhonStorage(env.TAKUHON_KV);
+  let profile: Takuhon;
+  try {
+    profile = (await storage.getProfile()).data;
+  } catch {
+    profile = fallback();
+  }
+
+  const contact = profile.settings.contact;
+  if (contact?.enabled !== true) {
+    // Form disabled in the profile: behave as if the endpoint were not mounted.
+    return new Response(JSON.stringify({ ok: false, error: 'not_found' }), {
+      status: 404,
+      headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    });
+  }
+
+  // The binding presence is the caller's gate; assert it for the type.
+  const binding = env.TAKUHON_CONTACT_EMAIL!;
+  return handleContact(request, {
+    verifier: createTurnstileVerifier(env.TAKUHON_TURNSTILE_SECRET ?? ''),
+    transport: createSendEmailTransport(binding, {
+      to: env.TAKUHON_CONTACT_TO ?? '',
+      from: { email: env.TAKUHON_CONTACT_FROM ?? '' },
+      ...(contact.subjectPrefix ? { subjectPrefix: contact.subjectPrefix } : {}),
+    }),
+    // Same-origin only: the widget POSTs from the page it is embedded on.
+    config: { allowedOrigins: [url.origin] },
+    readMeta: (req) => {
+      const cf = (req as { cf?: { country?: unknown } }).cf;
+      const country = typeof cf?.country === 'string' ? cf.country : undefined;
+      const ip = req.headers.get('cf-connecting-ip') ?? undefined;
+      return { ...(country ? { country } : {}), ...(ip ? { ip } : {}) };
+    },
+  });
 }
 
 /**
@@ -235,6 +350,24 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
       // GET /api/activity.
       if (isActivitySvgPath(url.pathname)) {
         return serveActivitySvg(request, env.TAKUHON_KV, opts.fallback);
+      }
+
+      // Bundled contact-widget assets, referenced by the server-rendered page
+      // when the contact form is enabled. Served from the Worker bundle, so no
+      // asset binding is required (parity with /mcp and /activity.svg).
+      if (isContactWidgetPath(url.pathname)) {
+        return serveContactWidget(request, url);
+      }
+
+      // Contact-form submission. Mounted only when the send_email binding is
+      // bound; serveContact additionally requires settings.contact.enabled.
+      // Without the binding the POST falls through to the public app's 405.
+      if (
+        url.pathname === '/api/contact' &&
+        request.method === 'POST' &&
+        env.TAKUHON_CONTACT_EMAIL
+      ) {
+        return serveContact(request, env, opts.fallback, url);
       }
 
       const storage = new KvTakuhonStorage(env.TAKUHON_KV);
