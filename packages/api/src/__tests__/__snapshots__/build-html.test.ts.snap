@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderProfileHtml() appearance tokens (settings.appearance) > matches the design-foundation stylesheet snapshot 1`] = `
+":root{--takuhon-space-1:4px;--takuhon-space-2:8px;--takuhon-space-3:12px;--takuhon-space-4:16px;--takuhon-space-5:24px;--takuhon-space-6:32px;--takuhon-radius-sm:6px;--takuhon-radius-full:9999px;--takuhon-font-size-sm:14px;--takuhon-font-size-base:16px;--takuhon-font-size-lg:18px;--takuhon-font-size-xl:22px;--takuhon-font-size-2xl:28px;--takuhon-line-height:1.7;--takuhon-max-content-width:720px;--takuhon-color-bg:#ffffff;--takuhon-color-surface:#f6f7f9;--takuhon-color-text:#1f2933;--takuhon-color-text-muted:#52606d;--takuhon-color-border:#d8dee7;--takuhon-color-primary:#2563eb;--takuhon-color-primary-contrast:#ffffff;--takuhon-color-accent:#4f46e5;--takuhon-font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root{--takuhon-color-bg:#0f172a;--takuhon-color-surface:#1e293b;--takuhon-color-text:#e2e8f0;--takuhon-color-text-muted:#94a3b8;--takuhon-color-border:#334155;--takuhon-color-primary:#60a5fa;--takuhon-color-primary-contrast:#0f172a;--takuhon-color-accent:#818cf8}}
+*{box-sizing:border-box}
+html{font-size:100%}
+body{margin:0;color:var(--takuhon-color-text);background:var(--takuhon-color-bg);font-family:var(--takuhon-font-family);font-size:var(--takuhon-font-size-base);line-height:var(--takuhon-line-height);-webkit-text-size-adjust:100%}
+main{max-width:var(--takuhon-max-content-width);margin:0 auto;padding:var(--takuhon-space-6) var(--takuhon-space-4)}
+a{color:var(--takuhon-color-primary)}
+a:focus-visible{outline:2px solid var(--takuhon-color-accent);outline-offset:2px;border-radius:var(--takuhon-radius-sm)}
+h1{font-size:var(--takuhon-font-size-2xl);font-weight:700;line-height:1.2;margin:0 0 var(--takuhon-space-2)}
+h2{font-size:var(--takuhon-font-size-xl);margin:0 0 var(--takuhon-space-3);padding-bottom:var(--takuhon-space-2);border-bottom:1px solid var(--takuhon-color-border)}
+h3{font-size:var(--takuhon-font-size-lg);font-weight:600;margin:0}
+header{margin-bottom:var(--takuhon-space-6);display:flow-root}
+header .avatar{width:96px;height:96px;border-radius:var(--takuhon-radius-full);object-fit:cover;float:left;margin:0 var(--takuhon-space-3) var(--takuhon-space-3) 0;shape-outside:circle();border:1px solid var(--takuhon-color-border)}
+.tagline{font-size:var(--takuhon-font-size-lg);color:var(--takuhon-color-text-muted);margin:0 0 var(--takuhon-space-2)}
+.location{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted);margin:0}
+.bio{margin:var(--takuhon-space-3) 0 0}
+section{margin:0 0 var(--takuhon-space-6)}
+ul{padding:0;margin:0;list-style:none}
+.entries>li{margin:0 0 var(--takuhon-space-4)}
+.sub{margin:var(--takuhon-space-1) 0 0;font-weight:600}
+.meta{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
+.links{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2) var(--takuhon-space-3);margin:var(--takuhon-space-3) 0}
+.skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
+.skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
+.rec{margin:0 0 var(--takuhon-space-4)}
+.rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
+.rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}
+nav.locales{display:flex;gap:var(--takuhon-space-3);margin-bottom:var(--takuhon-space-4);font-size:var(--takuhon-font-size-sm)}
+.activity svg{max-width:100%;height:auto}
+footer.powered{max-width:var(--takuhon-max-content-width);margin:0 auto;padding:var(--takuhon-space-5) var(--takuhon-space-4);color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}"
+`;

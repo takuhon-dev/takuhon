@@ -80,24 +80,64 @@ function escapeJsonLd(json: string): string {
 }
 
 /**
- * Built-in design tokens. Every themable value the renderer uses is a named
- * `--takuhon-*` custom property with a default here; owners re-skin the page by
- * overriding a subset via `settings.appearance` ({@link buildTokenCss}). The
- * static rules below reference only these variables, never hard-coded colors or
- * fonts, so an override propagates everywhere. `accent` and `primaryContrast`
- * are part of the public token vocabulary for owner overrides even though the
- * current minimal rules do not yet consume them.
+ * Overridable design tokens (light). Every color and the font the renderer uses
+ * is a named `--takuhon-*` custom property with a default here; owners re-skin
+ * the page by overriding a subset via `settings.appearance` ({@link
+ * buildTokenCss}). The static rules reference only these variables (and the
+ * internal tokens below), never hard-coded colors or fonts, so an override
+ * propagates everywhere.
  */
 const DEFAULT_TOKENS: Record<string, string> = {
-  '--takuhon-color-bg': '#fff',
-  '--takuhon-color-surface': '#f2f2f2',
-  '--takuhon-color-text': '#1a1a1a',
-  '--takuhon-color-text-muted': '#666',
-  '--takuhon-color-border': '#e5e5e5',
-  '--takuhon-color-primary': '#0b5fff',
-  '--takuhon-color-primary-contrast': '#fff',
-  '--takuhon-color-accent': '#0b5fff',
-  '--takuhon-font-family': 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+  '--takuhon-color-bg': '#ffffff',
+  '--takuhon-color-surface': '#f6f7f9',
+  '--takuhon-color-text': '#1f2933',
+  '--takuhon-color-text-muted': '#52606d',
+  '--takuhon-color-border': '#d8dee7',
+  '--takuhon-color-primary': '#2563eb',
+  '--takuhon-color-primary-contrast': '#ffffff',
+  '--takuhon-color-accent': '#4f46e5',
+  '--takuhon-font-family':
+    "system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif",
+};
+
+/**
+ * Default dark palette, applied under `prefers-color-scheme: dark`. Only colors
+ * flip in dark mode (the internal scale tokens are shared). Owner `colorsDark`
+ * overrides merge over these, exactly as `colors` merges over the light set.
+ */
+const DEFAULT_TOKENS_DARK: Record<string, string> = {
+  '--takuhon-color-bg': '#0f172a',
+  '--takuhon-color-surface': '#1e293b',
+  '--takuhon-color-text': '#e2e8f0',
+  '--takuhon-color-text-muted': '#94a3b8',
+  '--takuhon-color-border': '#334155',
+  '--takuhon-color-primary': '#60a5fa',
+  '--takuhon-color-primary-contrast': '#0f172a',
+  '--takuhon-color-accent': '#818cf8',
+};
+
+/**
+ * Internal design-scale tokens (spacing, radius, type scale, layout). These are
+ * NOT part of the `settings.appearance` override contract — they are the
+ * renderer's own layout vocabulary — so they are emitted in `:root` but not
+ * exposed as overridable schema keys. Kept in sync between light and dark.
+ */
+const INTERNAL_TOKENS: Record<string, string> = {
+  '--takuhon-space-1': '4px',
+  '--takuhon-space-2': '8px',
+  '--takuhon-space-3': '12px',
+  '--takuhon-space-4': '16px',
+  '--takuhon-space-5': '24px',
+  '--takuhon-space-6': '32px',
+  '--takuhon-radius-sm': '6px',
+  '--takuhon-radius-full': '9999px',
+  '--takuhon-font-size-sm': '14px',
+  '--takuhon-font-size-base': '16px',
+  '--takuhon-font-size-lg': '18px',
+  '--takuhon-font-size-xl': '22px',
+  '--takuhon-font-size-2xl': '28px',
+  '--takuhon-line-height': '1.7',
+  '--takuhon-max-content-width': '720px',
 };
 
 /** Map each `AppearanceColors` key to the CSS custom property it overrides. */
@@ -159,52 +199,66 @@ function rootBlock(pairs: Iterable<[string, string]>): string {
 }
 
 /**
- * Build the token stylesheet: the `:root` defaults merged with any owner
- * overrides, plus a `prefers-color-scheme: dark` block when `colorsDark` is
- * supplied. Only the fixed set of named tokens is ever emitted — never
- * arbitrary CSS — and every value is sanitized ({@link safeToken}).
+ * Build the token stylesheet:
+ * - `:root` = internal scale tokens + the light color/font defaults, with any
+ *   owner `colors`/`fontFamily` overrides merged on top.
+ * - a `prefers-color-scheme: dark` block = the default dark palette with any
+ *   owner `colorsDark` overrides merged on top.
+ *
+ * Only the fixed set of named tokens is ever emitted — never arbitrary CSS —
+ * and every overridable value is sanitized ({@link safeColor} / {@link
+ * safeFont}), so a value can neither escape the inline `<style>` nor trigger an
+ * external request.
  */
 function buildTokenCss(appearance: AppearanceSettings | undefined): string {
-  const tokens = new Map<string, string>(Object.entries(DEFAULT_TOKENS));
+  const light = new Map<string, string>([
+    ...Object.entries(INTERNAL_TOKENS),
+    ...Object.entries(DEFAULT_TOKENS),
+  ]);
   if (appearance) {
     const font = safeFont(appearance.fontFamily);
-    if (font !== undefined) tokens.set('--takuhon-font-family', font);
+    if (font !== undefined) light.set('--takuhon-font-family', font);
     for (const [cssVar, value] of colorOverrides(appearance.colors)) {
-      tokens.set(cssVar, value);
+      light.set(cssVar, value);
     }
   }
-  let css = rootBlock(tokens);
-  const dark = colorOverrides(appearance?.colorsDark);
-  if (dark.length > 0) {
-    css += `\n@media (prefers-color-scheme:dark){${rootBlock(dark)}}`;
+
+  const dark = new Map<string, string>(Object.entries(DEFAULT_TOKENS_DARK));
+  for (const [cssVar, value] of colorOverrides(appearance?.colorsDark)) {
+    dark.set(cssVar, value);
   }
-  return css;
+
+  return `${rootBlock(light)}\n@media (prefers-color-scheme:dark){${rootBlock(dark)}}`;
 }
 
 const CSS = `*{box-sizing:border-box}
-body{margin:0;color:var(--takuhon-color-text);font:16px/1.6 var(--takuhon-font-family);background:var(--takuhon-color-bg)}
-main{max-width:42rem;margin:0 auto;padding:2rem 1.25rem}
+html{font-size:100%}
+body{margin:0;color:var(--takuhon-color-text);background:var(--takuhon-color-bg);font-family:var(--takuhon-font-family);font-size:var(--takuhon-font-size-base);line-height:var(--takuhon-line-height);-webkit-text-size-adjust:100%}
+main{max-width:var(--takuhon-max-content-width);margin:0 auto;padding:var(--takuhon-space-6) var(--takuhon-space-4)}
 a{color:var(--takuhon-color-primary)}
-h1{font-size:1.9rem;margin:.2rem 0}
-h2{font-size:1.15rem;margin:2rem 0 .75rem;padding-bottom:.3rem;border-bottom:1px solid var(--takuhon-color-border)}
-h3{font-size:1rem;margin:0}
-header .avatar{width:96px;height:96px;border-radius:50%;object-fit:cover}
-.tagline{font-size:1.1rem;color:var(--takuhon-color-text-muted);margin:.2rem 0}
-.location{color:var(--takuhon-color-text-muted);margin:.2rem 0}
-.bio{margin:.75rem 0}
+a:focus-visible{outline:2px solid var(--takuhon-color-accent);outline-offset:2px;border-radius:var(--takuhon-radius-sm)}
+h1{font-size:var(--takuhon-font-size-2xl);font-weight:700;line-height:1.2;margin:0 0 var(--takuhon-space-2)}
+h2{font-size:var(--takuhon-font-size-xl);margin:0 0 var(--takuhon-space-3);padding-bottom:var(--takuhon-space-2);border-bottom:1px solid var(--takuhon-color-border)}
+h3{font-size:var(--takuhon-font-size-lg);font-weight:600;margin:0}
+header{margin-bottom:var(--takuhon-space-6);display:flow-root}
+header .avatar{width:96px;height:96px;border-radius:var(--takuhon-radius-full);object-fit:cover;float:left;margin:0 var(--takuhon-space-3) var(--takuhon-space-3) 0;shape-outside:circle();border:1px solid var(--takuhon-color-border)}
+.tagline{font-size:var(--takuhon-font-size-lg);color:var(--takuhon-color-text-muted);margin:0 0 var(--takuhon-space-2)}
+.location{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted);margin:0}
+.bio{margin:var(--takuhon-space-3) 0 0}
+section{margin:0 0 var(--takuhon-space-6)}
 ul{padding:0;margin:0;list-style:none}
-.entries>li{margin:0 0 1.1rem}
-.sub{margin:.1rem 0;font-weight:600}
-.meta{margin:.1rem 0;color:var(--takuhon-color-text-muted);font-size:.9rem}
-.links{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin:.75rem 0}
-.skills,.tags{display:flex;flex-wrap:wrap;gap:.4rem}
-.skills>li,.tags>li{background:var(--takuhon-color-surface);border-radius:1rem;padding:.15rem .6rem;font-size:.85rem}
-.rec{margin:0 0 1.1rem}
-.rec blockquote{margin:0;padding-left:.9rem;border-left:3px solid var(--takuhon-color-border)}
-.rec figcaption{color:var(--takuhon-color-text-muted);font-size:.9rem;margin-top:.3rem}
-nav.locales{display:flex;gap:.75rem;margin-bottom:1rem;font-size:.9rem}
+.entries>li{margin:0 0 var(--takuhon-space-4)}
+.sub{margin:var(--takuhon-space-1) 0 0;font-weight:600}
+.meta{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
+.links{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2) var(--takuhon-space-3);margin:var(--takuhon-space-3) 0}
+.skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
+.skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
+.rec{margin:0 0 var(--takuhon-space-4)}
+.rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
+.rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}
+nav.locales{display:flex;gap:var(--takuhon-space-3);margin-bottom:var(--takuhon-space-4);font-size:var(--takuhon-font-size-sm)}
 .activity svg{max-width:100%;height:auto}
-footer.powered{max-width:42rem;margin:0 auto;padding:1.5rem 1.25rem;color:var(--takuhon-color-text-muted);font-size:.85rem}`;
+footer.powered{max-width:var(--takuhon-max-content-width);margin:0 auto;padding:var(--takuhon-space-5) var(--takuhon-space-4);color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}`;
 
 interface EntryView {
   heading: string;
