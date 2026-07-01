@@ -430,3 +430,71 @@ describe('renderProfileHtml() links (brand icons + featured/other split)', () =>
     expect(html).toContain('<nav class="other-links"');
   });
 });
+
+describe('renderProfileHtml() section layouts (timeline / cards)', () => {
+  it('renders the Experience section as a timeline and marks the current role', () => {
+    const html = render(
+      localized({
+        careers: [
+          {
+            id: 'now',
+            organization: { en: 'Acme' },
+            role: { en: 'Staff Engineer' },
+            startDate: '2022-01',
+            isCurrent: true,
+          },
+          {
+            id: 'past',
+            organization: { en: 'Globex' },
+            role: { en: 'Engineer' },
+            startDate: '2019-01',
+            endDate: '2021-12',
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('<ul class="entries entries--timeline">');
+    // Only the ongoing role carries the is-current marker (accent dot); the
+    // inner entry markup is otherwise the shared renderEntry output.
+    expect((html.match(/<li class="is-current">/g) ?? []).length).toBe(1);
+  });
+
+  it('renders the Projects section as cards and marks a highlighted project', () => {
+    const html = render(
+      localized({
+        projects: [
+          { id: 'p1', title: { en: 'Alpha' }, highlighted: true },
+          { id: 'p2', title: { en: 'Beta' } },
+        ],
+      }),
+    );
+    expect(html).toContain('<ul class="entries entries--cards">');
+    expect((html.match(/<li class="is-highlighted">/g) ?? []).length).toBe(1);
+  });
+
+  it('leaves other entry sections as the default flat list (no variant)', () => {
+    const html = render(
+      localized({
+        // Clear the default career so the only timeline candidate is gone, then
+        // assert education keeps the plain `.entries` list.
+        careers: [],
+        education: [
+          {
+            id: 'e1',
+            institution: { en: 'State University' },
+            degree: { en: 'BSc' },
+            startDate: '2015-09',
+            endDate: '2019-06',
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('State University');
+    // The bare list — `<ul class="entries">` — is present (education), and no
+    // timeline/cards variant list is emitted. (The variant class names still
+    // appear as selectors in the <style> block, so assert on the <ul> element.)
+    expect(html).toContain('<ul class="entries">');
+    expect(html).not.toContain('<ul class="entries entries--timeline">');
+    expect(html).not.toContain('<ul class="entries entries--cards">');
+  });
+});
