@@ -6,7 +6,7 @@ This is a monorepo. Eleven publishable artifacts release in lockstep at the same
 
 ## [Unreleased]
 
-Design-token re-skin seam **and a refreshed default look with built-in dark mode** for the standard renderer — the first upstream steps of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.2.0 document unchanged.
+Design-token re-skin seam, **a refreshed default look with built-in dark mode**, and **brand-logo links with a featured/other split** for the standard renderer — the first upstream steps of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.2.0 document unchanged.
 
 ### Added — `@takuhon/core` (schema 1.1.0 → 1.2.0, non-breaking)
 
@@ -19,6 +19,8 @@ Design-token re-skin seam **and a refreshed default look with built-in dark mode
 ### Changed — `@takuhon/api` (design foundation, no schema change)
 
 - **Refreshed default look + built-in dark mode.** The standard renderer's built-in token values now carry a considered light palette and type/spacing scale (the design foundation of the bio-generalization track) and — new — a default `prefers-color-scheme: dark` palette, so every adapter that uses `renderProfileHtml` (Cloudflare, Vercel, static export, WordPress) gains dark mode out of the box. Owner `settings.appearance.colors` / `colorsDark` overrides merge over these light / dark defaults respectively. Internal design-scale tokens (spacing, radius, type scale) are emitted in `:root` for the renderer's own use but are intentionally **not** part of the overridable `settings.appearance` contract. **Markup is unchanged** — this is a CSS/token-value refresh only; richer per-section layouts and brand-icon links follow in later changes. A stylesheet snapshot test guards the shared renderer against unintended visual drift.
+
+- **Links: brand-logo glyphs + featured/other split.** The rendered profile's links are now two ordered pill groups — a prominent **Featured** grid followed by the rest — each carrying an inline brand-logo glyph for recognized link types (`github`, `gitlab`, `linkedin`, `x`, `mastodon`, `bluesky`, `instagram`, `youtube`, `threads`, `facebook`, `rss`). The split and ordering use only existing schema fields (`Link.featured`, `Link.order`); `website` / `blog` / `email` / `custom` render without a glyph rather than inventing one. Glyphs are inlined monochrome SVG drawn with `fill="currentColor"` — never an `<img>` — so the page needs no `img-src` beyond `'self'`, and links gain `rel="me noopener"`. Icon paths are bundled from Simple Icons (CC0) and, for LinkedIn, Bootstrap Icons (MIT); see the `@takuhon/api` NOTICE. (schema unchanged.)
 
 ## [1.1.0] - 2026-07-01
 
