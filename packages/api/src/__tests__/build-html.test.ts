@@ -403,6 +403,20 @@ describe('renderProfileHtml() links (brand icons + featured/other split)', () =>
     expect(html).toContain('Evil');
   });
 
+  it('reuses the RSS glyph for blog links (no invented icon)', () => {
+    const html = render(
+      localized({
+        links: [
+          { id: 'b', type: 'blog', url: 'https://blog.example', label: { en: 'Blog' } },
+          { id: 'f', type: 'rss', url: 'https://blog.example/feed.xml', label: { en: 'Feed' } },
+        ],
+      }),
+    );
+    // The blog link carries a brand-icon svg (the RSS glyph), same as the rss link.
+    expect((html.match(/<svg class="brand-icon"/g) ?? []).length).toBe(2);
+    expect(html).toContain('Blog');
+  });
+
   it('omits an empty group', () => {
     const html = render(
       localized({

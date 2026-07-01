@@ -4,9 +4,10 @@
  * Each entry is a single monochrome path drawn with `fill="currentColor"`, so a
  * link inherits its icon color from the surrounding text and the page never
  * needs an `img-src` beyond `'self'` (the glyphs are inlined into the HTML, not
- * fetched). Only link {@link LinkType}s that have an unambiguous brand mark are
- * covered; `website`, `blog`, `email`, and `custom` render without an icon
- * rather than inventing a generic glyph.
+ * fetched). Only link {@link LinkType}s that have an unambiguous mark are
+ * covered; `website`, `email`, and `custom` render without an icon rather than
+ * inventing a generic glyph. `blog` reuses the RSS glyph — the conventional
+ * feed/blog symbol — via {@link BRAND_ICON_ALIASES}.
  *
  * Sources & licensing (see this package's NOTICE):
  * - `linkedin` — Bootstrap Icons (MIT). simple-icons dropped the LinkedIn mark
@@ -75,15 +76,25 @@ const BRAND_ICONS: Partial<Record<LinkType, BrandIcon>> = {
 };
 
 /**
- * Inline SVG markup for a link type's brand glyph, or `''` when the type has no
- * brand mark (`website`, `blog`, `email`, `custom`, or an unknown value). The
- * glyph is decorative — the adjacent text label names the link — so it is
- * `aria-hidden`. The static `class="brand-icon"` and fixed viewBox are safe
- * literals; only the path data (a vetted constant, never user input) is
- * interpolated, and it is escaped for defense in depth.
+ * Link types that borrow another type's glyph rather than carry their own. A
+ * blog is not a brand, but the RSS mark is the conventional feed/blog symbol, so
+ * `blog` reuses the (already bundled, CC0) `rss` glyph instead of inventing a
+ * generic icon.
+ */
+const BRAND_ICON_ALIASES: Partial<Record<LinkType, LinkType>> = {
+  blog: 'rss',
+};
+
+/**
+ * Inline SVG markup for a link type's glyph, or `''` when the type has none
+ * (`website`, `email`, `custom`, or an unknown value). The glyph is
+ * decorative — the adjacent text label names the link — so it is `aria-hidden`.
+ * The static `class="brand-icon"` and fixed viewBox are safe literals; only the
+ * path data (a vetted constant, never user input) is interpolated, and it is
+ * escaped for defense in depth.
  */
 export function brandIconSvg(type: LinkType): string {
-  const icon = BRAND_ICONS[type];
+  const icon = BRAND_ICONS[BRAND_ICON_ALIASES[type] ?? type];
   if (!icon) return '';
   return (
     `<svg class="brand-icon" viewBox="${icon.viewBox}" width="18" height="18" ` +
