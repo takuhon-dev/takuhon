@@ -348,3 +348,85 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     expect(style).toMatchSnapshot();
   });
 });
+
+describe('renderProfileHtml() links (brand icons + featured/other split)', () => {
+  const linkDoc = {
+    links: [
+      { id: 'gh', type: 'github', url: 'https://github.com/pat', featured: true, order: 2 },
+      { id: 'li', type: 'linkedin', url: 'https://linkedin.com/in/pat', featured: true, order: 1 },
+      { id: 'site', type: 'website', url: 'https://pat.example', label: { en: 'Home' } },
+      { id: 'bad', type: 'website', url: 'javascript:alert(1)', label: { en: 'Evil' } },
+    ],
+  };
+
+  /** The `<nav class="…">…</nav>` block for a link group, or '' if absent. */
+  function navBlock(html: string, cls: string): string {
+    const re = new RegExp(`<nav class="${cls}"[\\s\\S]*?</nav>`);
+    return re.exec(html)?.[0] ?? '';
+  }
+
+  it('splits links into a featured group then an other group', () => {
+    const html = render(localized(linkDoc));
+    expect(html).toContain('<nav class="featured-links" aria-label="Featured links">');
+    expect(html).toContain('<nav class="other-links" aria-label="Links">');
+    // Featured group precedes the other group (compare the nav elements, not the
+    // shared `.featured-links,.other-links` CSS rule in the <style> block).
+    expect(html.indexOf('<nav class="featured-links"')).toBeLessThan(
+      html.indexOf('<nav class="other-links"'),
+    );
+  });
+
+  it('orders featured links by their `order` field', () => {
+    const featured = navBlock(render(localized(linkDoc)), 'featured-links');
+    // order 1 (linkedin) comes before order 2 (github).
+    expect(featured.indexOf('linkedin.com')).toBeLessThan(featured.indexOf('github.com'));
+  });
+
+  it('inlines a brand glyph for recognized types and none for the rest', () => {
+    const html = render(localized(linkDoc));
+    // github link carries an inline brand-icon svg with currentColor fill.
+    expect(html).toContain('<svg class="brand-icon"');
+    expect(html).toContain('fill="currentColor"');
+    // The glyph is inline SVG — never an <img> — so no img-src is needed.
+    expect(html).not.toContain('<img');
+    // website has no brand mark: its list item carries a link-main but no svg.
+    const other = navBlock(html, 'other-links');
+    expect(other).toContain('Home');
+    expect(other).not.toContain('<svg');
+  });
+
+  it('marks links rel="me noopener" and drops unsafe URLs to plain text', () => {
+    const html = render(localized(linkDoc));
+    expect(html).toContain('rel="me noopener"');
+    // The javascript: URL is not emitted as an href; its label survives as text.
+    expect(html).not.toContain('href="javascript:');
+    expect(html).toContain('Evil');
+  });
+
+  it('reuses the RSS glyph for blog links (no invented icon)', () => {
+    const html = render(
+      localized({
+        links: [
+          { id: 'b', type: 'blog', url: 'https://blog.example', label: { en: 'Blog' } },
+          { id: 'f', type: 'rss', url: 'https://blog.example/feed.xml', label: { en: 'Feed' } },
+        ],
+      }),
+    );
+    // The blog link carries a brand-icon svg (the RSS glyph), same as the rss link.
+    expect((html.match(/<svg class="brand-icon"/g) ?? []).length).toBe(2);
+    expect(html).toContain('Blog');
+  });
+
+  it('omits an empty group', () => {
+    const html = render(
+      localized({
+        links: [{ id: 'gh', type: 'github', url: 'https://github.com/pat' }],
+      }),
+    );
+    // No featured links → no featured-links nav element; the sole link is in
+    // other-links. (Both class names still appear in the <style> CSS rule, so
+    // assert on the nav element, not the bare substring.)
+    expect(html).not.toContain('<nav class="featured-links"');
+    expect(html).toContain('<nav class="other-links"');
+  });
+});

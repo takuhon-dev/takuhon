@@ -25,6 +25,7 @@ import type {
   LocalizedTakuhon,
 } from '@takuhon/core';
 
+import { brandIconSvg } from './brand-icons.js';
 import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
 
 // Re-exported for existing importers (e.g. dev-command, tests) that pull
@@ -130,7 +131,9 @@ const INTERNAL_TOKENS: Record<string, string> = {
   '--takuhon-space-5': '24px',
   '--takuhon-space-6': '32px',
   '--takuhon-radius-sm': '6px',
+  '--takuhon-radius-md': '12px',
   '--takuhon-radius-full': '9999px',
+  '--takuhon-tap-target': '44px',
   '--takuhon-font-size-sm': '14px',
   '--takuhon-font-size-base': '16px',
   '--takuhon-font-size-lg': '18px',
@@ -250,7 +253,13 @@ ul{padding:0;margin:0;list-style:none}
 .entries>li{margin:0 0 var(--takuhon-space-4)}
 .sub{margin:var(--takuhon-space-1) 0 0;font-weight:600}
 .meta{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
-.links{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2) var(--takuhon-space-3);margin:var(--takuhon-space-3) 0}
+.featured-links,.other-links{margin:0 0 var(--takuhon-space-6)}
+.featured-links>ul,.other-links>ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--takuhon-space-2)}
+.featured-links>ul{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.featured-links a,.other-links a{display:flex;align-items:center;gap:var(--takuhon-space-2);min-height:var(--takuhon-tap-target);padding:var(--takuhon-space-2) var(--takuhon-space-3);background:var(--takuhon-color-surface);color:var(--takuhon-color-text);text-decoration:none;border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md)}
+.featured-links a:hover,.other-links a:hover{border-color:var(--takuhon-color-accent)}
+.link-main{display:inline-flex;align-items:center;gap:var(--takuhon-space-2);min-width:0}
+.brand-icon{width:1.15em;height:1.15em;flex:none;opacity:.85}
 .skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
 .skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
 .rec{margin:0 0 var(--takuhon-space-4)}
@@ -311,16 +320,45 @@ function renderHeader(p: LocalizedProfile): string {
   return `<header>${parts.join('')}</header>`;
 }
 
+type LocalizedLink = LocalizedTakuhon['links'][number];
+
+/** Render one link as a pill: brand glyph (when the type has one) + label. */
+function renderLinkItem(link: LocalizedLink): string {
+  const label = escapeHtml(link.label ?? link.url);
+  const main = `<span class="link-main">${brandIconSvg(link.type)}<span>${label}</span></span>`;
+  const href = safeUrl(link.url);
+  // rel="me" declares these as the owner's own profiles (IndieWeb / Mastodon
+  // verification); noopener hardens the external navigation.
+  return href
+    ? `<li><a href="${escapeHtml(href)}" rel="me noopener">${main}</a></li>`
+    : `<li>${main}</li>`;
+}
+
+/** Ascending by `order` (absent sorts as 0), preserving input order on ties. */
+function byOrder(a: LocalizedLink, b: LocalizedLink): number {
+  return (a.order ?? 0) - (b.order ?? 0);
+}
+
+/**
+ * Render the links as two groups — featured first, then the rest — each an
+ * ordered pill list with an inline brand glyph for recognized types. Splitting
+ * on `featured` and sorting on `order` uses only existing schema fields; an
+ * empty group is omitted.
+ */
 function renderLinks(links: LocalizedTakuhon['links']): string {
   if (links.length === 0) return '';
-  const items = links
-    .map((l) => {
-      const text = escapeHtml(l.label ?? l.url);
-      const href = safeUrl(l.url);
-      return href ? `<li><a href="${escapeHtml(href)}">${text}</a></li>` : `<li>${text}</li>`;
-    })
-    .join('');
-  return `<nav aria-label="Links"><ul class="links">${items}</ul></nav>`;
+  const featured = links.filter((l) => l.featured === true).sort(byOrder);
+  const others = links.filter((l) => l.featured !== true).sort(byOrder);
+  const group = (cls: string, ariaLabel: string, items: LocalizedLink[]): string =>
+    items.length === 0
+      ? ''
+      : `<nav class="${cls}" aria-label="${ariaLabel}"><ul>${items.map(renderLinkItem).join('')}</ul></nav>`;
+  return [
+    group('featured-links', 'Featured links', featured),
+    group('other-links', 'Links', others),
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function renderSkills(skills: LocalizedTakuhon['skills']): string {
