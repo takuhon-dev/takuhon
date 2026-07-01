@@ -381,6 +381,55 @@ export interface Settings {
   publicVisibility?: PublicVisibility;
   /** Opt-in contact form (added in 1.1.0). Absent = no contact form. */
   contact?: ContactSettings;
+  /** Opt-in design tokens for the rendered profile (added in 1.2.0). Absent = built-in defaults. */
+  appearance?: AppearanceSettings;
+}
+
+/**
+ * Opt-in design tokens for the rendered profile (added in 1.2.0).
+ *
+ * A declarative re-skin seam: owners override the standard renderer's built-in
+ * color and font defaults. This is a token map only — never arbitrary CSS — so
+ * every value is length- and pattern-constrained (see the schema) and cannot
+ * break out of the inline `<style>`. Overriding tokens re-skins the page but
+ * cannot re-layout it; spacing, radius, and the type scale are intentionally
+ * not exposed. An absent block leaves the built-in defaults unchanged.
+ */
+export interface AppearanceSettings {
+  /** CSS font-family stack for the page body, e.g. `"Inter, system-ui, sans-serif"`. */
+  fontFamily?: string;
+  /** Light-mode (`:root`) color overrides. */
+  colors?: AppearanceColors;
+  /**
+   * Dark-mode (`prefers-color-scheme: dark`) color overrides. Until the
+   * standard renderer ships a default dark palette, only the keys set here
+   * change in dark mode.
+   */
+  colorsDark?: AppearanceColors;
+}
+
+/**
+ * Overridable color tokens (added in 1.2.0). Each value is a CSS color (hex,
+ * `rgb()`/`rgba()`, `hsl()`/`hsla()`, or a named color); CSS-structural
+ * characters are disallowed so a value cannot escape the inline `<style>`.
+ */
+export interface AppearanceColors {
+  /** Page background. */
+  bg?: string;
+  /** Raised surfaces such as skill/tag chips. */
+  surface?: string;
+  /** Primary body text. */
+  text?: string;
+  /** Secondary/muted text (taglines, meta, captions). */
+  textMuted?: string;
+  /** Hairline borders and rules. */
+  border?: string;
+  /** Accent color for emphasis and focus affordances. */
+  accent?: string;
+  /** Primary interactive color, e.g. links. */
+  primary?: string;
+  /** Foreground color used on top of the primary color. */
+  primaryContrast?: string;
 }
 
 /**

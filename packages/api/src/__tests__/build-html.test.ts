@@ -195,3 +195,128 @@ describe('renderProfileHtml()', () => {
     expect(html).not.toContain('contact-widget.css');
   });
 });
+
+describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
+  /** Build a localized doc whose settings carry the given appearance block. */
+  function withAppearance(appearance: unknown): LocalizedTakuhon {
+    return localized({
+      settings: { defaultLocale: 'en', availableLocales: ['en'], appearance },
+    });
+  }
+
+  it('emits the built-in :root token defaults when appearance is absent', () => {
+    const html = render(localized());
+    expect(html).toContain(':root{');
+    expect(html).toContain('--takuhon-color-bg:#fff');
+    expect(html).toContain('--takuhon-color-text:#1a1a1a');
+    expect(html).toContain('--takuhon-color-primary:#0b5fff');
+    expect(html).toContain('--takuhon-font-family:');
+    // No dark block is emitted without colorsDark.
+    expect(html).not.toContain('prefers-color-scheme:dark');
+  });
+
+  it('the static rules reference tokens, not hard-coded colors', () => {
+    const html = render(localized());
+    expect(html).toContain('background:var(--takuhon-color-bg)');
+    expect(html).toContain('color:var(--takuhon-color-text)');
+    expect(html).toContain('a{color:var(--takuhon-color-primary)}');
+    // The pre-token literals are gone.
+    expect(html).not.toContain('background:#fff}');
+    expect(html).not.toContain('color:var(--muted)');
+  });
+
+  it('merges owner color and font overrides into :root (override wins)', () => {
+    const html = render(
+      withAppearance({
+        fontFamily: 'Inter, system-ui, sans-serif',
+        colors: { bg: '#0b1020', text: 'rgb(230, 236, 245)', accent: '#f59e0b' },
+      }),
+    );
+    expect(html).toContain('--takuhon-color-bg:#0b1020');
+    expect(html).toContain('--takuhon-color-text:rgb(230, 236, 245)');
+    expect(html).toContain('--takuhon-color-accent:#f59e0b');
+    expect(html).toContain('--takuhon-font-family:Inter, system-ui, sans-serif');
+    // A token the owner did not set keeps its default.
+    expect(html).toContain('--takuhon-color-border:#e5e5e5');
+    // Each token is declared once (the override replaces the default, not appends).
+    expect(html.match(/--takuhon-color-bg:/g)).toHaveLength(1);
+  });
+
+  it('emits a prefers-color-scheme: dark block only for colorsDark keys', () => {
+    const html = render(
+      withAppearance({
+        colors: { bg: '#ffffff' },
+        colorsDark: { bg: '#0f172a', text: '#e2e8f0' },
+      }),
+    );
+    const darkMatch = /@media \(prefers-color-scheme:dark\)\{:root\{([^}]*)\}\}/.exec(html);
+    expect(darkMatch).not.toBeNull();
+    const darkBlock = darkMatch![1];
+    expect(darkBlock).toContain('--takuhon-color-bg:#0f172a');
+    expect(darkBlock).toContain('--takuhon-color-text:#e2e8f0');
+    // Dark block carries only the overridden keys, not the full default set.
+    expect(darkBlock).not.toContain('--takuhon-color-border');
+  });
+
+  it('drops unsafe token values and keeps the default (CSS-injection guard)', () => {
+    const html = render(
+      withAppearance({
+        colors: {
+          // Attempts to close the declaration / element are rejected outright.
+          bg: 'red;} body{display:none',
+          text: '#111} </style><script>alert(1)</script>',
+          accent: '#00ff00',
+        },
+      }),
+    );
+    // Malicious values never reach the stylesheet.
+    expect(html).not.toContain('display:none');
+    expect(html).not.toContain('</style><script>');
+    // The rejected tokens fall back to their defaults; the safe one is applied.
+    expect(html).toContain('--takuhon-color-bg:#fff');
+    expect(html).toContain('--takuhon-color-text:#1a1a1a');
+    expect(html).toContain('--takuhon-color-accent:#00ff00');
+  });
+
+  it('drops url()/fetch-bearing color values (no external-request injection)', () => {
+    const html = render(
+      withAppearance({
+        colors: {
+          // These carry no ;{}<> yet would trigger a third-party fetch or a
+          // reference if emitted verbatim. Only an allowlist stops them.
+          bg: 'url(//evil.example/track.png)',
+          surface: 'url(track.png)',
+          text: 'image-set(a.png)',
+          border: 'var(--x)',
+          accent: 'rgb(0, 255, 0)', // a legitimate function value still passes
+        },
+      }),
+    );
+    expect(html).not.toContain('evil.example');
+    expect(html).not.toContain('url(');
+    expect(html).not.toContain('image-set(');
+    expect(html).not.toContain('var(--x)');
+    // Rejected tokens keep defaults; the valid rgb() override is applied.
+    expect(html).toContain('--takuhon-color-bg:#fff');
+    expect(html).toContain('--takuhon-color-accent:rgb(0, 255, 0)');
+  });
+
+  it('accepts hex, named, and modern color functions', () => {
+    const html = render(
+      withAppearance({
+        colors: {
+          bg: '#0b1020',
+          surface: 'rebeccapurple',
+          text: 'currentColor',
+          border: 'hsl(210 40% 20%)',
+          accent: 'oklch(0.7 0.1 200 / 0.5)',
+        },
+      }),
+    );
+    expect(html).toContain('--takuhon-color-bg:#0b1020');
+    expect(html).toContain('--takuhon-color-surface:rebeccapurple');
+    expect(html).toContain('--takuhon-color-text:currentColor');
+    expect(html).toContain('--takuhon-color-border:hsl(210 40% 20%)');
+    expect(html).toContain('--takuhon-color-accent:oklch(0.7 0.1 200 / 0.5)');
+  });
+});

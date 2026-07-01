@@ -18,14 +18,14 @@ describe('deriveBundle', () => {
     // The default locale first, then the rest.
     expect(bundle.meta.locales).toEqual(['en', 'ja']);
     expect(bundle.meta.default_locale).toBe('en');
-    expect(bundle.meta.schema_version).toBe('1.1.0');
+    expect(bundle.meta.schema_version).toBe('1.2.0');
     expect(bundle.meta.generated_at).toBe(STAMP);
 
     // A privacy-filtered, locale-resolved profile envelope per locale.
     expect(Object.keys(bundle.profiles).sort()).toEqual(['en', 'ja']);
     expect(bundle.profiles.en?.meta.locale).toBe('en');
     expect(bundle.profiles.ja?.meta.locale).toBe('ja');
-    expect(bundle.profiles.en?.meta.schemaVersion).toBe('1.1.0');
+    expect(bundle.profiles.en?.meta.schemaVersion).toBe('1.2.0');
 
     // JSON-LD per locale.
     expect(Object.keys(bundle.jsonld).sort()).toEqual(['en', 'ja']);
