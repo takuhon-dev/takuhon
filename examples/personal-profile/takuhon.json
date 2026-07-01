@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.2.0",
+  "schemaVersion": "1.3.0",
   "profile": {
     "displayName": {
       "en": "Pat Rivera",
@@ -489,7 +489,15 @@
     "showPoweredBy": true,
     "enableJsonLd": true,
     "enableApi": true,
-    "enableAnalytics": false
+    "enableAnalytics": false,
+    "skillCategories": [
+      { "id": "programming", "label": { "en": "Programming", "ja": "プログラミング" } },
+      {
+        "id": "design",
+        "label": { "en": "Design & accessibility", "ja": "デザイン・アクセシビリティ" }
+      },
+      { "id": "language", "label": { "en": "Languages", "ja": "言語" } }
+    ]
   },
   "meta": {
     "createdAt": "2026-01-15T09:00:00Z",

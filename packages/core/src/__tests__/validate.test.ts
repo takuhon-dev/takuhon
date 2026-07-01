@@ -30,7 +30,7 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('1.2.0');
+      expect(result.data.schemaVersion).toBe('1.3.0');
     }
   });
 

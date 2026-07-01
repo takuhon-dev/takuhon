@@ -52,7 +52,7 @@ describe('exportTakuhon', () => {
 describe('importTakuhon', () => {
   it('returns a Takuhon for a valid input', () => {
     const out = importTakuhon(cloneExample());
-    expect(out.schemaVersion).toBe('1.2.0');
+    expect(out.schemaVersion).toBe('1.3.0');
     expect(out.profile.displayName).toBeDefined();
   });
 

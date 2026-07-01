@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/1.2.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/1.3.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -312,6 +312,23 @@
         "order": { "type": "integer", "minimum": 0 }
       }
     },
+    "SkillCategory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Matches the `category` value on the skills that belong to this group."
+        },
+        "label": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "Localized display heading for the group."
+        }
+      }
+    },
     "Contact": {
       "type": "object",
       "additionalProperties": false,
@@ -364,7 +381,13 @@
         "activity": { "$ref": "#/$defs/ActivitySettings" },
         "publicVisibility": { "$ref": "#/$defs/PublicVisibility" },
         "contact": { "$ref": "#/$defs/ContactSettings" },
-        "appearance": { "$ref": "#/$defs/AppearanceSettings" }
+        "appearance": { "$ref": "#/$defs/AppearanceSettings" },
+        "skillCategories": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/SkillCategory" },
+          "description": "Ordered skill-category display groups (added in 1.3.0). When present, the rendered profile groups skills by their `category` under these localized headings, in array order; absent = the flat skill list. A skill whose `category` is not listed here (or which has none) renders in a trailing group so nothing is dropped."
+        }
       }
     },
     "AppearanceSettings": {
