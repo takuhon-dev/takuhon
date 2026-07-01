@@ -251,6 +251,14 @@ header .avatar{width:96px;height:96px;border-radius:var(--takuhon-radius-full);o
 section{margin:0 0 var(--takuhon-space-6)}
 ul{padding:0;margin:0;list-style:none}
 .entries>li{margin:0 0 var(--takuhon-space-4)}
+.entries--timeline>li{position:relative;display:flex;flex-direction:column;margin:0 0 0 var(--takuhon-space-2);padding:0 0 var(--takuhon-space-5) var(--takuhon-space-4);border-left:2px solid var(--takuhon-color-border)}
+.entries--timeline>li:last-child{padding-bottom:0}
+.entries--timeline>li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:var(--takuhon-radius-full);background:var(--takuhon-color-primary)}
+.entries--timeline>li.is-current::before{background:var(--takuhon-color-accent)}
+.entries--timeline .meta{order:-1;margin:0 0 var(--takuhon-space-1)}
+.entries--cards{display:grid;gap:var(--takuhon-space-3)}
+.entries--cards>li{margin:0;padding:var(--takuhon-space-4);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md);background:var(--takuhon-color-surface)}
+.entries--cards>li.is-highlighted{border-color:var(--takuhon-color-accent)}
 .sub{margin:var(--takuhon-space-1) 0 0;font-weight:600}
 .meta{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 .featured-links,.other-links{margin:0 0 var(--takuhon-space-6)}
@@ -276,7 +284,28 @@ interface EntryView {
   body?: string;
   url?: string;
   tags?: readonly string[];
+  /**
+   * Timeline-variant "ongoing" marker (from `career.isCurrent` etc.) → an
+   * `is-current` class on the `<li>` so the timeline dot uses the accent color.
+   */
+  current?: boolean;
+  /**
+   * Card-variant highlight (from `project.highlighted`) → an `is-highlighted`
+   * class on the `<li>` so the card gets an accent border.
+   */
+  highlighted?: boolean;
 }
+
+/**
+ * Layout variant for a section's entry list. Undefined = the default flat list;
+ * `timeline` decorates each `<li>` as a dotted left-border timeline row (dates
+ * float to the top via CSS order); `cards` lays the entries out as bordered
+ * surface cards (intentionally single-column within the reading-width column —
+ * long descriptions stay readable — not a responsive multi-column grid). Only
+ * the container/`<li>` decoration differs — the inner {@link renderEntry}
+ * markup is identical across all three.
+ */
+type EntriesVariant = 'timeline' | 'cards';
 
 function renderEntry(entry: EntryView): string {
   const href = entry.url ? safeUrl(entry.url) : undefined;
@@ -287,6 +316,10 @@ function renderEntry(entry: EntryView): string {
   if (entry.sub) parts.push(`<p class="sub">${escapeHtml(entry.sub)}</p>`);
   // `entry.dates` is already an escaped HTML fragment from `dateRange` (localized
   // <time> elements), so it is inserted raw rather than re-escaped.
+  // NOTE: the `timeline` variant hoists this `.meta` above the heading via CSS
+  // `order:-1`, which only works while `.meta` stays a *direct child* of the
+  // entry `<li>`. Keep these entry parts as flat siblings — do not wrap them in
+  // a container div, or the date-first timeline ordering silently breaks.
   if (entry.dates) parts.push(`<p class="meta">${entry.dates}</p>`);
   if (entry.body) parts.push(`<p>${escapeHtml(entry.body)}</p>`);
   if (entry.tags && entry.tags.length > 0) {
@@ -294,13 +327,19 @@ function renderEntry(entry: EntryView): string {
       `<ul class="tags">${entry.tags.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`,
     );
   }
-  return `<li>${parts.join('')}</li>`;
+  // Both markers come from real schema booleans; only the relevant one is ever
+  // set per section (`current` for careers, `highlighted` for projects).
+  const cls = [entry.current ? 'is-current' : '', entry.highlighted ? 'is-highlighted' : '']
+    .filter(Boolean)
+    .join(' ');
+  return `<li${cls ? ` class="${cls}"` : ''}>${parts.join('')}</li>`;
 }
 
 /** Render a `<section>` of entries, or `''` when there are none. */
-function entryList(title: string, entries: readonly EntryView[]): string {
+function entryList(title: string, entries: readonly EntryView[], variant?: EntriesVariant): string {
   if (entries.length === 0) return '';
-  return `<section><h2>${escapeHtml(title)}</h2><ul class="entries">${entries
+  const cls = variant ? `entries entries--${variant}` : 'entries';
+  return `<section><h2>${escapeHtml(title)}</h2><ul class="${cls}">${entries
     .map(renderEntry)
     .join('')}</ul></section>`;
 }
@@ -478,7 +517,9 @@ export function renderProfileHtml(input: RenderInput): string {
         }),
         body: c.description,
         url: c.url,
+        current: c.isCurrent,
       })),
+      'timeline',
     ),
     entryList(
       'Projects',
@@ -488,7 +529,9 @@ export function renderProfileHtml(input: RenderInput): string {
         body: x.description,
         url: x.url,
         tags: x.tags,
+        highlighted: x.highlighted,
       })),
+      'cards',
     ),
     renderSkills(d.skills),
     renderActivity(input.activitySnapshot),
