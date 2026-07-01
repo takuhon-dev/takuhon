@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/contact",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Portable, framework-agnostic contact-form core for takuhon — validation, a stateless inquiry pipeline, and challenge/email transport interfaces. Host wiring (e.g. Cloudflare Turnstile + send_email) lives in the adapters.",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",

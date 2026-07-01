@@ -10,4 +10,4 @@
  * minors, which is what made this pin load-bearing; from 1.0.0 the pin keeps
  * the scaffold on the same lockstep generation the guard asserts.)
  */
-export const TAKUHON_DEP_RANGE = '^1.0.0';
+export const TAKUHON_DEP_RANGE = '^1.1.0';

@@ -4,7 +4,9 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
-## [Unreleased]
+## [1.1.0] - 2026-07-01
+
+Minor release. Ships the **turnkey contact form**: the `@takuhon/contact` widget is now a configuration-only feature on the standard Cloudflare deployment — enable `settings.contact` (with a public Turnstile site key), wire the `send_email` binding and the Turnstile secret, and the server-rendered profile page embeds the widget while the Worker serves its assets and the `POST /api/contact` endpoint. Non-breaking: a valid 1.0.0 document is a valid 1.1.0 document unchanged.
 
 ### Added — `@takuhon/core` (schema 1.0.0 → 1.1.0, non-breaking)
 
@@ -23,6 +25,10 @@ This is a monorepo. Eleven publishable artifacts release in lockstep at the same
 ### Added — `@takuhon/cli` & `create-takuhon`
 
 - **Scaffold documents the turnkey contact form.** A freshly scaffolded Cloudflare project now ships the contact wiring as opt-in, commented-out config (mirroring the R2 / activity blocks): `wrangler.toml` gains a commented `[[send_email]]` binding named `TAKUHON_CONTACT_EMAIL` plus recipient/From `[vars]` guidance and the `wrangler secret put TAKUHON_TURNSTILE_SECRET` step; `.env.example` lists `TAKUHON_CONTACT_TO` / `TAKUHON_CONTACT_FROM` / `TAKUHON_TURNSTILE_SECRET`; and the README's new "Contact form (optional)" section gives the `settings.contact` snippet and the four enable steps. A default `wrangler deploy` still works untouched (everything ships commented), and the documented names/conditions/degrade codes match the `@takuhon/cloudflare` adapter exactly. (Scaffolded `takuhon.json` stays the minimal profile; contact is documented, not baked in.)
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump from `1.0.0` to `1.1.0` — the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The scaffold's pinned `@takuhon/*` caret range (`TAKUHON_DEP_RANGE`) advances to `^1.1.0`. (`apps/admin`, `apps/playground`, `adapters/static`, and `adapters/wordpress` are private and not published.)
 
 ## [1.0.0] - 2026-06-30
 
