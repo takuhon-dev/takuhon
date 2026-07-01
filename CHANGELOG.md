@@ -6,7 +6,7 @@ This is a monorepo. Eleven publishable artifacts release in lockstep at the same
 
 ## [Unreleased]
 
-Design-token re-skin seam for the standard renderer — the first upstream step of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.2.0 document unchanged.
+Design-token re-skin seam **and a refreshed default look with built-in dark mode** for the standard renderer — the first upstream steps of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.2.0 document unchanged.
 
 ### Added — `@takuhon/core` (schema 1.1.0 → 1.2.0, non-breaking)
 
@@ -14,7 +14,11 @@ Design-token re-skin seam for the standard renderer — the first upstream step 
 
 ### Added — `@takuhon/api`
 
-- **The standard renderer honors `settings.appearance`.** `renderProfileHtml` now emits a `:root` block of named `--takuhon-*` design tokens (colors + font family) and merges any `settings.appearance` overrides over the built-in defaults, plus a `prefers-color-scheme: dark` block when `colorsDark` is supplied. The static stylesheet was refactored to reference these tokens instead of hard-coded colors, so a single override propagates everywhere. As defense in depth beyond the schema pattern, every token value is re-sanitized at render time and any value carrying a CSS-structural character (`; { } < > \`) is dropped in favor of the default. Visual defaults are unchanged; this ships the token vocabulary and the override seam only (the richer bio-derived default look follows in a subsequent change).
+- **The standard renderer honors `settings.appearance`.** `renderProfileHtml` now emits a `:root` block of named `--takuhon-*` design tokens (colors + font family) and merges any `settings.appearance` overrides over the built-in defaults, plus the `prefers-color-scheme: dark` block. The static stylesheet was refactored to reference these tokens instead of hard-coded colors, so a single override propagates everywhere. As defense in depth beyond the schema pattern, every color value is re-sanitized at render time against the same allowlist (hex / keyword / known color function); `url()`, `image-set()`, `var()`, and anything carrying a CSS-structural character are dropped in favor of the default, so a value can neither escape the inline `<style>` nor trigger an external request.
+
+### Changed — `@takuhon/api` (design foundation, no schema change)
+
+- **Refreshed default look + built-in dark mode.** The standard renderer's built-in token values now carry a considered light palette and type/spacing scale (the design foundation of the bio-generalization track) and — new — a default `prefers-color-scheme: dark` palette, so every adapter that uses `renderProfileHtml` (Cloudflare, Vercel, static export, WordPress) gains dark mode out of the box. Owner `settings.appearance.colors` / `colorsDark` overrides merge over these light / dark defaults respectively. Internal design-scale tokens (spacing, radius, type scale) are emitted in `:root` for the renderer's own use but are intentionally **not** part of the overridable `settings.appearance` contract. **Markup is unchanged** — this is a CSS/token-value refresh only; richer per-section layouts and brand-icon links follow in later changes. A stylesheet snapshot test guards the shared renderer against unintended visual drift.
 
 ## [1.1.0] - 2026-07-01
 

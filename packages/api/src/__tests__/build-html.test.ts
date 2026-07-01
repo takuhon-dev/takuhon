@@ -204,15 +204,35 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     });
   }
 
-  it('emits the built-in :root token defaults when appearance is absent', () => {
+  /** Extract the declarations inside the `prefers-color-scheme: dark` `:root` block. */
+  function darkRoot(html: string): string {
+    const m = /@media \(prefers-color-scheme:dark\)\{:root\{([^}]*)\}\}/.exec(html);
+    expect(m).not.toBeNull();
+    return m?.[1] ?? '';
+  }
+
+  /** Extract the declarations inside the light `:root` block (first match). */
+  function lightRoot(html: string): string {
+    const m = /:root\{([^}]*)\}/.exec(html);
+    expect(m).not.toBeNull();
+    return m?.[1] ?? '';
+  }
+
+  it('emits the built-in :root token defaults plus a default dark block when appearance is absent', () => {
     const html = render(localized());
     expect(html).toContain(':root{');
-    expect(html).toContain('--takuhon-color-bg:#fff');
-    expect(html).toContain('--takuhon-color-text:#1a1a1a');
-    expect(html).toContain('--takuhon-color-primary:#0b5fff');
+    // Light defaults.
+    expect(html).toContain('--takuhon-color-bg:#ffffff');
+    expect(html).toContain('--takuhon-color-text:#1f2933');
+    expect(html).toContain('--takuhon-color-primary:#2563eb');
     expect(html).toContain('--takuhon-font-family:');
-    // No dark block is emitted without colorsDark.
-    expect(html).not.toContain('prefers-color-scheme:dark');
+    // Internal design-scale tokens (not owner-overridable) are also emitted.
+    expect(html).toContain('--takuhon-space-4:16px');
+    expect(html).toContain('--takuhon-line-height:1.7');
+    // A default dark palette now ships (standard renderer gained dark mode).
+    const darkBlock = darkRoot(html);
+    expect(darkBlock).toContain('--takuhon-color-bg:#0f172a');
+    expect(darkBlock).toContain('--takuhon-color-text:#e2e8f0');
   });
 
   it('the static rules reference tokens, not hard-coded colors', () => {
@@ -236,26 +256,24 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     expect(html).toContain('--takuhon-color-text:rgb(230, 236, 245)');
     expect(html).toContain('--takuhon-color-accent:#f59e0b');
     expect(html).toContain('--takuhon-font-family:Inter, system-ui, sans-serif');
-    // A token the owner did not set keeps its default.
-    expect(html).toContain('--takuhon-color-border:#e5e5e5');
-    // Each token is declared once (the override replaces the default, not appends).
-    expect(html.match(/--takuhon-color-bg:/g)).toHaveLength(1);
+    // A token the owner did not set keeps its light default.
+    expect(html).toContain('--takuhon-color-border:#d8dee7');
+    // Each token is declared once in :root (the override replaces the default).
+    expect(lightRoot(html).match(/--takuhon-color-bg:/g)).toHaveLength(1);
   });
 
-  it('emits a prefers-color-scheme: dark block only for colorsDark keys', () => {
+  it('merges owner colorsDark over the default dark palette (override wins, others keep dark defaults)', () => {
     const html = render(
       withAppearance({
-        colors: { bg: '#ffffff' },
-        colorsDark: { bg: '#0f172a', text: '#e2e8f0' },
+        colorsDark: { bg: '#000000', text: '#ffffff' },
       }),
     );
-    const darkMatch = /@media \(prefers-color-scheme:dark\)\{:root\{([^}]*)\}\}/.exec(html);
-    expect(darkMatch).not.toBeNull();
-    const darkBlock = darkMatch![1];
-    expect(darkBlock).toContain('--takuhon-color-bg:#0f172a');
-    expect(darkBlock).toContain('--takuhon-color-text:#e2e8f0');
-    // Dark block carries only the overridden keys, not the full default set.
-    expect(darkBlock).not.toContain('--takuhon-color-border');
+    const darkBlock = darkRoot(html);
+    // Owner overrides win in the dark block.
+    expect(darkBlock).toContain('--takuhon-color-bg:#000000');
+    expect(darkBlock).toContain('--takuhon-color-text:#ffffff');
+    // A dark token the owner did not set keeps the built-in dark default.
+    expect(darkBlock).toContain('--takuhon-color-border:#334155');
   });
 
   it('drops unsafe token values and keeps the default (CSS-injection guard)', () => {
@@ -273,8 +291,8 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     expect(html).not.toContain('display:none');
     expect(html).not.toContain('</style><script>');
     // The rejected tokens fall back to their defaults; the safe one is applied.
-    expect(html).toContain('--takuhon-color-bg:#fff');
-    expect(html).toContain('--takuhon-color-text:#1a1a1a');
+    expect(html).toContain('--takuhon-color-bg:#ffffff');
+    expect(html).toContain('--takuhon-color-text:#1f2933');
     expect(html).toContain('--takuhon-color-accent:#00ff00');
   });
 
@@ -297,7 +315,7 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     expect(html).not.toContain('image-set(');
     expect(html).not.toContain('var(--x)');
     // Rejected tokens keep defaults; the valid rgb() override is applied.
-    expect(html).toContain('--takuhon-color-bg:#fff');
+    expect(html).toContain('--takuhon-color-bg:#ffffff');
     expect(html).toContain('--takuhon-color-accent:rgb(0, 255, 0)');
   });
 
@@ -318,5 +336,15 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     expect(html).toContain('--takuhon-color-text:currentColor');
     expect(html).toContain('--takuhon-color-border:hsl(210 40% 20%)');
     expect(html).toContain('--takuhon-color-accent:oklch(0.7 0.1 200 / 0.5)');
+  });
+
+  // Visual-regression guard for the shared string renderer: the whole <style>
+  // block (tokens + static rules) is snapshotted so any unintended change to the
+  // default look — across every adapter that uses renderProfileHtml — shows up as
+  // a reviewable diff. Update deliberately with `vitest -u` when the design changes.
+  it('matches the design-foundation stylesheet snapshot', () => {
+    const html = render(localized());
+    const style = /<style>([\s\S]*?)<\/style>/.exec(html)![1];
+    expect(style).toMatchSnapshot();
   });
 });
