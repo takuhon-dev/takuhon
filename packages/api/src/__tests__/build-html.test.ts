@@ -472,6 +472,68 @@ describe('renderProfileHtml() section layouts (timeline / cards)', () => {
     expect((html.match(/<li class="is-highlighted">/g) ?? []).length).toBe(1);
   });
 
+  it('renders a flat skill chip list when no categories are configured', () => {
+    const html = render(
+      localized({
+        skills: [
+          { id: 'ts', label: 'TypeScript', category: 'programming' },
+          { id: 'misc', label: 'Curiosity' },
+        ],
+      }),
+    );
+    expect(html).toContain('<ul class="skills">');
+    // No grouping container element (the class name still appears as a <style> selector).
+    expect(html).not.toContain('<div class="skills-groups">');
+  });
+
+  it('groups skills under configured localized headings, in declared order, dropping none', () => {
+    const html = render(
+      localized({
+        skills: [
+          { id: 'ts', label: 'TypeScript', category: 'programming' },
+          { id: 'react', label: 'React', category: 'programming' },
+          { id: 'wcag', label: 'WCAG', category: 'design' },
+          { id: 'k8s', label: 'Kubernetes', category: 'cloud-infra' },
+          { id: 'misc', label: 'Curiosity' },
+        ],
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          skillCategories: [
+            { id: 'design', label: { en: 'Design & a11y' } },
+            { id: 'programming', label: { en: 'Programming' } },
+          ],
+        },
+      }),
+    );
+    expect(html).toContain('<div class="skills-groups">');
+    expect(html).toContain('<div class="skill-group"><h3>Design &amp; a11y</h3>');
+    expect(html).toContain('<h3>Programming</h3>');
+    // Declared order wins over first-seen data order (design precedes programming).
+    expect(html.indexOf('<h3>Design &amp; a11y</h3>')).toBeLessThan(
+      html.indexOf('<h3>Programming</h3>'),
+    );
+    // A category present on a skill but not configured heads a trailing group with its raw key.
+    expect(html).toContain('<h3>cloud-infra</h3>');
+    // The uncategorized skill is never dropped (trailing heading-less group).
+    expect(html).toContain('Curiosity');
+  });
+
+  it('localizes category headings for the resolved locale', () => {
+    const doc = {
+      skills: [{ id: 'ts', label: 'TypeScript', category: 'programming' }],
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en', 'ja'],
+        skillCategories: [
+          { id: 'programming', label: { en: 'Programming', ja: 'プログラミング' } },
+        ],
+      },
+    };
+    expect(render(localized(doc, 'ja'))).toContain('<h3>プログラミング</h3>');
+    expect(render(localized(doc, 'en'))).toContain('<h3>Programming</h3>');
+  });
+
   it('leaves other entry sections as the default flat list (no variant)', () => {
     const html = render(
       localized({

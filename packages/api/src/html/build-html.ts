@@ -270,6 +270,8 @@ ul{padding:0;margin:0;list-style:none}
 .brand-icon{width:1.15em;height:1.15em;flex:none;opacity:.85}
 .skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
 .skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
+.skills-groups{display:grid;gap:var(--takuhon-space-4)}
+.skill-group h3{font-size:var(--takuhon-font-size-base);margin:0 0 var(--takuhon-space-2);color:var(--takuhon-color-text-muted);text-transform:uppercase;letter-spacing:.04em}
 .rec{margin:0 0 var(--takuhon-space-4)}
 .rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
 .rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}
@@ -400,10 +402,58 @@ function renderLinks(links: LocalizedTakuhon['links']): string {
     .join('\n');
 }
 
-function renderSkills(skills: LocalizedTakuhon['skills']): string {
+type LocalizedSkill = LocalizedTakuhon['skills'][number];
+
+/**
+ * Render the Skills section. With no `settings.skillCategories` it stays a flat
+ * chip list (the default). When categories are configured, skills are grouped
+ * by their `category` under the configured localized headings in declared
+ * order; any category present on a skill but not configured renders after, with
+ * its raw key as the heading; and uncategorized skills fall into a final,
+ * heading-less group — so no skill is ever dropped.
+ */
+function renderSkills(
+  skills: LocalizedTakuhon['skills'],
+  categories: LocalizedTakuhon['settings']['skillCategories'],
+): string {
   if (skills.length === 0) return '';
-  const items = skills.map((s) => `<li>${escapeHtml(s.label)}</li>`).join('');
-  return `<section><h2>Skills</h2><ul class="skills">${items}</ul></section>`;
+  const chips = (list: readonly LocalizedSkill[]): string =>
+    `<ul class="skills">${list.map((s) => `<li>${escapeHtml(s.label)}</li>`).join('')}</ul>`;
+
+  if (!categories || categories.length === 0) {
+    return `<section><h2>Skills</h2>${chips(skills)}</section>`;
+  }
+
+  // Bucket by category, preserving input order within each bucket. `category`
+  // has minLength 1 in the schema, so '' is a safe marker for "uncategorized".
+  const UNCAT = '';
+  const buckets = new Map<string, LocalizedSkill[]>();
+  for (const s of skills) {
+    const key = s.category ?? UNCAT;
+    const arr = buckets.get(key) ?? [];
+    arr.push(s);
+    buckets.set(key, arr);
+  }
+
+  const group = (heading: string | undefined, list: readonly LocalizedSkill[]): string =>
+    `<div class="skill-group">${heading !== undefined ? `<h3>${escapeHtml(heading)}</h3>` : ''}${chips(list)}</div>`;
+
+  const seen = new Set<string>();
+  const groups: string[] = [];
+  for (const cat of categories) {
+    const list = buckets.get(cat.id);
+    if (!list || list.length === 0) continue;
+    seen.add(cat.id);
+    groups.push(group(cat.label, list));
+  }
+  for (const [key, list] of buckets) {
+    if (key === UNCAT || seen.has(key)) continue;
+    groups.push(group(key, list));
+  }
+  const uncategorized = buckets.get(UNCAT);
+  if (uncategorized && uncategorized.length > 0) groups.push(group(undefined, uncategorized));
+
+  return `<section><h2>Skills</h2><div class="skills-groups">${groups.join('')}</div></section>`;
 }
 
 function renderLanguages(languages: LocalizedTakuhon['languages']): string {
@@ -533,7 +583,7 @@ export function renderProfileHtml(input: RenderInput): string {
       })),
       'cards',
     ),
-    renderSkills(d.skills),
+    renderSkills(d.skills, d.settings.skillCategories),
     renderActivity(input.activitySnapshot),
     entryList(
       'Education',

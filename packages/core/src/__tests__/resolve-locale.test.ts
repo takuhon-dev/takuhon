@@ -104,13 +104,18 @@ describe('resolveLocale() per-field fallback', () => {
 });
 
 describe('resolveLocale() non-localized passthrough', () => {
-  it('passes skills, contact, settings, and meta through unchanged', () => {
+  it('passes skills, contact, and meta through unchanged; localizes settings.skillCategories', () => {
     const data = cloneExample();
     const resolved = resolveLocale(data, 'ja');
     expect(resolved.skills).toEqual(data.skills);
     expect(resolved.contact).toEqual(data.contact);
-    expect(resolved.settings).toEqual(data.settings);
     expect(resolved.meta).toEqual(data.meta);
+    // Every settings field except skillCategories passes through unchanged.
+    const { skillCategories: resolvedCats, ...resolvedRest } = resolved.settings;
+    const { skillCategories: rawCats, ...rawRest } = data.settings;
+    expect(resolvedRest).toEqual(rawRest);
+    // skillCategories labels are collapsed to the resolved locale's string.
+    expect(resolvedCats).toEqual((rawCats ?? []).map((c) => ({ id: c.id, label: c.label.ja })));
   });
 
   it('preserves Career endDate:null and Project tags arrays verbatim', () => {

@@ -59,6 +59,7 @@ import type {
   LocalizedPublication,
   LocalizedRecommendation,
   LocalizedRecommendationAuthor,
+  LocalizedSettings,
   LocalizedTakuhon,
   LocalizedTestScore,
   LocalizedTitle,
@@ -70,6 +71,7 @@ import type {
   Publication,
   Recommendation,
   RecommendationAuthor,
+  Settings,
   Takuhon,
   TestScore,
   Volunteering,
@@ -111,7 +113,7 @@ export function resolveLocale(
     testScores: data.testScores.map((t) => resolveTestScore(t, candidates)),
     recommendations: data.recommendations.map((r) => resolveRecommendation(r, candidates)),
     contact: data.contact,
-    settings: data.settings,
+    settings: resolveSettings(data.settings, candidates),
     meta: data.meta,
     resolvedLocale: displayPick?.tag ?? candidates[0] ?? '',
   };
@@ -167,6 +169,24 @@ function pickLocalized(
   candidates: LocaleTag[],
 ): string | undefined {
   return pickLocalizedWithTag(field, candidates)?.value;
+}
+
+/**
+ * Resolve the parts of `settings` that carry localized values. Only
+ * `skillCategories` labels are localized (collapsed to the resolved string,
+ * falling back to the raw category id when no candidate matches); every other
+ * settings field is passed through unchanged.
+ */
+function resolveSettings(settings: Settings, candidates: LocaleTag[]): LocalizedSettings {
+  const { skillCategories, ...rest } = settings;
+  if (!skillCategories) return rest;
+  return {
+    ...rest,
+    skillCategories: skillCategories.map((c) => ({
+      id: c.id,
+      label: pickLocalized(c.label, candidates) ?? c.id,
+    })),
+  };
 }
 
 function resolveProfile(

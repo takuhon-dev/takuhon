@@ -39,6 +39,8 @@ ul{padding:0;margin:0;list-style:none}
 .brand-icon{width:1.15em;height:1.15em;flex:none;opacity:.85}
 .skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
 .skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
+.skills-groups{display:grid;gap:var(--takuhon-space-4)}
+.skill-group h3{font-size:var(--takuhon-font-size-base);margin:0 0 var(--takuhon-space-2);color:var(--takuhon-color-text-muted);text-transform:uppercase;letter-spacing:.04em}
 .rec{margin:0 0 var(--takuhon-space-4)}
 .rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
 .rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}

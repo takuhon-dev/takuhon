@@ -383,6 +383,25 @@ export interface Settings {
   contact?: ContactSettings;
   /** Opt-in design tokens for the rendered profile (added in 1.2.0). Absent = built-in defaults. */
   appearance?: AppearanceSettings;
+  /**
+   * Ordered skill-category display groups (added in 1.3.0). When present, the
+   * rendered profile groups skills by their `category` under these localized
+   * headings, in array order; absent = the flat skill list. A skill whose
+   * `category` is unlisted (or absent) renders in a trailing group.
+   */
+  skillCategories?: SkillCategory[];
+}
+
+/**
+ * One skill-category display group (added in 1.3.0). Maps a `Skill.category`
+ * value to a localized heading; the array position in {@link
+ * Settings.skillCategories} defines the group's display order.
+ */
+export interface SkillCategory {
+  /** Matches the `category` value on the skills that belong to this group. */
+  id: string;
+  /** Localized display heading for the group. */
+  label: LocalizedTitle;
 }
 
 /**
@@ -812,12 +831,32 @@ export interface LocalizedRecommendation extends VisibilityControlled {
 }
 
 /**
+ * One skill-category group after locale resolution: the localized `label` map
+ * collapsed to the single resolved string. See {@link SkillCategory}.
+ */
+export interface LocalizedSkillCategory {
+  id: string;
+  label: string;
+}
+
+/**
+ * {@link Settings} after locale resolution. Identical to the raw settings
+ * except `skillCategories` labels are collapsed to single resolved strings
+ * ({@link LocalizedSkillCategory}); every other settings field is passed
+ * through unchanged.
+ */
+export type LocalizedSettings = Omit<Settings, 'skillCategories'> & {
+  skillCategories?: LocalizedSkillCategory[];
+};
+
+/**
  * A takuhon document with every localized map flattened to a single string,
  * plus a `resolvedLocale` field recording which tag was actually used as the
  * head of the fallback chain. `resolveLocale()` returns this shape.
  *
- * `Skill`, `Contact`, `Settings`, and `Meta` carry no localized fields and
- * pass through unchanged.
+ * `Skill`, `Contact`, and `Meta` carry no localized fields and pass through
+ * unchanged; `Settings` passes through too, except its `skillCategories`
+ * labels are resolved to the single locale string (see {@link LocalizedSettings}).
  */
 export interface LocalizedTakuhon {
   schemaVersion: string;
@@ -838,7 +877,7 @@ export interface LocalizedTakuhon {
   testScores: LocalizedTestScore[];
   recommendations: LocalizedRecommendation[];
   contact: Contact;
-  settings: Settings;
+  settings: LocalizedSettings;
   meta: Meta;
   /**
    * The locale tag that was matched first by the fallback chain and used as
