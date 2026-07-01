@@ -4,6 +4,18 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [Unreleased]
+
+Design-token re-skin seam for the standard renderer — the first upstream step of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.2.0 document unchanged.
+
+### Added — `@takuhon/core` (schema 1.1.0 → 1.2.0, non-breaking)
+
+- **`settings.appearance` (opt-in design tokens).** New optional block that lets an owner re-skin the server-rendered profile by overriding the standard renderer's built-in color and font defaults. It is a **declarative token map, never arbitrary CSS**: `fontFamily`, a `colors` map (`bg`, `surface`, `text`, `textMuted`, `border`, `accent`, `primary`, `primaryContrast`), and a `colorsDark` map of the same keys for `prefers-color-scheme: dark`. Every value is length- and pattern-constrained (`CssColor` / a font-family pattern) so it cannot break out of the inline `<style>`. Overriding tokens re-skins the page but cannot re-layout it — spacing, radius, and the type scale are intentionally not exposed. Adding an optional field is a minor bump: a valid 1.1.0 document is a valid 1.2.0 document unchanged, and a `v1.1.0-to-v1.2.0` migration (a pure version stamp) is added. `SCHEMA_VERSION` becomes `1.2.0`, `$id` advances to `/schemas/1.2.0/`, and the validator is regenerated.
+
+### Added — `@takuhon/api`
+
+- **The standard renderer honors `settings.appearance`.** `renderProfileHtml` now emits a `:root` block of named `--takuhon-*` design tokens (colors + font family) and merges any `settings.appearance` overrides over the built-in defaults, plus a `prefers-color-scheme: dark` block when `colorsDark` is supplied. The static stylesheet was refactored to reference these tokens instead of hard-coded colors, so a single override propagates everywhere. As defense in depth beyond the schema pattern, every token value is re-sanitized at render time and any value carrying a CSS-structural character (`; { } < > \`) is dropped in favor of the default. Visual defaults are unchanged; this ships the token vocabulary and the override seam only (the richer bio-derived default look follows in a subsequent change).
+
 ## [1.1.0] - 2026-07-01
 
 Minor release. Ships the **turnkey contact form**: the `@takuhon/contact` widget is now a configuration-only feature on the standard Cloudflare deployment — enable `settings.contact` (with a public Turnstile site key), wire the `send_email` binding and the Turnstile secret, and the server-rendered profile page embeds the widget while the Worker serves its assets and the `POST /api/contact` endpoint. Non-breaking: a valid 1.0.0 document is a valid 1.1.0 document unchanged.

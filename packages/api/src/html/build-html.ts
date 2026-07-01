@@ -18,7 +18,12 @@
  */
 
 import { generateJsonLd, renderActivitySvg } from '@takuhon/core';
-import type { ActivitySnapshot, LocalizedTakuhon } from '@takuhon/core';
+import type {
+  ActivitySnapshot,
+  AppearanceColors,
+  AppearanceSettings,
+  LocalizedTakuhon,
+} from '@takuhon/core';
 
 import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
 
@@ -74,31 +79,132 @@ function escapeJsonLd(json: string): string {
   return json.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 }
 
-const CSS = `:root{--fg:#1a1a1a;--muted:#666;--accent:#0b5fff;--line:#e5e5e5}
-*{box-sizing:border-box}
-body{margin:0;color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#fff}
+/**
+ * Built-in design tokens. Every themable value the renderer uses is a named
+ * `--takuhon-*` custom property with a default here; owners re-skin the page by
+ * overriding a subset via `settings.appearance` ({@link buildTokenCss}). The
+ * static rules below reference only these variables, never hard-coded colors or
+ * fonts, so an override propagates everywhere. `accent` and `primaryContrast`
+ * are part of the public token vocabulary for owner overrides even though the
+ * current minimal rules do not yet consume them.
+ */
+const DEFAULT_TOKENS: Record<string, string> = {
+  '--takuhon-color-bg': '#fff',
+  '--takuhon-color-surface': '#f2f2f2',
+  '--takuhon-color-text': '#1a1a1a',
+  '--takuhon-color-text-muted': '#666',
+  '--takuhon-color-border': '#e5e5e5',
+  '--takuhon-color-primary': '#0b5fff',
+  '--takuhon-color-primary-contrast': '#fff',
+  '--takuhon-color-accent': '#0b5fff',
+  '--takuhon-font-family': 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+};
+
+/** Map each `AppearanceColors` key to the CSS custom property it overrides. */
+const COLOR_TOKEN_VARS: Record<keyof AppearanceColors, string> = {
+  bg: '--takuhon-color-bg',
+  surface: '--takuhon-color-surface',
+  text: '--takuhon-color-text',
+  textMuted: '--takuhon-color-text-muted',
+  border: '--takuhon-color-border',
+  accent: '--takuhon-color-accent',
+  primary: '--takuhon-color-primary',
+  primaryContrast: '--takuhon-color-primary-contrast',
+};
+
+/**
+ * Defense in depth. The schema pattern-constrains these values, but data can
+ * reach the renderer unvalidated (pre-1.2.0 documents, adapters that skip
+ * `validate()`), so the renderer re-sanitizes every token with an allowlist
+ * that mirrors the schema. An unsafe, non-string, or empty value is dropped and
+ * the built-in default stands.
+ *
+ * Colors accept only a hex value, a bare keyword (named colors / currentColor /
+ * transparent), or a known color function — never `url()`, `image-set()`,
+ * `var()`, or anything else that could trigger an external request or escape
+ * the inline `<style>`. A permissive "any char but `;{}<>`" filter is NOT
+ * enough: `url(//evil/x.png)` carries none of those characters yet would make
+ * the page fetch a third-party resource. These patterns mirror `CssColor` and
+ * the font-family pattern in `@takuhon/core`'s takuhon.schema.json — keep them
+ * in sync.
+ */
+const SAFE_COLOR =
+  /^(?:#[0-9A-Fa-f]{3,8}|[A-Za-z]+|(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\([A-Za-z0-9.,%/\s-]*\))$/;
+const SAFE_FONT = /^[A-Za-z0-9\s,'"._-]+$/;
+
+function safeValue(value: unknown, pattern: RegExp, maxLength: number): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const v = value.trim();
+  if (v === '' || v.length > maxLength || !pattern.test(v)) return undefined;
+  return v;
+}
+
+const safeColor = (value: unknown): string | undefined => safeValue(value, SAFE_COLOR, 64);
+const safeFont = (value: unknown): string | undefined => safeValue(value, SAFE_FONT, 256);
+
+/** Sanitized `[cssVar, value]` pairs for the color overrides that are present. */
+function colorOverrides(colors: AppearanceColors | undefined): [string, string][] {
+  if (!colors) return [];
+  const out: [string, string][] = [];
+  for (const key of Object.keys(COLOR_TOKEN_VARS) as (keyof AppearanceColors)[]) {
+    const safe = safeColor(colors[key]);
+    if (safe !== undefined) out.push([COLOR_TOKEN_VARS[key], safe]);
+  }
+  return out;
+}
+
+/** Serialize `[var, value]` pairs into a `:root{…}` declaration block. */
+function rootBlock(pairs: Iterable<[string, string]>): string {
+  return `:root{${[...pairs].map(([k, v]) => `${k}:${v}`).join(';')}}`;
+}
+
+/**
+ * Build the token stylesheet: the `:root` defaults merged with any owner
+ * overrides, plus a `prefers-color-scheme: dark` block when `colorsDark` is
+ * supplied. Only the fixed set of named tokens is ever emitted — never
+ * arbitrary CSS — and every value is sanitized ({@link safeToken}).
+ */
+function buildTokenCss(appearance: AppearanceSettings | undefined): string {
+  const tokens = new Map<string, string>(Object.entries(DEFAULT_TOKENS));
+  if (appearance) {
+    const font = safeFont(appearance.fontFamily);
+    if (font !== undefined) tokens.set('--takuhon-font-family', font);
+    for (const [cssVar, value] of colorOverrides(appearance.colors)) {
+      tokens.set(cssVar, value);
+    }
+  }
+  let css = rootBlock(tokens);
+  const dark = colorOverrides(appearance?.colorsDark);
+  if (dark.length > 0) {
+    css += `\n@media (prefers-color-scheme:dark){${rootBlock(dark)}}`;
+  }
+  return css;
+}
+
+const CSS = `*{box-sizing:border-box}
+body{margin:0;color:var(--takuhon-color-text);font:16px/1.6 var(--takuhon-font-family);background:var(--takuhon-color-bg)}
 main{max-width:42rem;margin:0 auto;padding:2rem 1.25rem}
-a{color:var(--accent)}
+a{color:var(--takuhon-color-primary)}
 h1{font-size:1.9rem;margin:.2rem 0}
-h2{font-size:1.15rem;margin:2rem 0 .75rem;padding-bottom:.3rem;border-bottom:1px solid var(--line)}
+h2{font-size:1.15rem;margin:2rem 0 .75rem;padding-bottom:.3rem;border-bottom:1px solid var(--takuhon-color-border)}
 h3{font-size:1rem;margin:0}
 header .avatar{width:96px;height:96px;border-radius:50%;object-fit:cover}
-.tagline{font-size:1.1rem;color:var(--muted);margin:.2rem 0}
-.location{color:var(--muted);margin:.2rem 0}
+.tagline{font-size:1.1rem;color:var(--takuhon-color-text-muted);margin:.2rem 0}
+.location{color:var(--takuhon-color-text-muted);margin:.2rem 0}
 .bio{margin:.75rem 0}
 ul{padding:0;margin:0;list-style:none}
 .entries>li{margin:0 0 1.1rem}
 .sub{margin:.1rem 0;font-weight:600}
-.meta{margin:.1rem 0;color:var(--muted);font-size:.9rem}
+.meta{margin:.1rem 0;color:var(--takuhon-color-text-muted);font-size:.9rem}
 .links{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin:.75rem 0}
 .skills,.tags{display:flex;flex-wrap:wrap;gap:.4rem}
-.skills>li,.tags>li{background:#f2f2f2;border-radius:1rem;padding:.15rem .6rem;font-size:.85rem}
+.skills>li,.tags>li{background:var(--takuhon-color-surface);border-radius:1rem;padding:.15rem .6rem;font-size:.85rem}
 .rec{margin:0 0 1.1rem}
-.rec blockquote{margin:0;padding-left:.9rem;border-left:3px solid var(--line)}
-.rec figcaption{color:var(--muted);font-size:.9rem;margin-top:.3rem}
+.rec blockquote{margin:0;padding-left:.9rem;border-left:3px solid var(--takuhon-color-border)}
+.rec figcaption{color:var(--takuhon-color-text-muted);font-size:.9rem;margin-top:.3rem}
 nav.locales{display:flex;gap:.75rem;margin-bottom:1rem;font-size:.9rem}
 .activity svg{max-width:100%;height:auto}
-footer.powered{max-width:42rem;margin:0 auto;padding:1.5rem 1.25rem;color:var(--muted);font-size:.85rem}`;
+footer.powered{max-width:42rem;margin:0 auto;padding:1.5rem 1.25rem;color:var(--takuhon-color-text-muted);font-size:.85rem}`;
 
 interface EntryView {
   heading: string;
@@ -259,7 +365,7 @@ export function renderProfileHtml(input: RenderInput): string {
     ),
     input.jsonLd ? renderJsonLdScript(d) : '',
     input.contact ? '<link rel="stylesheet" href="/contact-widget.css">' : '',
-    `<style>${CSS}</style>`,
+    `<style>${buildTokenCss(d.settings.appearance)}\n${CSS}</style>`,
   ]
     .filter(Boolean)
     .join('\n  ');

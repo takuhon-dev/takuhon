@@ -401,6 +401,27 @@ describe('migrateTakuhon', () => {
     expect(validate(out).ok).toBe(true);
   });
 
+  it('migrates a 1.1.0 input forward to 1.2.0 (version stamp; settings.appearance is optional)', () => {
+    const v110 = {
+      schemaVersion: '1.1.0',
+      profile: { displayName: { en: 'Test' } },
+      links: [],
+      careers: [],
+      projects: [],
+      skills: [],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(v110, '1.2.0');
+    expect(out.schemaVersion).toBe('1.2.0');
+    // Pure version stamp: 1.2.0 only adds the optional settings.appearance block.
+    expect(out.profile.displayName).toEqual({ en: 'Test' });
+    expect(out.settings.appearance).toBeUndefined();
+    expect(validate(out).ok).toBe(true);
+  });
+
   it('chains 0.1.0 → 0.6.0 through all five registered migrations', () => {
     const v010 = {
       schemaVersion: '0.1.0',
@@ -462,8 +483,8 @@ describe('migrateTakuhon', () => {
 });
 
 describe('migrations registry', () => {
-  it('contains the v0.1.0 → … → v1.1.0 entries in chain order', () => {
-    expect(migrations).toHaveLength(8);
+  it('contains the v0.1.0 → … → v1.2.0 entries in chain order', () => {
+    expect(migrations).toHaveLength(9);
     expect(migrations[0]).toMatchObject({ from: '0.1.0', to: '0.2.0' });
     expect(migrations[1]).toMatchObject({ from: '0.2.0', to: '0.3.0' });
     expect(migrations[2]).toMatchObject({ from: '0.3.0', to: '0.4.0' });
@@ -472,5 +493,6 @@ describe('migrations registry', () => {
     expect(migrations[5]).toMatchObject({ from: '0.6.0', to: '0.7.0' });
     expect(migrations[6]).toMatchObject({ from: '0.7.0', to: '1.0.0' });
     expect(migrations[7]).toMatchObject({ from: '1.0.0', to: '1.1.0' });
+    expect(migrations[8]).toMatchObject({ from: '1.1.0', to: '1.2.0' });
   });
 });

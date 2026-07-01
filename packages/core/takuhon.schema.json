@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://takuhon.example/schemas/1.1.0/takuhon.schema.json",
+  "$id": "https://takuhon.example/schemas/1.2.0/takuhon.schema.json",
   "title": "Takuhon Profile",
   "description": "Portable profile data format consumed by @takuhon/core. The canonical contract for profile content authored as takuhon.json.",
   "type": "object",
@@ -363,8 +363,53 @@
         },
         "activity": { "$ref": "#/$defs/ActivitySettings" },
         "publicVisibility": { "$ref": "#/$defs/PublicVisibility" },
-        "contact": { "$ref": "#/$defs/ContactSettings" }
+        "contact": { "$ref": "#/$defs/ContactSettings" },
+        "appearance": { "$ref": "#/$defs/AppearanceSettings" }
       }
+    },
+    "AppearanceSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opt-in design tokens for the rendered profile (added in 1.2.0). A declarative re-skin seam: owners override the standard renderer's built-in color and font defaults. This is a token map only, not arbitrary CSS — every value is length- and pattern-constrained so it cannot break out of the inline <style>. Overriding tokens re-skins the page but cannot re-layout it (spacing/radius/type-scale are intentionally not exposed). Absent = the built-in defaults are used unchanged.",
+      "properties": {
+        "fontFamily": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9\\s,'\"._-]+$",
+          "description": "CSS font-family stack for the page body, e.g. \"Inter, system-ui, sans-serif\". Quotes and commas are allowed; CSS-structural characters (; { } < >) are not."
+        },
+        "colors": {
+          "$ref": "#/$defs/AppearanceColors",
+          "description": "Light-mode (:root) color overrides."
+        },
+        "colorsDark": {
+          "$ref": "#/$defs/AppearanceColors",
+          "description": "Dark-mode (prefers-color-scheme: dark) color overrides. Note: until the standard renderer ships a default dark palette, only the keys set here change in dark mode."
+        }
+      }
+    },
+    "AppearanceColors": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A set of overridable color tokens. Each value is a CSS color (hex, rgb()/rgba(), hsl()/hsla(), or a named color); CSS-structural characters (; { } < > \" ' \\) are disallowed so a value cannot escape the inline <style>.",
+      "properties": {
+        "bg": { "$ref": "#/$defs/CssColor", "description": "Page background." },
+        "surface": { "$ref": "#/$defs/CssColor", "description": "Raised surfaces such as skill/tag chips." },
+        "text": { "$ref": "#/$defs/CssColor", "description": "Primary body text." },
+        "textMuted": { "$ref": "#/$defs/CssColor", "description": "Secondary/muted text (taglines, meta, captions)." },
+        "border": { "$ref": "#/$defs/CssColor", "description": "Hairline borders and rules." },
+        "accent": { "$ref": "#/$defs/CssColor", "description": "Accent color for emphasis and focus affordances." },
+        "primary": { "$ref": "#/$defs/CssColor", "description": "Primary interactive color, e.g. links." },
+        "primaryContrast": { "$ref": "#/$defs/CssColor", "description": "Foreground color used on top of the primary color." }
+      }
+    },
+    "CssColor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^(?:#[0-9A-Fa-f]{3,8}|[A-Za-z]+|(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\\([A-Za-z0-9.,%/\\s-]*\\))$",
+      "description": "A CSS color value, restricted to a safe allowlist: a hex color (#rgb/#rgba/#rrggbb/#rrggbbaa), a bare keyword (named colors, currentColor, transparent), or a color function (rgb/rgba/hsl/hsla/hwb/lab/lch/oklab/oklch/color). url(), image-set(), var(), and other fetch- or reference-bearing functions are intentionally excluded so a value can never trigger an external request or escape the inline <style>."
     },
     "ContactSettings": {
       "type": "object",
