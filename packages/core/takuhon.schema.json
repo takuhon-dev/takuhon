@@ -395,13 +395,28 @@
       "description": "A set of overridable color tokens. Each value is a CSS color (hex, rgb()/rgba(), hsl()/hsla(), or a named color); CSS-structural characters (; { } < > \" ' \\) are disallowed so a value cannot escape the inline <style>.",
       "properties": {
         "bg": { "$ref": "#/$defs/CssColor", "description": "Page background." },
-        "surface": { "$ref": "#/$defs/CssColor", "description": "Raised surfaces such as skill/tag chips." },
+        "surface": {
+          "$ref": "#/$defs/CssColor",
+          "description": "Raised surfaces such as skill/tag chips."
+        },
         "text": { "$ref": "#/$defs/CssColor", "description": "Primary body text." },
-        "textMuted": { "$ref": "#/$defs/CssColor", "description": "Secondary/muted text (taglines, meta, captions)." },
+        "textMuted": {
+          "$ref": "#/$defs/CssColor",
+          "description": "Secondary/muted text (taglines, meta, captions)."
+        },
         "border": { "$ref": "#/$defs/CssColor", "description": "Hairline borders and rules." },
-        "accent": { "$ref": "#/$defs/CssColor", "description": "Accent color for emphasis and focus affordances." },
-        "primary": { "$ref": "#/$defs/CssColor", "description": "Primary interactive color, e.g. links." },
-        "primaryContrast": { "$ref": "#/$defs/CssColor", "description": "Foreground color used on top of the primary color." }
+        "accent": {
+          "$ref": "#/$defs/CssColor",
+          "description": "Accent color for emphasis and focus affordances."
+        },
+        "primary": {
+          "$ref": "#/$defs/CssColor",
+          "description": "Primary interactive color, e.g. links."
+        },
+        "primaryContrast": {
+          "$ref": "#/$defs/CssColor",
+          "description": "Foreground color used on top of the primary color."
+        }
       }
     },
     "CssColor": {

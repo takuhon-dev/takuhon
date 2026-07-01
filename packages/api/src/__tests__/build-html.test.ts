@@ -228,7 +228,7 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
   it('merges owner color and font overrides into :root (override wins)', () => {
     const html = render(
       withAppearance({
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: 'Inter, system-ui, sans-serif',
         colors: { bg: '#0b1020', text: 'rgb(230, 236, 245)', accent: '#f59e0b' },
       }),
     );
