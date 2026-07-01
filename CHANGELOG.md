@@ -4,9 +4,9 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
-## [Unreleased]
+## [1.3.0] - 2026-07-02
 
-Design-token re-skin seam, **a refreshed default look with built-in dark mode**, **brand-logo links with a featured/other split**, **richer section layouts (an experience timeline and project cards)**, and **skill-category grouping** for the standard renderer — the first upstream steps of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.3.0 document unchanged.
+Minor release. Design-token re-skin seam, **a refreshed default look with built-in dark mode**, **brand-logo links with a featured/other split**, **richer section layouts (an experience timeline and project cards)**, and **skill-category grouping** for the standard renderer — the first upstream steps of the "bio design generalization" track (bring the bio prototype's design into the standard product so bio can shed its bespoke renderer and ride the turnkey path). Non-breaking: a valid 1.1.0 document is a valid 1.3.0 document unchanged.
 
 ### Added — `@takuhon/core` (schema 1.1.0 → 1.3.0, non-breaking)
 
@@ -830,7 +830,8 @@ Initial publication on the PyPI index. This release reserves the `takuhon` name 
 - `pyproject.toml` with `requires-python = ">=3.9"`, Apache-2.0 license metadata, and project URLs back to `https://takuhon.org`, the GitHub repository, and the issue tracker.
 - Package classifiers including `Development Status :: 1 - Planning` so it is clear that this is a namespace reservation and not a usable SDK.
 
-[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v0.25.0...HEAD
+[Unreleased]: https://github.com/takuhon-dev/takuhon/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/takuhon-dev/takuhon/compare/v1.1.0...v1.3.0
 [0.25.0]: https://github.com/takuhon-dev/takuhon/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/takuhon-dev/takuhon/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/takuhon-dev/takuhon/compare/v0.22.0...v0.23.0
