@@ -31,6 +31,7 @@ import { v0_7_0_to_v1_0_0 } from './v0.7.0-to-v1.0.0.js';
 import { v1_0_0_to_v1_1_0 } from './v1.0.0-to-v1.1.0.js';
 import { v1_1_0_to_v1_2_0 } from './v1.1.0-to-v1.2.0.js';
 import { v1_2_0_to_v1_3_0 } from './v1.2.0-to-v1.3.0.js';
+import { v1_3_0_to_v1_4_0 } from './v1.3.0-to-v1.4.0.js';
 
 /**
  * A forward migration entry. `from` and `to` are semver strings matching
@@ -61,4 +62,5 @@ export const migrations: readonly Migration<Takuhon, Takuhon>[] = [
   v1_0_0_to_v1_1_0,
   v1_1_0_to_v1_2_0,
   v1_2_0_to_v1_3_0,
+  v1_3_0_to_v1_4_0,
 ];

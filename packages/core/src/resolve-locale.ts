@@ -277,6 +277,8 @@ function resolveProject(project: Project, candidates: LocaleTag[]): LocalizedPro
     id: project.id,
     title: pickLocalized(project.title, candidates) ?? '',
   };
+  const role = pickLocalized(project.role, candidates);
+  if (role !== undefined) out.role = role;
   const description = pickLocalized(project.description, candidates);
   if (description !== undefined) out.description = description;
   if (project.url !== undefined) out.url = project.url;

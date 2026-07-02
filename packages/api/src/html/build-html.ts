@@ -824,6 +824,7 @@ export function renderProfileHtml(input: RenderInput): string {
         L.projects,
         d.projects.map((x) => ({
           heading: x.title,
+          sub: x.role,
           dates: dateRange(x.startDate, { end: x.endDate, locale: d.resolvedLocale }),
           body: x.description,
           url: x.url,
