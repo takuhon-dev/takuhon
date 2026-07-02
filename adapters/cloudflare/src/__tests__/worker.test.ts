@@ -34,7 +34,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     const body: any = await res.json();
     expect(body.data.profile.displayName).toBeTruthy();
     expect(body.meta.locale).toBe('en');
-    expect(body.meta.schemaVersion).toBe('1.3.0');
+    expect(body.meta.schemaVersion).toBe('1.4.0');
     expect(typeof body.meta.updatedAt).toBe('string');
   });
 
@@ -123,7 +123,7 @@ describe('cloudflare worker — Phase 3.2', () => {
     const res = await call('https://worker.example/.well-known/takuhon.json', makeEnv().env);
     expect(res.status).toBe(200);
     const body: any = await res.json();
-    expect(body.schemaVersion).toBe('1.3.0');
+    expect(body.schemaVersion).toBe('1.4.0');
     expect(body.schemaUrl).toBe('/api/schema');
     expect(body.profile).toBe('/api/profile');
     expect(body.jsonld).toBe('/api/jsonld');
@@ -245,7 +245,7 @@ describe('cloudflare worker — GET /api/admin/export (production path)', () => 
     const body: any = await res.json();
     // Raw full document (not a { data, meta } envelope); the privacy-sensitive
     // fields the public read path strips are present for the token holder.
-    expect(body.schemaVersion).toBe('1.3.0');
+    expect(body.schemaVersion).toBe('1.4.0');
     expect(body.contact.email).toBeTruthy();
   });
 });

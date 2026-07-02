@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.3.0",
+  "schemaVersion": "1.4.0",
   "profile": {
     "displayName": {
       "en": "Pat Rivera",
@@ -123,6 +123,10 @@
       "title": {
         "en": "axe-helpers",
         "ja": "axe-helpers"
+      },
+      "role": {
+        "en": "Author & maintainer",
+        "ja": "作者・メンテナ"
       },
       "description": {
         "en": "A tiny set of utilities that wraps axe-core for use in component-level integration tests.",

@@ -472,6 +472,29 @@ describe('renderProfileHtml() section layouts (timeline / cards)', () => {
     expect((html.match(/<li class="is-highlighted">/g) ?? []).length).toBe(1);
   });
 
+  it('renders a localized project role as the card sub line (schema 1.4.0)', () => {
+    const html = render(
+      localized(
+        {
+          projects: [
+            {
+              id: 'p1',
+              title: { en: 'Alpha', ja: 'アルファ' },
+              role: { en: 'Author & maintainer', ja: '作者・メンテナ' },
+            },
+          ],
+          settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
+        },
+        'ja',
+      ),
+    );
+    expect(html).toContain('<p class="sub">作者・メンテナ</p>');
+    // A project without a role emits no sub line.
+    const noRole = render(localized({ projects: [{ id: 'p2', title: { en: 'Beta' } }] }));
+    const projectsSection = /entries--cards">([\s\S]*?)<\/ul>/.exec(noRole)?.[1] ?? '';
+    expect(projectsSection).not.toContain('class="sub"');
+  });
+
   it('renders a flat skill chip list when no categories are configured', () => {
     const html = render(
       localized({

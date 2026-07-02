@@ -165,6 +165,12 @@ export interface Career extends VisibilityControlled {
 export interface Project extends VisibilityControlled {
   id: Slug;
   title: LocalizedTitle;
+  /**
+   * The owner's role/relationship on this project (added in 1.4.0), e.g.
+   * "Author & lead maintainer". Rendered as a short line under the title.
+   * Localized, like {@link Career.role}.
+   */
+  role?: LocalizedTitle;
   description?: LocalizedBody;
   url?: string;
   tags?: string[];
@@ -674,6 +680,8 @@ export interface LocalizedCareer extends VisibilityControlled {
 export interface LocalizedProject extends VisibilityControlled {
   id: Slug;
   title: string;
+  /** Resolved {@link Project.role} for the active locale (added in 1.4.0). */
+  role?: string;
   description?: string;
   url?: string;
   tags?: string[];

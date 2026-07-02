@@ -30,8 +30,20 @@ describe('validate() positive cases', () => {
     const result = validate(exampleJson);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.data.schemaVersion).toBe('1.3.0');
+      expect(result.data.schemaVersion).toBe('1.4.0');
     }
+  });
+
+  it('accepts a project with a localized role (schema 1.4.0)', () => {
+    const doc = cloneExample();
+    doc.projects[0]!.role = { en: 'Author & maintainer', ja: '作者・メンテナ' };
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('rejects a project role whose value is blank (LocalizedTitle \\S pattern)', () => {
+    const doc = cloneExample();
+    doc.projects[0]!.role!.en = '   ';
+    expect(validate(doc).ok).toBe(false);
   });
 
   it('treats Career.endDate: null as valid (current position)', () => {
