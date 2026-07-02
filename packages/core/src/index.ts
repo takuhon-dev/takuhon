@@ -44,6 +44,9 @@ export type { ExportOptions, ExportedTakuhon } from './export.js';
 
 export { applyPublicPrivacyFilter } from './privacy-filter.js';
 
+export { SECTION_KEYS } from './sections.js';
+export type { SectionKey } from './sections.js';
+
 export { MigrationError, migrateTakuhon } from './migrate.js';
 export { migrations } from './migrations/index.js';
 export type { Migration } from './migrations/index.js';

@@ -85,12 +85,12 @@ describe('renderProfileHtml()', () => {
 
     const en = render(localized(overrides, 'en'));
     expect(en).toContain('<time datetime="2020-01">Jan 2020</time>');
-    expect(en).toContain(`– ${getPresentLabel('en')}`); // "Present"
+    expect(en).toContain(`〜 ${getPresentLabel('en')}`); // "Present"
     expect(en).not.toContain('現在');
 
     const ja = render(localized(overrides, 'ja'));
     expect(ja).toContain('<time datetime="2020-01">2020年1月</time>');
-    expect(ja).toContain(`– ${getPresentLabel('ja')}`); // "現在"
+    expect(ja).toContain(`〜 ${getPresentLabel('ja')}`); // "現在"
     expect(ja).not.toContain('Present');
   });
 
@@ -151,7 +151,7 @@ describe('renderProfileHtml()', () => {
       languages: [{ name: 'TypeScript', bytes: 800, percent: 80 }],
     };
     const html = render(localized(), { activitySnapshot: snapshot });
-    expect(html).toContain('<section class="activity"><h2>Activity</h2><svg');
+    expect(html).toContain('<section class="activity"><h2>Developer activity</h2><svg');
     expect(html).toContain('TypeScript 80%');
   });
 
@@ -359,25 +359,26 @@ describe('renderProfileHtml() links (brand icons + featured/other split)', () =>
     ],
   };
 
-  /** The `<nav class="…">…</nav>` block for a link group, or '' if absent. */
-  function navBlock(html: string, cls: string): string {
-    const re = new RegExp(`<nav class="${cls}"[\\s\\S]*?</nav>`);
+  /** The link-group block (`<nav>` for featured, `<section>` for other), or ''. */
+  function linkGroup(html: string, cls: string): string {
+    const re = new RegExp(`<(nav|section) class="${cls}"[\\s\\S]*?</\\1>`);
     return re.exec(html)?.[0] ?? '';
   }
 
-  it('splits links into a featured group then an other group', () => {
+  it('splits links into a top featured nav then a bottom other-links section', () => {
     const html = render(localized(linkDoc));
     expect(html).toContain('<nav class="featured-links" aria-label="Featured links">');
-    expect(html).toContain('<nav class="other-links" aria-label="Links">');
-    // Featured group precedes the other group (compare the nav elements, not the
+    // The other links now render as a bottom section with a visible heading.
+    expect(html).toContain('<section class="other-links"><h2>Links</h2>');
+    // Featured group precedes the other group (compare the elements, not the
     // shared `.featured-links,.other-links` CSS rule in the <style> block).
     expect(html.indexOf('<nav class="featured-links"')).toBeLessThan(
-      html.indexOf('<nav class="other-links"'),
+      html.indexOf('<section class="other-links"'),
     );
   });
 
   it('orders featured links by their `order` field', () => {
-    const featured = navBlock(render(localized(linkDoc)), 'featured-links');
+    const featured = linkGroup(render(localized(linkDoc)), 'featured-links');
     // order 1 (linkedin) comes before order 2 (github).
     expect(featured.indexOf('linkedin.com')).toBeLessThan(featured.indexOf('github.com'));
   });
@@ -390,7 +391,7 @@ describe('renderProfileHtml() links (brand icons + featured/other split)', () =>
     // The glyph is inline SVG — never an <img> — so no img-src is needed.
     expect(html).not.toContain('<img');
     // website has no brand mark: its list item carries a link-main but no svg.
-    const other = navBlock(html, 'other-links');
+    const other = linkGroup(html, 'other-links');
     expect(other).toContain('Home');
     expect(other).not.toContain('<svg');
   });
@@ -424,10 +425,10 @@ describe('renderProfileHtml() links (brand icons + featured/other split)', () =>
       }),
     );
     // No featured links → no featured-links nav element; the sole link is in
-    // other-links. (Both class names still appear in the <style> CSS rule, so
-    // assert on the nav element, not the bare substring.)
+    // the bottom other-links section. (Both class names still appear in the
+    // <style> CSS rule, so assert on the element, not the bare substring.)
     expect(html).not.toContain('<nav class="featured-links"');
-    expect(html).toContain('<nav class="other-links"');
+    expect(html).toContain('<section class="other-links"');
   });
 });
 
@@ -472,7 +473,7 @@ describe('renderProfileHtml() section layouts (timeline / cards)', () => {
     expect((html.match(/<li class="is-highlighted">/g) ?? []).length).toBe(1);
   });
 
-  it('renders a localized project role as the card sub line (schema 1.4.0)', () => {
+  it('renders a localized project role as the accent role badge (schema 1.4.0)', () => {
     const html = render(
       localized(
         {
@@ -488,11 +489,11 @@ describe('renderProfileHtml() section layouts (timeline / cards)', () => {
         'ja',
       ),
     );
-    expect(html).toContain('<p class="sub">作者・メンテナ</p>');
-    // A project without a role emits no sub line.
+    expect(html).toContain('<p class="role-badge">作者・メンテナ</p>');
+    // A project without a role emits no role badge.
     const noRole = render(localized({ projects: [{ id: 'p2', title: { en: 'Beta' } }] }));
     const projectsSection = /entries--cards">([\s\S]*?)<\/ul>/.exec(noRole)?.[1] ?? '';
-    expect(projectsSection).not.toContain('class="sub"');
+    expect(projectsSection).not.toContain('class="role-badge"');
   });
 
   it('renders a flat skill chip list when no categories are configured', () => {
@@ -591,10 +592,12 @@ describe('renderProfileHtml() composition seam (skip link / labels / slots / omi
     expect(html).toContain('<main id="main">');
   });
 
-  it('overrides section headings and chrome labels for the resolved locale (defaults stay English)', () => {
+  it('overrides section headings and chrome labels over the resolved-locale pack', () => {
+    // The fixture is an en-locale document, so the English pack is the base;
+    // per-key overrides win over it.
     const html = render(localized(), {
       labels: {
-        experience: '経歴',
+        careers: '経歴',
         skills: 'スキル',
         skipLink: 'メインコンテンツへスキップ',
         featuredLinks: '主要リンク',
@@ -604,7 +607,7 @@ describe('renderProfileHtml() composition seam (skip link / labels / slots / omi
     expect(html).toContain('<h2>スキル</h2>');
     expect(html).toContain('<a class="skip-link" href="#main">メインコンテンツへスキップ</a>');
     expect(html).toContain('aria-label="主要リンク"');
-    // An un-overridden label keeps its English default.
+    // An overridden label replaces the pack default.
     expect(html).not.toContain('<h2>Experience</h2>');
     expect(html).not.toContain('<h2>Skills</h2>');
   });
@@ -616,12 +619,14 @@ describe('renderProfileHtml() composition seam (skip link / labels / slots / omi
   });
 
   it('injects the head slot verbatim (raw, not escaped) after the <style> block', () => {
+    // Use a host asset tag (manifest) — the renderer owns og:* tags itself, so a
+    // distinct marker avoids colliding with the renderer's own og:title.
     const html = render(localized(), {
-      slots: { head: '<meta property="og:title" content="Pat & Co">' },
+      slots: { head: '<link rel="manifest" href="/app.webmanifest?a=1&b=2">' },
     });
     const head = /<head>([\s\S]*?)<\/head>/.exec(html)![1] ?? '';
-    expect(head).toContain('<meta property="og:title" content="Pat & Co">');
-    expect(head.indexOf('</style>')).toBeLessThan(head.indexOf('og:title'));
+    expect(head).toContain('<link rel="manifest" href="/app.webmanifest?a=1&b=2">');
+    expect(head.indexOf('</style>')).toBeLessThan(head.indexOf('app.webmanifest'));
   });
 
   it('injects the mainEnd slot inside <main>, after the sections', () => {
@@ -727,5 +732,224 @@ describe('renderProfileHtml() Markdown About section', () => {
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
     // Bold still applies to the (escaped) text.
     expect(html).toContain('<strong>bold</strong>');
+  });
+});
+
+describe('renderProfileHtml() default layout (bio-derived)', () => {
+  it('picks the Japanese heading pack for a ja locale by default (no labels)', () => {
+    const doc = {
+      profile: { displayName: { en: 'Pat', ja: 'パット' }, tagline: { en: 'M', ja: 'M' } },
+      settings: { defaultLocale: 'ja', availableLocales: ['ja', 'en'] },
+    };
+    const ja = render(localized(doc, 'ja'));
+    // Section headings and the skip link come out Japanese without any overrides.
+    expect(ja).toContain('<h2>経歴</h2>');
+    expect(ja).toContain('<a class="skip-link" href="#main">メインコンテンツへスキップ</a>');
+    // The English pack is used for a non-ja locale.
+    const en = render(localized(doc, 'en'));
+    expect(en).toContain('<h2>Experience</h2>');
+    expect(en).toContain('Skip to main content');
+  });
+
+  it('orders sections about → careers → projects → volunteering → skills', () => {
+    const html = render(
+      localized({
+        profile: { displayName: { en: 'Pat' }, tagline: { en: 'M' }, bio: { en: 'Hi.' } },
+        careers: [
+          { id: 'c', organization: { en: 'Acme' }, role: { en: 'Eng' }, startDate: '2020-01' },
+        ],
+        projects: [{ id: 'p', title: { en: 'Proj' } }],
+        volunteering: [
+          {
+            id: 'v',
+            organization: { en: 'OSS Org' },
+            role: { en: 'Maintainer' },
+            startDate: '2021-01',
+          },
+        ],
+        skills: [{ id: 's', label: 'TypeScript' }],
+      }),
+    );
+    const order = [
+      html.indexOf('<section class="bio">'),
+      html.indexOf('<h2>Experience</h2>'),
+      html.indexOf('<h2>Projects</h2>'),
+      html.indexOf('<h2>Volunteering</h2>'),
+      html.indexOf('<h2>Skills</h2>'),
+    ];
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  it('links a career organization (not the role) with the external-link icon', () => {
+    const html = render(
+      localized({
+        careers: [
+          {
+            id: 'c',
+            organization: { en: 'Acme' },
+            role: { en: 'Engineer' },
+            url: 'https://acme.example',
+            startDate: '2020-01',
+          },
+        ],
+      }),
+    );
+    // The role is the plain heading; the organization is the linked sub with the
+    // external-link affordance icon.
+    expect(html).toContain('<h3>Engineer</h3>');
+    expect(html).toContain(
+      '<p class="sub"><a href="https://acme.example" rel="noopener">Acme<svg class="external-icon"',
+    );
+  });
+
+  it('links a project title with the external-link icon', () => {
+    const html = render(
+      localized({ projects: [{ id: 'p', title: { en: 'Alpha' }, url: 'https://alpha.example' }] }),
+    );
+    expect(html).toContain(
+      '<h3><a href="https://alpha.example" rel="noopener">Alpha<svg class="external-icon"',
+    );
+  });
+
+  it('renders volunteering as a one-line head with no dates', () => {
+    const html = render(
+      localized({
+        volunteering: [
+          {
+            id: 'v',
+            organization: { en: 'OSS Project' },
+            role: { en: 'Maintainer' },
+            url: 'https://oss.example',
+            startDate: '2020-01',
+            description: { en: 'Runs the project.' },
+          },
+        ],
+      }),
+    );
+    const section = /<ul class="vol-list">[\s\S]*?<\/ul>/.exec(html)?.[0] ?? '';
+    expect(section).toContain('<div class="vol-head"><span class="vol-org">');
+    expect(section).toContain('<span class="vol-role">Maintainer</span>');
+    expect(section).toContain('<p class="vol-desc">Runs the project.</p>');
+    // Dates are intentionally hidden for volunteering — no <time> element.
+    expect(section).not.toContain('<time');
+  });
+
+  it('emits data-derived Open Graph tags (renderer-owned), leaving image tags to the host', () => {
+    const html = render(localized(), { canonicalUrl: 'https://me.example/' });
+    expect(html).toContain('<meta property="og:type" content="profile">');
+    expect(html).toContain('<meta property="og:title" content="Pat Rivera">');
+    expect(html).toContain('<meta property="og:url" content="https://me.example/">');
+    // The renderer never invents an og:image — that asset tag is the host's.
+    expect(html).not.toContain('og:image');
+  });
+
+  it('renders a footer with a license line and Powered by, on by default', () => {
+    const html = render(localized(), { year: 2026 });
+    expect(html).toContain('<footer class="powered">');
+    expect(html).toContain('<p class="license">© 2026 Pat Rivera — CC0-1.0</p>');
+    expect(html).toContain(
+      '<p class="powered-by">Powered by <a href="https://takuhon.org/" rel="noopener">Takuhon</a></p>',
+    );
+  });
+
+  it('omits the year from the license line when none is provided (deterministic default)', () => {
+    const html = render(localized());
+    expect(html).toContain('<p class="license">© Pat Rivera — CC0-1.0</p>');
+  });
+
+  it('drops only the Powered by credit when showPoweredBy is false (license stays)', () => {
+    const html = render(
+      localized({
+        settings: { defaultLocale: 'en', availableLocales: ['en'], showPoweredBy: false },
+      }),
+      { year: 2026 },
+    );
+    expect(html).toContain('<p class="license">© 2026 Pat Rivera — CC0-1.0</p>');
+    // The credit paragraph is gone (the `.powered-by` CSS selector still exists
+    // in the <style> block, so assert on the element, not the bare substring).
+    expect(html).not.toContain('<p class="powered-by">');
+  });
+
+  it('resolves a custom link glyph from its URL host (npm) and none for an unknown host', () => {
+    const html = render(
+      localized({
+        links: [
+          {
+            id: 'npm',
+            type: 'custom',
+            url: 'https://www.npmjs.com/~pat',
+            iconUrl: 'https://x/i.png',
+            label: { en: 'npm' },
+            featured: true,
+          },
+          {
+            id: 'misc',
+            type: 'custom',
+            url: 'https://unknown.example/pat',
+            iconUrl: 'https://x/i.png',
+            label: { en: 'Elsewhere' },
+            featured: true,
+          },
+        ],
+      }),
+    );
+    const featured = /<nav class="featured-links"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? '';
+    // The npm link resolves a brand glyph by host; the unknown host does not.
+    expect((featured.match(/<svg class="brand-icon"/g) ?? []).length).toBe(1);
+    expect(featured).toContain('Elsewhere');
+  });
+
+  it('shows a type pill when it adds information beyond the label', () => {
+    const html = render(
+      localized({
+        links: [
+          // A handle label: the "GitHub" type pill names the platform.
+          {
+            id: 'gh',
+            type: 'github',
+            url: 'https://github.com/pat',
+            label: { en: '@pat' },
+            featured: true,
+          },
+          // A label that already says "GitHub": no redundant pill.
+          { id: 'gh2', type: 'github', url: 'https://github.com/org', label: { en: 'GitHub' } },
+        ],
+      }),
+    );
+    expect(html).toContain('<span class="link-type">GitHub</span>');
+    // Exactly one pill — the redundant one is suppressed.
+    expect((html.match(/<span class="link-type">/g) ?? []).length).toBe(1);
+  });
+
+  it('resolves a custom-link glyph for a protocol-relative URL (matches href acceptance)', () => {
+    const html = render(
+      localized({
+        links: [
+          {
+            id: 'npm',
+            type: 'custom',
+            url: '//www.npmjs.com/~pat',
+            iconUrl: 'https://x/i.png',
+            label: { en: 'npm' },
+            featured: true,
+          },
+        ],
+      }),
+    );
+    // A protocol-relative href is rendered as a link, so its host glyph must
+    // resolve too (parity with `safeUrl`).
+    expect(html).toContain('rel="me noopener"');
+    expect(html).toContain('<svg class="brand-icon"');
+  });
+
+  it('ignores a non-number year (defense in depth) and omits it from the license line', () => {
+    // A JS caller could pass a non-number despite the `number` type; it must not
+    // reach the raw-interpolated license line.
+    const html = render(localized(), {
+      year: '2026 <script>alert(1)</script>' as unknown as number,
+    });
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('<p class="license">© Pat Rivera — CC0-1.0</p>');
   });
 });

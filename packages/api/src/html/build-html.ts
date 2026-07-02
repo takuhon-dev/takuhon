@@ -17,15 +17,16 @@
  * unicode-escaped so it cannot break out of its `<script>` element.
  */
 
-import { generateJsonLd, renderActivitySvg } from '@takuhon/core';
+import { generateJsonLd, renderActivitySvg, SECTION_KEYS } from '@takuhon/core';
 import type {
   ActivitySnapshot,
   AppearanceColors,
   AppearanceSettings,
   LocalizedTakuhon,
+  SectionKey,
 } from '@takuhon/core';
 
-import { brandIconSvg } from './brand-icons.js';
+import { brandIconForLink } from './brand-icons.js';
 import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
 
 // Re-exported for existing importers (e.g. dev-command, tests) that pull
@@ -74,22 +75,30 @@ export interface RenderInput {
    */
   contact?: { siteKey: string; endpoint?: string };
   /**
+   * Copyright year for the footer license line (`© {year} {name} — {spdx}`).
+   * The renderer is pure, so the clock lives with the caller: a server/CLI
+   * passes `new Date().getFullYear()`; a test passes a fixed value. When absent,
+   * the license line omits the year (`© {name} — {spdx}`) so output stays
+   * deterministic by default.
+   */
+  year?: number;
+  /**
    * First-party composition slots: raw HTML injected verbatim at three fixed
    * points so a host can extend the page without forking the renderer (a page
    * `<head>`, a trailing `<main>` section, a pre-`</body>` block). Unlike every
    * other input, slot content is NOT escaped — it is the caller's own trusted
-   * markup (e.g. Open Graph tags, a PWA manifest link, an analytics beacon, a
-   * bespoke section), never profile/user data. Absent slots emit nothing, so a
-   * caller that passes none (e.g. the turnkey public app) gets byte-identical
-   * output. See {@link RenderSlots}.
+   * markup (e.g. an og:image tag, a PWA manifest link, an analytics beacon, a
+   * bespoke section), never profile/user data. Absent slots emit nothing, so
+   * passing no slots is byte-identical to passing empty slots. See {@link
+   * RenderSlots}.
    */
   slots?: RenderSlots;
   /**
    * Localized overrides for the section headings and chrome labels, merged over
-   * the built-in English defaults ({@link DEFAULT_LABELS}). The renderer stays
-   * locale-agnostic — it ships English and never guesses another language — so a
-   * bilingual host supplies the heading strings for the resolved locale here.
-   * Absent = the English defaults, byte-identical to before this field existed.
+   * the built-in pack chosen for the resolved locale ({@link pickLabelPack}: a
+   * Japanese base-language locale gets the Japanese pack, everything else
+   * English). A host supplies overrides only for the strings it wants to change
+   * (e.g. a bespoke heading); an absent field takes the pack default.
    */
   labels?: Partial<SectionLabels>;
   /**
@@ -99,7 +108,7 @@ export interface RenderInput {
    * is still generated from the complete document, so structured data never
    * loses a suppressed section. Absent / empty = every section renders.
    */
-  omitSections?: readonly OmittableSection[];
+  omitSections?: readonly SectionKey[];
 }
 
 /**
@@ -117,7 +126,13 @@ export interface RenderInput {
  * becomes ambiguous.
  */
 export interface RenderSlots {
-  /** Injected in `<head>`, after the `<style>` block (e.g. OG tags, manifest link). */
+  /**
+   * Injected in `<head>`, after the `<style>` block (e.g. OG image tags, a PWA
+   * manifest link, theme-color). NOTE: the renderer already owns the data-derived
+   * Open Graph tags (`og:type`/`og:title`/`og:description`/`og:url`); a host slot
+   * should supply only the asset tags it owns (`og:image`, `twitter:image`, …)
+   * and MUST NOT re-inject the renderer-owned ones, or they appear twice.
+   */
   head?: string;
   /** Injected at the end of `<main>`, after all rendered sections (e.g. a bespoke section). */
   mainEnd?: string;
@@ -130,83 +145,92 @@ export interface RenderSlots {
 }
 
 /**
- * A section whose default rendering can be suppressed via
- * {@link RenderInput.omitSections}. One key per visible `<section>` the renderer
- * emits from the document (chrome like the header, links nav, and locale nav is
- * not suppressible).
+ * Section headings (one per {@link SectionKey}) plus chrome labels the caller
+ * can localize via {@link RenderInput.labels}. The renderer ships Japanese and
+ * English packs and picks one by the resolved locale ({@link pickLabelPack});
+ * `labels` overrides individual strings on top.
  */
-export type OmittableSection =
-  | 'about'
-  | 'experience'
-  | 'projects'
-  | 'skills'
-  | 'activity'
-  | 'education'
-  | 'certifications'
-  | 'publications'
-  | 'honors'
-  | 'memberships'
-  | 'volunteering'
-  | 'courses'
-  | 'patents'
-  | 'testScores'
-  | 'languages'
-  | 'recommendations'
-  | 'contact';
-
-/** Section headings and chrome labels the caller can localize via {@link RenderInput.labels}. */
-export interface SectionLabels {
-  about: string;
-  experience: string;
-  projects: string;
-  skills: string;
-  activity: string;
-  education: string;
-  certifications: string;
-  publications: string;
-  honors: string;
-  memberships: string;
-  volunteering: string;
-  courses: string;
-  patents: string;
-  testScores: string;
-  languages: string;
-  recommendations: string;
-  contact: string;
+export type SectionLabels = Record<SectionKey, string> & {
   /** Visually-hidden skip-to-content link text. */
   skipLink: string;
   /** `aria-label` for the language switcher nav. */
   localeNav: string;
   /** `aria-label` for the featured-links nav. */
   featuredLinks: string;
-  /** `aria-label` for the other-links nav. */
+  /** Heading for the bottom "other links" section. */
   otherLinks: string;
-}
+  /** Footer "Powered by" lead-in (precedes the "Takuhon" link). */
+  poweredBy: string;
+};
 
-/** Built-in English defaults for {@link SectionLabels}; overridden per-key by {@link RenderInput.labels}. */
-const DEFAULT_LABELS: SectionLabels = {
+/** Built-in English label pack. */
+const LABELS_EN: SectionLabels = {
   about: 'About',
-  experience: 'Experience',
+  careers: 'Experience',
   projects: 'Projects',
+  volunteering: 'Volunteering',
   skills: 'Skills',
-  activity: 'Activity',
+  activity: 'Developer activity',
   education: 'Education',
   certifications: 'Certifications',
   publications: 'Publications',
   honors: 'Honors & awards',
   memberships: 'Memberships',
-  volunteering: 'Volunteering',
   courses: 'Courses',
   patents: 'Patents',
   testScores: 'Test scores',
   languages: 'Languages',
   recommendations: 'Recommendations',
+  highlights: 'Selected posts',
   contact: 'Contact',
   skipLink: 'Skip to main content',
   localeNav: 'Language',
   featuredLinks: 'Featured links',
   otherLinks: 'Links',
+  poweredBy: 'Powered by',
 };
+
+/** Built-in Japanese label pack. */
+const LABELS_JA: SectionLabels = {
+  about: '自己紹介',
+  careers: '経歴',
+  projects: 'プロジェクト',
+  volunteering: 'ボランティア',
+  skills: 'スキル',
+  activity: '開発アクティビティ',
+  education: '学歴',
+  certifications: '資格・認定',
+  publications: '出版物',
+  honors: '受賞・栄誉',
+  memberships: '所属',
+  courses: '講座',
+  patents: '特許',
+  testScores: 'テストスコア',
+  languages: '言語',
+  recommendations: '推薦',
+  highlights: 'ピックアップ投稿',
+  contact: '連絡先',
+  skipLink: 'メインコンテンツへスキップ',
+  localeNav: '言語',
+  featuredLinks: '主要リンク',
+  otherLinks: 'その他のリンク',
+  poweredBy: 'Powered by',
+};
+
+/**
+ * Choose a built-in label pack by the resolved locale's base language: a
+ * Japanese locale (`ja`, `ja-JP`, …) gets the Japanese pack, everything else the
+ * English pack. The renderer used to ship English only and leave localization to
+ * the caller; shipping a Japanese pack and auto-selecting is deliberate (a
+ * Japanese turnkey site should not show English headings). A caller can still
+ * override any string via {@link RenderInput.labels}.
+ */
+function pickLabelPack(resolvedLocale: string): SectionLabels {
+  // Compare the primary language subtag exactly (so `ja` / `ja-JP` match, but a
+  // different language that merely starts with "ja" does not).
+  const base = resolvedLocale.toLowerCase().split(/[-_]/)[0];
+  return base === 'ja' ? LABELS_JA : LABELS_EN;
+}
 
 /** Unicode-escape `<`, `>`, `&` so a JSON-LD payload cannot break out of `<script>`. */
 function escapeJsonLd(json: string): string {
@@ -399,31 +423,67 @@ ul{padding:0;margin:0;list-style:none}
 .entries--cards{display:grid;gap:var(--takuhon-space-3)}
 .entries--cards>li{margin:0;padding:var(--takuhon-space-4);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md);background:var(--takuhon-color-surface)}
 .entries--cards>li.is-highlighted{border-color:var(--takuhon-color-accent)}
-.sub{margin:var(--takuhon-space-1) 0 0;font-weight:600}
+.entries h3 a{color:inherit;text-decoration:none}
+.entries h3 a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
+.sub{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted)}
+.sub a{color:inherit;text-decoration:none}
+.sub a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
+.role-badge{margin:var(--takuhon-space-1) 0 0;font-size:var(--takuhon-font-size-sm);font-weight:600;letter-spacing:.02em;color:var(--takuhon-color-accent)}
+.desc{margin:var(--takuhon-space-2) 0 0}
+.entries--timeline .desc{white-space:pre-wrap}
+.external-icon{width:.72em;height:.72em;margin-left:.35em;vertical-align:-.05em;opacity:.55}
 .meta{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 .featured-links,.other-links{margin:0 0 var(--takuhon-space-6)}
 .featured-links>ul,.other-links>ul{list-style:none;padding:0;margin:0;display:grid;gap:var(--takuhon-space-2)}
 .featured-links>ul{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
-.featured-links a,.other-links a{display:flex;align-items:center;gap:var(--takuhon-space-2);min-height:var(--takuhon-tap-target);padding:var(--takuhon-space-2) var(--takuhon-space-3);background:var(--takuhon-color-surface);color:var(--takuhon-color-text);text-decoration:none;border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md)}
+.featured-links a,.other-links a{display:flex;align-items:center;justify-content:space-between;gap:var(--takuhon-space-2);min-height:var(--takuhon-tap-target);padding:var(--takuhon-space-2) var(--takuhon-space-3);background:var(--takuhon-color-surface);color:var(--takuhon-color-text);text-decoration:none;border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md)}
 .featured-links a:hover,.other-links a:hover{border-color:var(--takuhon-color-accent)}
 .link-main{display:inline-flex;align-items:center;gap:var(--takuhon-space-2);min-width:0}
+.link-type{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted)}
 .brand-icon{width:1.15em;height:1.15em;flex:none;opacity:.85}
 .skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
 .skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
 .skills-groups{display:grid;gap:var(--takuhon-space-4)}
 .skill-group h3{font-size:var(--takuhon-font-size-base);margin:0 0 var(--takuhon-space-2);color:var(--takuhon-color-text-muted);text-transform:uppercase;letter-spacing:.04em}
+.vol-list{display:grid;gap:var(--takuhon-space-2)}
+.vol{padding:var(--takuhon-space-3) 0;border-bottom:1px solid var(--takuhon-color-border)}
+.vol:last-child{border-bottom:0}
+.vol-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--takuhon-space-1) var(--takuhon-space-3)}
+.vol-org{font-size:var(--takuhon-font-size-lg)}
+.vol-org a{color:inherit;text-decoration:none}
+.vol-org a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
+.vol-role{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
+.vol-desc{margin:var(--takuhon-space-1) 0 0;font-size:var(--takuhon-font-size-sm)}
 .rec{margin:0 0 var(--takuhon-space-4)}
 .rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
 .rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}
-nav.locales{display:flex;gap:var(--takuhon-space-3);margin-bottom:var(--takuhon-space-4);font-size:var(--takuhon-font-size-sm)}
+nav.locales{display:flex;justify-content:flex-end;gap:var(--takuhon-space-3);margin-bottom:var(--takuhon-space-4);font-size:var(--takuhon-font-size-sm)}
 .activity svg{max-width:100%;height:auto}
-footer.powered{max-width:var(--takuhon-max-content-width);margin:0 auto;padding:var(--takuhon-space-5) var(--takuhon-space-4);color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}`;
+footer.powered{max-width:var(--takuhon-max-content-width);margin:var(--takuhon-space-6) auto 0;padding:var(--takuhon-space-4) var(--takuhon-space-4) var(--takuhon-space-6);border-top:1px solid var(--takuhon-color-border);text-align:center;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
+footer.powered p{margin:0 0 var(--takuhon-space-2)}
+footer.powered p:last-child{margin-bottom:0}
+footer.powered .powered-by a{color:var(--takuhon-color-primary);text-decoration:none}
+footer.powered .powered-by a:hover{text-decoration:underline}`;
 
 interface EntryView {
   heading: string;
+  /**
+   * An accent "role" badge shown directly under the heading (a project's role).
+   * Distinct from {@link sub}, which is a muted secondary line.
+   */
+  role?: string;
   sub?: string;
+  /**
+   * When set, {@link sub} renders as an external link (e.g. a career's
+   * organization site) with the external-link affordance icon.
+   */
+  subUrl?: string;
   dates?: string;
   body?: string;
+  /**
+   * When set, the heading renders as an external link (e.g. a project's site)
+   * with the external-link affordance icon.
+   */
   url?: string;
   tags?: readonly string[];
   /**
@@ -439,6 +499,19 @@ interface EntryView {
 }
 
 /**
+ * External-link affordance icon appended to a linked heading or sub, so on touch
+ * devices (no hover) it is clear the link opens another site. A vetted static
+ * literal (Feather "external-link"), never user input.
+ */
+const EXTERNAL_ICON =
+  '<svg class="external-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+
+/** An external link wrapping already-escaped inner HTML, with the affordance icon. */
+function externalLink(url: string, innerEscaped: string): string {
+  return `<a href="${escapeHtml(url)}" rel="noopener">${innerEscaped}${EXTERNAL_ICON}</a>`;
+}
+
+/**
  * Layout variant for a section's entry list. Undefined = the default flat list;
  * `timeline` decorates each `<li>` as a dotted left-border timeline row (dates
  * float to the top via CSS order); `cards` lays the entries out as bordered
@@ -450,12 +523,17 @@ interface EntryView {
 type EntriesVariant = 'timeline' | 'cards';
 
 function renderEntry(entry: EntryView): string {
-  const href = entry.url ? safeUrl(entry.url) : undefined;
-  const heading = href
-    ? `<a href="${escapeHtml(href)}">${escapeHtml(entry.heading)}</a>`
+  const headHref = entry.url ? safeUrl(entry.url) : undefined;
+  const heading = headHref
+    ? externalLink(headHref, escapeHtml(entry.heading))
     : escapeHtml(entry.heading);
   const parts = [`<h3>${heading}</h3>`];
-  if (entry.sub) parts.push(`<p class="sub">${escapeHtml(entry.sub)}</p>`);
+  if (entry.role) parts.push(`<p class="role-badge">${escapeHtml(entry.role)}</p>`);
+  if (entry.sub) {
+    const subHref = entry.subUrl ? safeUrl(entry.subUrl) : undefined;
+    const sub = subHref ? externalLink(subHref, escapeHtml(entry.sub)) : escapeHtml(entry.sub);
+    parts.push(`<p class="sub">${sub}</p>`);
+  }
   // `entry.dates` is already an escaped HTML fragment from `dateRange` (localized
   // <time> elements), so it is inserted raw rather than re-escaped.
   // NOTE: the `timeline` variant hoists this `.meta` above the heading via CSS
@@ -463,7 +541,7 @@ function renderEntry(entry: EntryView): string {
   // entry `<li>`. Keep these entry parts as flat siblings — do not wrap them in
   // a container div, or the date-first timeline ordering silently breaks.
   if (entry.dates) parts.push(`<p class="meta">${entry.dates}</p>`);
-  if (entry.body) parts.push(`<p>${escapeHtml(entry.body)}</p>`);
+  if (entry.body) parts.push(`<p class="desc">${escapeHtml(entry.body)}</p>`);
   if (entry.tags && entry.tags.length > 0) {
     parts.push(
       `<ul class="tags">${entry.tags.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`,
@@ -571,8 +649,11 @@ function renderBio(bio: string | undefined, heading: string): string {
   return `<section class="bio"><h2>${escapeHtml(heading)}</h2><div class="bio-body">${renderMarkdown(bio)}</div></section>`;
 }
 
-function renderHeader(p: LocalizedProfile): string {
+function renderHeader(p: LocalizedProfile, localeNavHtml: string): string {
   const parts: string[] = [];
+  // The locale switcher sits at the very top of the header (right-aligned via
+  // CSS) rather than as a separate pre-header nav.
+  if (localeNavHtml) parts.push(localeNavHtml);
   const avatarSrc = p.avatar?.url ? safeUrl(p.avatar.url) : undefined;
   if (avatarSrc) {
     parts.push(
@@ -591,16 +672,47 @@ function renderHeader(p: LocalizedProfile): string {
 
 type LocalizedLink = LocalizedTakuhon['links'][number];
 
-/** Render one link as a pill: brand glyph (when the type has one) + label. */
+/** Human display names for the built-in link types, used for the type pill. */
+const LINK_TYPE_DISPLAY: Partial<Record<LocalizedLink['type'], string>> = {
+  website: 'Website',
+  blog: 'Blog',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  linkedin: 'LinkedIn',
+  x: 'X (Twitter)',
+  mastodon: 'Mastodon',
+  bluesky: 'Bluesky',
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  threads: 'Threads',
+  facebook: 'Facebook',
+  email: 'Email',
+  rss: 'RSS',
+};
+
+/**
+ * A small muted type pill (e.g. "GitHub") shown at the trailing edge of a link,
+ * so a link whose label is a handle still names its platform. Omitted for
+ * `custom` links (no canonical name) and when the type name would just repeat
+ * the visible label.
+ */
+function linkTypePill(link: LocalizedLink, label: string): string {
+  const display = LINK_TYPE_DISPLAY[link.type];
+  if (!display || display === label) return '';
+  return `<span class="link-type">${escapeHtml(display)}</span>`;
+}
+
+/** Render one link as a pill: brand glyph (when resolvable) + label + type pill. */
 function renderLinkItem(link: LocalizedLink): string {
-  const label = escapeHtml(link.label ?? link.url);
-  const main = `<span class="link-main">${brandIconSvg(link.type)}<span>${label}</span></span>`;
+  const label = link.label ?? link.url;
+  const main = `<span class="link-main">${brandIconForLink(link)}<span>${escapeHtml(label)}</span></span>`;
+  const pill = linkTypePill(link, label);
   const href = safeUrl(link.url);
   // rel="me" declares these as the owner's own profiles (IndieWeb / Mastodon
   // verification); noopener hardens the external navigation.
   return href
-    ? `<li><a href="${escapeHtml(href)}" rel="me noopener">${main}</a></li>`
-    : `<li>${main}</li>`;
+    ? `<li><a href="${escapeHtml(href)}" rel="me noopener">${main}${pill}</a></li>`
+    : `<li>${main}${pill}</li>`;
 }
 
 /** Ascending by `order` (absent sorts as 0), preserving input order on ties. */
@@ -609,29 +721,28 @@ function byOrder(a: LocalizedLink, b: LocalizedLink): number {
 }
 
 /**
- * Render the links as two groups — featured first, then the rest — each an
- * ordered pill list with an inline brand glyph for recognized types. Splitting
- * on `featured` and sorting on `order` uses only existing schema fields; an
- * empty group is omitted.
+ * The featured links — a top-of-page pill grid (a `<nav>`, no visible heading).
+ * Sorted by `order`; `''` when there are no featured links.
  */
-function renderLinks(
-  links: LocalizedTakuhon['links'],
-  featuredLabel: string,
-  otherLabel: string,
-): string {
-  if (links.length === 0) return '';
+function renderFeaturedLinks(links: LocalizedTakuhon['links'], ariaLabel: string): string {
   const featured = links.filter((l) => l.featured === true).sort(byOrder);
+  if (featured.length === 0) return '';
+  return `<nav class="featured-links" aria-label="${escapeHtml(ariaLabel)}"><ul>${featured
+    .map(renderLinkItem)
+    .join('')}</ul></nav>`;
+}
+
+/**
+ * The remaining links — a bottom-of-page `<section>` with a visible heading.
+ * Sorted by `order`; `''` when every link is featured. This section is pinned
+ * to the bottom of the page (below the reorderable content sections).
+ */
+function renderOtherLinks(links: LocalizedTakuhon['links'], heading: string): string {
   const others = links.filter((l) => l.featured !== true).sort(byOrder);
-  const group = (cls: string, ariaLabel: string, items: LocalizedLink[]): string =>
-    items.length === 0
-      ? ''
-      : `<nav class="${cls}" aria-label="${escapeHtml(ariaLabel)}"><ul>${items.map(renderLinkItem).join('')}</ul></nav>`;
-  return [
-    group('featured-links', featuredLabel, featured),
-    group('other-links', otherLabel, others),
-  ]
-    .filter(Boolean)
-    .join('\n');
+  if (others.length === 0) return '';
+  return `<section class="other-links"><h2>${escapeHtml(heading)}</h2><ul>${others
+    .map(renderLinkItem)
+    .join('')}</ul></section>`;
 }
 
 type LocalizedSkill = LocalizedTakuhon['skills'][number];
@@ -688,6 +799,31 @@ function renderSkills(
   if (uncategorized && uncategorized.length > 0) groups.push(group(undefined, uncategorized));
 
   return `<section><h2>${h}</h2><div class="skills-groups">${groups.join('')}</div></section>`;
+}
+
+type LocalizedVolunteering = LocalizedTakuhon['volunteering'][number];
+
+/**
+ * Render the Volunteering section as a compact list of one-line-head entries:
+ * the organization (linked, when a URL is present, with the external-link icon)
+ * and the role on a single wrapping line, then an optional description. Dates
+ * are intentionally not shown — this reads as an "involved with" list rather
+ * than a dated timeline. Returns `''` when there are none.
+ */
+function renderVolunteering(items: readonly LocalizedVolunteering[], heading: string): string {
+  if (items.length === 0) return '';
+  const li = (v: LocalizedVolunteering): string => {
+    const orgHref = v.url ? safeUrl(v.url) : undefined;
+    const org = orgHref
+      ? externalLink(orgHref, escapeHtml(v.organization))
+      : escapeHtml(v.organization);
+    const role = v.role ? `<span class="vol-role">${escapeHtml(v.role)}</span>` : '';
+    const desc = v.description ? `<p class="vol-desc">${escapeHtml(v.description)}</p>` : '';
+    return `<li class="vol"><div class="vol-head"><span class="vol-org">${org}</span>${role}</div>${desc}</li>`;
+  };
+  return `<section><h2>${escapeHtml(heading)}</h2><ul class="vol-list">${items
+    .map(li)
+    .join('')}</ul></section>`;
 }
 
 function renderLanguages(languages: LocalizedTakuhon['languages'], heading: string): string {
@@ -760,18 +896,33 @@ function renderLocaleNav(localeNav: readonly LocaleLink[], ariaLabel: string): s
   return `<nav class="locales" aria-label="${escapeHtml(ariaLabel)}">${items}</nav>`;
 }
 
+/**
+ * Wave dash separator for date ranges on the profile page (`2020 〜 2024`). A
+ * static literal, never user data. The CV renderer keeps the en-dash default.
+ */
+const DATE_SEPARATOR = ' 〜 ';
+
 /** Render a complete static HTML document for one locale-resolved profile. */
 export function renderProfileHtml(input: RenderInput): string {
   const d = input.localized;
   const p = d.profile;
+  const locale = d.resolvedLocale;
   const description = p.tagline ?? p.bio ?? '';
 
-  // Section headings + chrome labels: English defaults, overridden per-key by
-  // the caller for the resolved locale. `omit` suppresses a section's visible
-  // rendering (never its JSON-LD, generated from the full document below).
-  const L: SectionLabels = { ...DEFAULT_LABELS, ...input.labels };
-  const omit = new Set<OmittableSection>(input.omitSections ?? []);
-  const keep = (key: OmittableSection, html: string): string => (omit.has(key) ? '' : html);
+  // Section headings + chrome labels: the built-in pack for the resolved locale,
+  // then any per-key overrides the caller supplied. `omit` suppresses a
+  // section's visible rendering (never its JSON-LD, generated from the full
+  // document below).
+  const L: SectionLabels = { ...pickLabelPack(locale), ...input.labels };
+  const omit = new Set<SectionKey>(input.omitSections ?? []);
+  const keep = (key: SectionKey, html: string): string => (omit.has(key) ? '' : html);
+
+  // Every date range on the page uses the wave-dash separator and the resolved
+  // locale; this closure keeps the per-section maps below terse.
+  const dates = (
+    start: string | undefined,
+    opts: { end?: string | null; isCurrent?: boolean },
+  ): string => dateRange(start, { ...opts, locale, separator: DATE_SEPARATOR });
 
   const head = [
     '<meta charset="utf-8">',
@@ -779,6 +930,16 @@ export function renderProfileHtml(input: RenderInput): string {
     `<title>${escapeHtml(p.displayName)}</title>`,
     description
       ? `<meta name="description" content="${escapeHtml(description.slice(0, 300))}">`
+      : '',
+    // Data-derived Open Graph tags (the renderer owns these; asset tags like
+    // og:image and PWA/theme-color are the host's, via the `head` slot).
+    '<meta property="og:type" content="profile">',
+    `<meta property="og:title" content="${escapeHtml(p.displayName)}">`,
+    description
+      ? `<meta property="og:description" content="${escapeHtml(description.slice(0, 300))}">`
+      : '',
+    input.canonicalUrl
+      ? `<meta property="og:url" content="${escapeHtml(input.canonicalUrl)}">`
       : '',
     input.canonicalUrl ? `<link rel="canonical" href="${escapeHtml(input.canonicalUrl)}">` : '',
     ...input.alternates.map(
@@ -788,194 +949,165 @@ export function renderProfileHtml(input: RenderInput): string {
     input.jsonLd ? renderJsonLdScript(d) : '',
     input.contact ? '<link rel="stylesheet" href="/contact-widget.css">' : '',
     `<style>${buildTokenCss(d.settings.appearance)}\n${CSS}</style>`,
-    // First-party <head> slot (raw, unescaped): OG tags, manifest link, etc.
+    // First-party <head> slot (raw, unescaped): OG image tags, manifest link, etc.
     input.slots?.head ?? '',
   ]
     .filter(Boolean)
     .join('\n  ');
 
+  // Rendered HTML for every content section, keyed by its canonical
+  // {@link SectionKey}. Assembled in the default order below; a `highlights`
+  // section is reserved (its data model lands in a later additive schema
+  // change) and renders nothing for now.
+  const sections: Record<SectionKey, string> = {
+    about: renderBio(p.bio, L.about),
+    careers: entryList(
+      L.careers,
+      d.careers.map((c) => ({
+        heading: c.role,
+        sub: c.organization,
+        subUrl: c.url,
+        dates: dates(c.startDate, { end: c.endDate, isCurrent: c.isCurrent }),
+        body: c.description,
+        current: c.isCurrent,
+      })),
+      'timeline',
+    ),
+    projects: entryList(
+      L.projects,
+      d.projects.map((x) => ({
+        heading: x.title,
+        url: x.url,
+        role: x.role,
+        dates: dates(x.startDate, { end: x.endDate }),
+        body: x.description,
+        tags: x.tags,
+        highlighted: x.highlighted,
+      })),
+      'cards',
+    ),
+    volunteering: renderVolunteering(d.volunteering, L.volunteering),
+    skills: renderSkills(d.skills, d.settings.skillCategories, L.skills),
+    activity: renderActivity(input.activitySnapshot, L.activity),
+    education: entryList(
+      L.education,
+      d.education.map((e) => {
+        const degree = nonEmpty([e.degree, e.fieldOfStudy], ', ');
+        return {
+          heading: degree ?? e.institution,
+          sub: degree ? e.institution : undefined,
+          dates: dates(e.startDate, { end: e.endDate, isCurrent: e.isCurrent }),
+          body: e.description,
+          url: e.url,
+        };
+      }),
+    ),
+    certifications: entryList(
+      L.certifications,
+      d.certifications.map((c) => ({
+        heading: c.title,
+        sub: c.issuingOrganization,
+        dates: dates(c.issueDate, { end: c.expirationDate }),
+        url: c.url,
+      })),
+    ),
+    publications: entryList(
+      L.publications,
+      d.publications.map((x) => ({
+        heading: x.title,
+        sub: nonEmpty([x.publisher, x.coAuthors?.join(', ')], ' · '),
+        dates: dates(x.date, {}),
+        body: x.description,
+        url: x.url ?? (x.doi ? `https://doi.org/${x.doi}` : undefined),
+      })),
+    ),
+    honors: entryList(
+      L.honors,
+      d.honors.map((x) => ({
+        heading: x.title,
+        sub: x.issuer,
+        dates: dates(x.date, {}),
+        body: x.description,
+        url: x.url,
+      })),
+    ),
+    memberships: entryList(
+      L.memberships,
+      d.memberships.map((x) => ({
+        heading: x.role ?? x.organization,
+        sub: x.role ? x.organization : undefined,
+        dates: dates(x.startDate, { end: x.endDate, isCurrent: x.isCurrent }),
+        body: x.description,
+        url: x.url,
+      })),
+    ),
+    courses: entryList(
+      L.courses,
+      d.courses.map((x) => ({
+        heading: x.title,
+        sub: x.provider,
+        dates: dates(x.completionDate, {}),
+        body: x.description,
+        url: x.certificateUrl,
+      })),
+    ),
+    patents: entryList(
+      L.patents,
+      d.patents.map((x) => ({
+        heading: x.title,
+        sub: nonEmpty([x.patentNumber, x.office, x.status, x.coInventors?.join(', ')], ' · '),
+        dates: dates(x.filingDate ?? x.grantDate, {}),
+        body: x.description,
+        url: x.url,
+      })),
+    ),
+    testScores: entryList(
+      L.testScores,
+      d.testScores.map((x) => ({
+        heading: `${x.title}: ${x.score}`,
+        dates: dates(x.date, {}),
+        body: x.description,
+        url: x.url,
+      })),
+    ),
+    languages: renderLanguages(d.languages, L.languages),
+    recommendations: renderRecommendations(d.recommendations, L.recommendations),
+    highlights: '',
+    contact: renderContact(d.contact, L.contact),
+  };
+
+  const localeNavHtml =
+    input.localeNav.length > 1 ? renderLocaleNav(input.localeNav, L.localeNav) : '';
+
   const body = [
-    input.localeNav.length > 1 ? renderLocaleNav(input.localeNav, L.localeNav) : '',
-    renderHeader(p),
-    renderLinks(d.links, L.featuredLinks, L.otherLinks),
-    keep('about', renderBio(p.bio, L.about)),
-    keep(
-      'experience',
-      entryList(
-        L.experience,
-        d.careers.map((c) => ({
-          heading: c.role,
-          sub: c.organization,
-          dates: dateRange(c.startDate, {
-            end: c.endDate,
-            isCurrent: c.isCurrent,
-            locale: d.resolvedLocale,
-          }),
-          body: c.description,
-          url: c.url,
-          current: c.isCurrent,
-        })),
-        'timeline',
-      ),
-    ),
-    keep(
-      'projects',
-      entryList(
-        L.projects,
-        d.projects.map((x) => ({
-          heading: x.title,
-          sub: x.role,
-          dates: dateRange(x.startDate, { end: x.endDate, locale: d.resolvedLocale }),
-          body: x.description,
-          url: x.url,
-          tags: x.tags,
-          highlighted: x.highlighted,
-        })),
-        'cards',
-      ),
-    ),
-    keep('skills', renderSkills(d.skills, d.settings.skillCategories, L.skills)),
-    keep('activity', renderActivity(input.activitySnapshot, L.activity)),
-    keep(
-      'education',
-      entryList(
-        L.education,
-        d.education.map((e) => {
-          const degree = nonEmpty([e.degree, e.fieldOfStudy], ', ');
-          return {
-            heading: degree ?? e.institution,
-            sub: degree ? e.institution : undefined,
-            dates: dateRange(e.startDate, {
-              end: e.endDate,
-              isCurrent: e.isCurrent,
-              locale: d.resolvedLocale,
-            }),
-            body: e.description,
-            url: e.url,
-          };
-        }),
-      ),
-    ),
-    keep(
-      'certifications',
-      entryList(
-        L.certifications,
-        d.certifications.map((c) => ({
-          heading: c.title,
-          sub: c.issuingOrganization,
-          dates: dateRange(c.issueDate, { end: c.expirationDate, locale: d.resolvedLocale }),
-          url: c.url,
-        })),
-      ),
-    ),
-    keep(
-      'publications',
-      entryList(
-        L.publications,
-        d.publications.map((x) => ({
-          heading: x.title,
-          sub: nonEmpty([x.publisher, x.coAuthors?.join(', ')], ' · '),
-          dates: dateRange(x.date, { locale: d.resolvedLocale }),
-          body: x.description,
-          url: x.url ?? (x.doi ? `https://doi.org/${x.doi}` : undefined),
-        })),
-      ),
-    ),
-    keep(
-      'honors',
-      entryList(
-        L.honors,
-        d.honors.map((x) => ({
-          heading: x.title,
-          sub: x.issuer,
-          dates: dateRange(x.date, { locale: d.resolvedLocale }),
-          body: x.description,
-          url: x.url,
-        })),
-      ),
-    ),
-    keep(
-      'memberships',
-      entryList(
-        L.memberships,
-        d.memberships.map((x) => ({
-          heading: x.role ?? x.organization,
-          sub: x.role ? x.organization : undefined,
-          dates: dateRange(x.startDate, {
-            end: x.endDate,
-            isCurrent: x.isCurrent,
-            locale: d.resolvedLocale,
-          }),
-          body: x.description,
-          url: x.url,
-        })),
-      ),
-    ),
-    keep(
-      'volunteering',
-      entryList(
-        L.volunteering,
-        d.volunteering.map((x) => ({
-          heading: x.role,
-          sub: nonEmpty([x.organization, x.cause], ' · '),
-          dates: dateRange(x.startDate, {
-            end: x.endDate,
-            isCurrent: x.isCurrent,
-            locale: d.resolvedLocale,
-          }),
-          body: x.description,
-          url: x.url,
-        })),
-      ),
-    ),
-    keep(
-      'courses',
-      entryList(
-        L.courses,
-        d.courses.map((x) => ({
-          heading: x.title,
-          sub: x.provider,
-          dates: dateRange(x.completionDate, { locale: d.resolvedLocale }),
-          body: x.description,
-          url: x.certificateUrl,
-        })),
-      ),
-    ),
-    keep(
-      'patents',
-      entryList(
-        L.patents,
-        d.patents.map((x) => ({
-          heading: x.title,
-          sub: nonEmpty([x.patentNumber, x.office, x.status, x.coInventors?.join(', ')], ' · '),
-          dates: dateRange(x.filingDate ?? x.grantDate, { locale: d.resolvedLocale }),
-          body: x.description,
-          url: x.url,
-        })),
-      ),
-    ),
-    keep(
-      'testScores',
-      entryList(
-        L.testScores,
-        d.testScores.map((x) => ({
-          heading: `${x.title}: ${x.score}`,
-          dates: dateRange(x.date, { locale: d.resolvedLocale }),
-          body: x.description,
-          url: x.url,
-        })),
-      ),
-    ),
-    keep('languages', renderLanguages(d.languages, L.languages)),
-    keep('recommendations', renderRecommendations(d.recommendations, L.recommendations)),
-    keep('contact', renderContact(d.contact, L.contact)),
+    renderHeader(p, localeNavHtml),
+    // Featured links at the top; the remaining links are a fixed bottom section.
+    renderFeaturedLinks(d.links, L.featuredLinks),
+    ...SECTION_KEYS.map((key) => keep(key, sections[key])),
+    renderOtherLinks(d.links, L.otherLinks),
     input.slots?.mainEnd ?? '',
   ]
     .filter(Boolean)
     .join('\n');
 
-  const footer =
-    d.settings.showPoweredBy === true ? '<footer class="powered">Powered by takuhon</footer>' : '';
+  // Footer (default on): a copyright/license line plus a "Powered by Takuhon"
+  // credit unless the owner opted out (`showPoweredBy: false`).
+  const spdx = d.meta?.contentLicense?.spdxId;
+  // Defense in depth: `year` is typed `number`, but an untyped/JS caller could
+  // pass anything; only a finite number reaches the raw-interpolated line.
+  const year =
+    typeof input.year === 'number' && Number.isFinite(input.year) ? input.year : undefined;
+  const licenseText =
+    year !== undefined
+      ? `© ${year} ${escapeHtml(p.displayName)} — ${escapeHtml(spdx ?? '')}`
+      : `© ${escapeHtml(p.displayName)} — ${escapeHtml(spdx ?? '')}`;
+  const licenseLine = spdx ? `<p class="license">${licenseText}</p>` : '';
+  const poweredByLine =
+    d.settings.showPoweredBy !== false
+      ? `<p class="powered-by">${escapeHtml(L.poweredBy)} <a href="https://takuhon.org/" rel="noopener">Takuhon</a></p>`
+      : '';
+  const footerInner = `${licenseLine}${poweredByLine}`;
+  const footer = footerInner ? `<footer class="powered">${footerInner}</footer>` : '';
 
   // The widget reads its config from these data-* attributes (see
   // @takuhon/contact's browser entry); `defer` lets it mount after parsing

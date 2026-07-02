@@ -1,13 +1,18 @@
 /**
- * Inline brand-logo SVG glyphs for social link types.
+ * Inline brand-logo SVG glyphs for profile links.
  *
  * Each entry is a single monochrome path drawn with `fill="currentColor"`, so a
  * link inherits its icon color from the surrounding text and the page never
  * needs an `img-src` beyond `'self'` (the glyphs are inlined into the HTML, not
- * fetched). Only link {@link LinkType}s that have an unambiguous mark are
- * covered; `website`, `email`, and `custom` render without an icon rather than
- * inventing a generic glyph. `blog` reuses the RSS glyph — the conventional
- * feed/blog symbol — via {@link BRAND_ICON_ALIASES}.
+ * fetched).
+ *
+ * A glyph is resolved for a link in two steps ({@link brandIconForLink}):
+ * 1. by its built-in {@link LinkType} (`github`, `linkedin`, …; `blog` reuses
+ *    the RSS mark). `website` and `email` have no unambiguous mark and render
+ *    without an icon rather than inventing a generic glyph.
+ * 2. for a user-defined `custom` link, by the host of its URL — so a link to
+ *    `npmjs.com`, `linktr.ee`, `wakatime.com`, `wordpress.org`, or a covered
+ *    social host still shows its mark without hard-coding any bio-specific id.
  *
  * Sources & licensing (see this package's NOTICE):
  * - `linkedin` — Bootstrap Icons (MIT). simple-icons dropped the LinkedIn mark
@@ -28,7 +33,8 @@ interface BrandIcon {
   path: string;
 }
 
-const BRAND_ICONS: Partial<Record<LinkType, BrandIcon>> = {
+/** Monochrome glyphs keyed by an internal glyph name (not a `LinkType`). */
+const GLYPHS: Record<string, BrandIcon> = {
   github: {
     viewBox: '0 0 24 24',
     path: 'M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12',
@@ -73,32 +79,108 @@ const BRAND_ICONS: Partial<Record<LinkType, BrandIcon>> = {
     viewBox: '0 0 24 24',
     path: 'M19.199 24C19.199 13.467 10.533 4.8 0 4.8V0c13.165 0 24 10.835 24 24h-4.801zM3.291 17.415c1.814 0 3.293 1.479 3.293 3.295 0 1.813-1.485 3.29-3.301 3.29C1.47 24 0 22.526 0 20.71s1.475-3.294 3.291-3.295zM15.909 24h-4.665c0-6.169-5.075-11.245-11.244-11.245V8.09c8.727 0 15.909 7.184 15.909 15.91z',
   },
+  npm: {
+    viewBox: '0 0 24 24',
+    path: 'M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z',
+  },
+  linktree: {
+    viewBox: '0 0 24 24',
+    path: 'm13.73635 5.85251 4.00467-4.11665 2.3248 2.3808-4.20064 4.00466h5.9085v3.30473h-5.9365l4.22865 4.10766-2.3248 2.3338L12.0005 12.099l-5.74052 5.76852-2.3248-2.3248 4.22864-4.10766h-5.9375V8.12132h5.9085L3.93417 4.11666l2.3248-2.3808 4.00468 4.11665V0h3.4727zm-3.4727 10.30614h3.4727V24h-3.4727z',
+  },
+  wakatime: {
+    viewBox: '0 0 24 24',
+    path: 'M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.824a9.176 9.176 0 1 1 0 18.352 9.176 9.176 0 0 1 0-18.352zm5.097 5.058c-.327 0-.61.19-.764.45-1.025 1.463-2.21 3.162-3.288 4.706l-.387-.636a.897.897 0 0 0-.759-.439.901.901 0 0 0-.788.492l-.357.581-1.992-2.943a.897.897 0 0 0-.761-.446c-.514 0-.903.452-.903.96a1 1 0 0 0 .207.61l2.719 3.96c.152.272.44.47.776.47a.91.91 0 0 0 .787-.483c.046-.071.23-.368.314-.504l.324.52c-.035-.047.076.113.087.13.024.031.054.059.078.085.019.019.04.036.058.052.036.033.08.056.115.08.025.016.052.028.076.04.029.015.06.024.088.035.058.025.122.027.18.04.031.004.064.003.092.005.29 0 .546-.149.707-.36 1.4-2 2.842-4.055 4.099-5.849A.995.995 0 0 0 18 8.842c0-.508-.389-.96-.903-.96',
+  },
+  wordpress: {
+    viewBox: '0 0 24 24',
+    path: 'M21.469 6.825c.84 1.537 1.318 3.3 1.318 5.175 0 3.979-2.156 7.456-5.363 9.325l3.295-9.527c.615-1.54.82-2.771.82-3.864 0-.405-.026-.78-.07-1.11m-7.981.105c.647-.03 1.232-.105 1.232-.105.582-.075.514-.93-.067-.899 0 0-1.755.135-2.88.135-1.064 0-2.85-.15-2.85-.15-.585-.03-.661.855-.075.885 0 0 .54.061 1.125.09l1.68 4.605-2.37 7.08L5.354 6.9c.649-.03 1.234-.1 1.234-.1.585-.075.516-.93-.065-.896 0 0-1.746.138-2.874.138-.2 0-.438-.008-.69-.015C4.911 3.15 8.235 1.215 12 1.215c2.809 0 5.365 1.072 7.286 2.833-.046-.003-.091-.009-.141-.009-1.06 0-1.812.923-1.812 1.914 0 .89.513 1.643 1.06 2.531.411.72.89 1.643.89 2.977 0 .915-.354 1.994-.821 3.479l-1.075 3.585-3.9-11.61.001.014zM12 22.784c-1.059 0-2.081-.153-3.048-.437l3.237-9.406 3.315 9.087c.024.053.05.101.078.149-1.12.393-2.325.609-3.582.609M1.211 12c0-1.564.336-3.05.935-4.39L7.29 21.709C3.694 19.96 1.212 16.271 1.211 12M12 0C5.385 0 0 5.385 0 12s5.385 12 12 12 12-5.385 12-12S18.615 0 12 0',
+  },
 };
 
 /**
- * Link types that borrow another type's glyph rather than carry their own. A
- * blog is not a brand, but the RSS mark is the conventional feed/blog symbol, so
- * `blog` reuses the (already bundled, CC0) `rss` glyph instead of inventing a
- * generic icon.
+ * Built-in link types that carry a glyph. `website`, `email`, and `custom` are
+ * absent: the first two have no unambiguous mark, and a `custom` link resolves
+ * by URL host instead ({@link HOST_GLYPHS}). `blog` borrows the RSS mark — the
+ * conventional feed/blog symbol.
  */
-const BRAND_ICON_ALIASES: Partial<Record<LinkType, LinkType>> = {
+const TYPE_GLYPHS: Partial<Record<LinkType, string>> = {
+  github: 'github',
+  gitlab: 'gitlab',
+  linkedin: 'linkedin',
+  x: 'x',
+  mastodon: 'mastodon',
+  bluesky: 'bluesky',
+  instagram: 'instagram',
+  youtube: 'youtube',
+  threads: 'threads',
+  facebook: 'facebook',
+  rss: 'rss',
   blog: 'rss',
 };
 
 /**
- * Inline SVG markup for a link type's glyph, or `''` when the type has none
- * (`website`, `email`, `custom`, or an unknown value). The glyph is
- * decorative — the adjacent text label names the link — so it is `aria-hidden`.
- * The static `class="brand-icon"` and fixed viewBox are safe literals; only the
- * path data (a vetted constant, never user input) is interpolated, and it is
- * escaped for defense in depth.
+ * Registrable hosts whose links carry a known glyph, for resolving `custom`
+ * links by their URL (e.g. an npm profile, a Linktree, a WakaTime badge, a
+ * WordPress.org profile). Matched against the URL's hostname (exact or as a
+ * subdomain), so `www.npmjs.com` and `profiles.wordpress.org` both resolve.
+ * Federated platforms (Mastodon) have no single host and are intentionally
+ * omitted — they still resolve via their `type`.
  */
-export function brandIconSvg(type: LinkType): string {
-  const icon = BRAND_ICONS[BRAND_ICON_ALIASES[type] ?? type];
+const HOST_GLYPHS: Record<string, string> = {
+  'github.com': 'github',
+  'gitlab.com': 'gitlab',
+  'linkedin.com': 'linkedin',
+  'x.com': 'x',
+  'twitter.com': 'x',
+  'instagram.com': 'instagram',
+  'youtube.com': 'youtube',
+  'threads.net': 'threads',
+  'facebook.com': 'facebook',
+  'bsky.app': 'bluesky',
+  'npmjs.com': 'npm',
+  'linktr.ee': 'linktree',
+  'wakatime.com': 'wakatime',
+  'wordpress.org': 'wordpress',
+};
+
+/** Resolve a glyph name from a URL's host, or `null` when none is known. */
+export function hostGlyph(url: string): string | null {
+  let host: string;
+  try {
+    // A dummy base lets protocol-relative (`//host/…`) and relative URLs parse —
+    // matching the set the renderer accepts as an href (see `safeUrl`). The
+    // reserved `.invalid` base host never matches a known domain, so a relative
+    // path simply resolves to "no glyph" rather than a spurious match.
+    host = new URL(url, 'https://takuhon.invalid').hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+  for (const [domain, glyph] of Object.entries(HOST_GLYPHS)) {
+    if (host === domain || host.endsWith(`.${domain}`)) return glyph;
+  }
+  return null;
+}
+
+/** Inline SVG markup for a glyph name, or `''` when the name is unknown. */
+function renderGlyph(name: string): string {
+  const icon = GLYPHS[name];
   if (!icon) return '';
   return (
     `<svg class="brand-icon" viewBox="${icon.viewBox}" width="18" height="18" ` +
     `fill="currentColor" aria-hidden="true" focusable="false">` +
     `<path d="${escapeHtml(icon.path)}"/></svg>`
   );
+}
+
+/**
+ * Inline SVG glyph for a link, or `''` when none is known. Resolved by the
+ * built-in {@link LinkType} first; a `custom` link falls back to its URL host
+ * ({@link hostGlyph}). The glyph is decorative — the adjacent text label names
+ * the link — so it is `aria-hidden`. The static class and viewBox are safe
+ * literals; only vetted constant path data is interpolated (escaped for defense
+ * in depth), never user input.
+ */
+export function brandIconForLink(link: { type: LinkType; url: string }): string {
+  const glyph = link.type === 'custom' ? hostGlyph(link.url) : TYPE_GLYPHS[link.type];
+  return glyph ? renderGlyph(glyph) : '';
 }

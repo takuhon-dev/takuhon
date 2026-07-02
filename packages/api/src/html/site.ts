@@ -94,6 +94,7 @@ export function generateSite(
       localeNav,
       jsonLd,
       activitySnapshot,
+      year: new Date().getFullYear(),
     });
     pages.push({
       route: isDefault ? '/' : `/${locale}/`,
