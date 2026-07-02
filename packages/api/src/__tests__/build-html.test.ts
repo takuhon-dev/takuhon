@@ -85,12 +85,13 @@ describe('renderProfileHtml()', () => {
 
     const en = render(localized(overrides, 'en'));
     expect(en).toContain('<time datetime="2020-01">Jan 2020</time>');
-    expect(en).toContain(`〜 ${getPresentLabel('en')}`); // "Present"
+    expect(en).toContain(`– ${getPresentLabel('en')}`); // en-dash + "Present"
     expect(en).not.toContain('現在');
+    expect(en).not.toContain('〜'); // the wave dash is Japanese-only
 
     const ja = render(localized(overrides, 'ja'));
     expect(ja).toContain('<time datetime="2020-01">2020年1月</time>');
-    expect(ja).toContain(`〜 ${getPresentLabel('ja')}`); // "現在"
+    expect(ja).toContain(`〜 ${getPresentLabel('ja')}`); // wave dash + "現在"
     expect(ja).not.toContain('Present');
   });
 
@@ -951,5 +952,27 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
     });
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).toContain('<p class="license">© Pat Rivera — CC0-1.0</p>');
+  });
+
+  it('uses a locale-appropriate date-range separator (wave dash for ja, en-dash otherwise)', () => {
+    const doc = {
+      profile: { displayName: { en: 'Pat', ja: 'パット' }, tagline: { en: 'M', ja: 'M' } },
+      careers: [
+        {
+          id: 'c',
+          organization: { en: 'Acme', ja: 'アクメ' },
+          role: { en: 'Engineer', ja: 'エンジニア' },
+          startDate: '2019-01',
+          endDate: '2021-12',
+        },
+      ],
+      settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
+    };
+    const en = render(localized(doc, 'en'));
+    expect(en).toContain('</time> – <time'); // en-dash between the two dates
+    expect(en).not.toContain('〜');
+    const ja = render(localized(doc, 'ja'));
+    expect(ja).toContain('</time> 〜 <time'); // wave dash for Japanese
+    expect(ja).not.toContain(' – ');
   });
 });

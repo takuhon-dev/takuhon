@@ -225,11 +225,17 @@ const LABELS_JA: SectionLabels = {
  * Japanese turnkey site should not show English headings). A caller can still
  * override any string via {@link RenderInput.labels}.
  */
+/**
+ * Base-language test: true for `ja`, `ja-JP`, … The primary language subtag is
+ * compared exactly (so a different language that merely starts with "ja" does
+ * not match). Drives both the label pack and the date-range separator.
+ */
+function isJapaneseLocale(resolvedLocale: string): boolean {
+  return resolvedLocale.toLowerCase().split(/[-_]/)[0] === 'ja';
+}
+
 function pickLabelPack(resolvedLocale: string): SectionLabels {
-  // Compare the primary language subtag exactly (so `ja` / `ja-JP` match, but a
-  // different language that merely starts with "ja" does not).
-  const base = resolvedLocale.toLowerCase().split(/[-_]/)[0];
-  return base === 'ja' ? LABELS_JA : LABELS_EN;
+  return isJapaneseLocale(resolvedLocale) ? LABELS_JA : LABELS_EN;
 }
 
 /** Unicode-escape `<`, `>`, `&` so a JSON-LD payload cannot break out of `<script>`. */
@@ -897,10 +903,13 @@ function renderLocaleNav(localeNav: readonly LocaleLink[], ariaLabel: string): s
 }
 
 /**
- * Wave dash separator for date ranges on the profile page (`2020 〜 2024`). A
- * static literal, never user data. The CV renderer keeps the en-dash default.
+ * Date-range separators, chosen by locale: a wave dash for Japanese
+ * (`2020 〜 2024`, the convention on the canonical site) and a spaced en-dash
+ * for everything else (`2020 – 2024`, the international convention and the CV /
+ * `dateRange` default). Static literals, never user data.
  */
-const DATE_SEPARATOR = ' 〜 ';
+const DATE_SEPARATOR_JA = ' 〜 ';
+const DATE_SEPARATOR_DEFAULT = ' – ';
 
 /** Render a complete static HTML document for one locale-resolved profile. */
 export function renderProfileHtml(input: RenderInput): string {
@@ -917,12 +926,14 @@ export function renderProfileHtml(input: RenderInput): string {
   const omit = new Set<SectionKey>(input.omitSections ?? []);
   const keep = (key: SectionKey, html: string): string => (omit.has(key) ? '' : html);
 
-  // Every date range on the page uses the wave-dash separator and the resolved
-  // locale; this closure keeps the per-section maps below terse.
+  // Every date range on the page uses the locale-appropriate separator (wave
+  // dash for Japanese, en-dash otherwise) and the resolved locale; this closure
+  // keeps the per-section maps below terse.
+  const dateSeparator = isJapaneseLocale(locale) ? DATE_SEPARATOR_JA : DATE_SEPARATOR_DEFAULT;
   const dates = (
     start: string | undefined,
     opts: { end?: string | null; isCurrent?: boolean },
-  ): string => dateRange(start, { ...opts, locale, separator: DATE_SEPARATOR });
+  ): string => dateRange(start, { ...opts, locale, separator: dateSeparator });
 
   const head = [
     '<meta charset="utf-8">',
