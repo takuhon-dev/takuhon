@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { MCP_PROFILE_SECTIONS } from '../mcp.js';
-import { SECTION_KEYS, type SectionKey } from '../sections.js';
+import { schema } from '../schema.js';
+import { LABEL_KEYS, SECTION_KEYS, type SectionKey } from '../sections.js';
 import type { PublicVisibility } from '../types.js';
 
 /**
@@ -80,5 +81,32 @@ describe('SECTION_KEYS', () => {
       if (key === 'about' || key === 'activity' || key === 'highlights') continue;
       expect(mcp.has(key)).toBe(true);
     }
+  });
+});
+
+describe('SECTION_KEYS / LABEL_KEYS ↔ schema parity', () => {
+  // Drift guard: the section-flow settings (1.4.0) encode the canonical key sets
+  // in the schema too, so a change to SECTION_KEYS / LABEL_KEYS must be mirrored
+  // there (and vice versa). Lock the parity so the two cannot silently diverge.
+  const defs = (schema as { $defs: Record<string, unknown> }).$defs;
+  const settingsProps = (defs.Settings as { properties: Record<string, Record<string, unknown>> })
+    .properties;
+
+  it('settings.sectionOrder enum equals SECTION_KEYS (same order)', () => {
+    const order = settingsProps.sectionOrder as {
+      items: { enum: string[] };
+      maxItems: number;
+    };
+    expect(order.items.enum).toEqual([...SECTION_KEYS]);
+    expect(order.maxItems).toBe(SECTION_KEYS.length);
+  });
+
+  it('SectionLabelOverrides has exactly the LABEL_KEYS as closed properties', () => {
+    const overrides = defs.SectionLabelOverrides as {
+      additionalProperties: boolean;
+      properties: Record<string, unknown>;
+    };
+    expect(overrides.additionalProperties).toBe(false);
+    expect(Object.keys(overrides.properties).sort()).toEqual([...LABEL_KEYS].sort());
   });
 });
