@@ -73,7 +73,137 @@ export interface RenderInput {
    * relaxing its CSP to allow the Turnstile origin.
    */
   contact?: { siteKey: string; endpoint?: string };
+  /**
+   * First-party composition slots: raw HTML injected verbatim at three fixed
+   * points so a host can extend the page without forking the renderer (a page
+   * `<head>`, a trailing `<main>` section, a pre-`</body>` block). Unlike every
+   * other input, slot content is NOT escaped — it is the caller's own trusted
+   * markup (e.g. Open Graph tags, a PWA manifest link, an analytics beacon, a
+   * bespoke section), never profile/user data. Absent slots emit nothing, so a
+   * caller that passes none (e.g. the turnkey public app) gets byte-identical
+   * output. See {@link RenderSlots}.
+   */
+  slots?: RenderSlots;
+  /**
+   * Localized overrides for the section headings and chrome labels, merged over
+   * the built-in English defaults ({@link DEFAULT_LABELS}). The renderer stays
+   * locale-agnostic — it ships English and never guesses another language — so a
+   * bilingual host supplies the heading strings for the resolved locale here.
+   * Absent = the English defaults, byte-identical to before this field existed.
+   */
+  labels?: Partial<SectionLabels>;
+  /**
+   * Sections whose DEFAULT rendering to suppress in the visible body — so a host
+   * can replace one with its own markup via {@link RenderSlots.mainEnd} without
+   * it appearing twice. This affects the visible body ONLY: the embedded JSON-LD
+   * is still generated from the complete document, so structured data never
+   * loses a suppressed section. Absent / empty = every section renders.
+   */
+  omitSections?: readonly OmittableSection[];
 }
+
+/**
+ * First-party raw-HTML injection points. Content is inserted verbatim (not
+ * escaped): it is the host's own trusted markup, not profile/user data. Keep it
+ * self-contained — the renderer makes no guarantees about it.
+ *
+ * CSP: the renderer does not set any Content-Security-Policy — the adapter does.
+ * The turnkey public app serves `script-src 'self'` (no `'unsafe-inline'`), so
+ * an inline `<script>` injected via `bodyEnd`/`head` is blocked there; prefer an
+ * external `<script src>` or ensure the host's own CSP permits the slot content.
+ *
+ * Reserved id: the renderer owns `<main id="main">` (the skip-link target). A
+ * slot MUST NOT inject another element with `id="main"`, or the skip anchor
+ * becomes ambiguous.
+ */
+export interface RenderSlots {
+  /** Injected in `<head>`, after the `<style>` block (e.g. OG tags, manifest link). */
+  head?: string;
+  /** Injected at the end of `<main>`, after all rendered sections (e.g. a bespoke section). */
+  mainEnd?: string;
+  /**
+   * Injected before `</body>`, after the footer and contact script (e.g. an
+   * analytics beacon). Inline scripts here require a CSP that allows them (see
+   * the interface note) — the turnkey `script-src 'self'` would block them.
+   */
+  bodyEnd?: string;
+}
+
+/**
+ * A section whose default rendering can be suppressed via
+ * {@link RenderInput.omitSections}. One key per visible `<section>` the renderer
+ * emits from the document (chrome like the header, links nav, and locale nav is
+ * not suppressible).
+ */
+export type OmittableSection =
+  | 'experience'
+  | 'projects'
+  | 'skills'
+  | 'activity'
+  | 'education'
+  | 'certifications'
+  | 'publications'
+  | 'honors'
+  | 'memberships'
+  | 'volunteering'
+  | 'courses'
+  | 'patents'
+  | 'testScores'
+  | 'languages'
+  | 'recommendations'
+  | 'contact';
+
+/** Section headings and chrome labels the caller can localize via {@link RenderInput.labels}. */
+export interface SectionLabels {
+  experience: string;
+  projects: string;
+  skills: string;
+  activity: string;
+  education: string;
+  certifications: string;
+  publications: string;
+  honors: string;
+  memberships: string;
+  volunteering: string;
+  courses: string;
+  patents: string;
+  testScores: string;
+  languages: string;
+  recommendations: string;
+  contact: string;
+  /** Visually-hidden skip-to-content link text. */
+  skipLink: string;
+  /** `aria-label` for the language switcher nav. */
+  localeNav: string;
+  /** `aria-label` for the featured-links nav. */
+  featuredLinks: string;
+  /** `aria-label` for the other-links nav. */
+  otherLinks: string;
+}
+
+/** Built-in English defaults for {@link SectionLabels}; overridden per-key by {@link RenderInput.labels}. */
+const DEFAULT_LABELS: SectionLabels = {
+  experience: 'Experience',
+  projects: 'Projects',
+  skills: 'Skills',
+  activity: 'Activity',
+  education: 'Education',
+  certifications: 'Certifications',
+  publications: 'Publications',
+  honors: 'Honors & awards',
+  memberships: 'Memberships',
+  volunteering: 'Volunteering',
+  courses: 'Courses',
+  patents: 'Patents',
+  testScores: 'Test scores',
+  languages: 'Languages',
+  recommendations: 'Recommendations',
+  contact: 'Contact',
+  skipLink: 'Skip to main content',
+  localeNav: 'Language',
+  featuredLinks: 'Featured links',
+  otherLinks: 'Links',
+};
 
 /** Unicode-escape `<`, `>`, `&` so a JSON-LD payload cannot break out of `<script>`. */
 function escapeJsonLd(json: string): string {
@@ -240,6 +370,8 @@ body{margin:0;color:var(--takuhon-color-text);background:var(--takuhon-color-bg)
 main{max-width:var(--takuhon-max-content-width);margin:0 auto;padding:var(--takuhon-space-6) var(--takuhon-space-4)}
 a{color:var(--takuhon-color-primary)}
 a:focus-visible{outline:2px solid var(--takuhon-color-accent);outline-offset:2px;border-radius:var(--takuhon-radius-sm)}
+.skip-link{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{position:fixed;left:var(--takuhon-space-2);top:var(--takuhon-space-2);width:auto;height:auto;padding:var(--takuhon-space-2) var(--takuhon-space-4);background:var(--takuhon-color-primary);color:var(--takuhon-color-primary-contrast);border-radius:var(--takuhon-radius-sm);z-index:100}
 h1{font-size:var(--takuhon-font-size-2xl);font-weight:700;line-height:1.2;margin:0 0 var(--takuhon-space-2)}
 h2{font-size:var(--takuhon-font-size-xl);margin:0 0 var(--takuhon-space-3);padding-bottom:var(--takuhon-space-2);border-bottom:1px solid var(--takuhon-color-border)}
 h3{font-size:var(--takuhon-font-size-lg);font-weight:600;margin:0}
@@ -386,17 +518,21 @@ function byOrder(a: LocalizedLink, b: LocalizedLink): number {
  * on `featured` and sorting on `order` uses only existing schema fields; an
  * empty group is omitted.
  */
-function renderLinks(links: LocalizedTakuhon['links']): string {
+function renderLinks(
+  links: LocalizedTakuhon['links'],
+  featuredLabel: string,
+  otherLabel: string,
+): string {
   if (links.length === 0) return '';
   const featured = links.filter((l) => l.featured === true).sort(byOrder);
   const others = links.filter((l) => l.featured !== true).sort(byOrder);
   const group = (cls: string, ariaLabel: string, items: LocalizedLink[]): string =>
     items.length === 0
       ? ''
-      : `<nav class="${cls}" aria-label="${ariaLabel}"><ul>${items.map(renderLinkItem).join('')}</ul></nav>`;
+      : `<nav class="${cls}" aria-label="${escapeHtml(ariaLabel)}"><ul>${items.map(renderLinkItem).join('')}</ul></nav>`;
   return [
-    group('featured-links', 'Featured links', featured),
-    group('other-links', 'Links', others),
+    group('featured-links', featuredLabel, featured),
+    group('other-links', otherLabel, others),
   ]
     .filter(Boolean)
     .join('\n');
@@ -415,13 +551,15 @@ type LocalizedSkill = LocalizedTakuhon['skills'][number];
 function renderSkills(
   skills: LocalizedTakuhon['skills'],
   categories: LocalizedTakuhon['settings']['skillCategories'],
+  heading: string,
 ): string {
   if (skills.length === 0) return '';
+  const h = escapeHtml(heading);
   const chips = (list: readonly LocalizedSkill[]): string =>
     `<ul class="skills">${list.map((s) => `<li>${escapeHtml(s.label)}</li>`).join('')}</ul>`;
 
   if (!categories || categories.length === 0) {
-    return `<section><h2>Skills</h2>${chips(skills)}</section>`;
+    return `<section><h2>${h}</h2>${chips(skills)}</section>`;
   }
 
   // Bucket by category, preserving input order within each bucket. `category`
@@ -453,18 +591,18 @@ function renderSkills(
   const uncategorized = buckets.get(UNCAT);
   if (uncategorized && uncategorized.length > 0) groups.push(group(undefined, uncategorized));
 
-  return `<section><h2>Skills</h2><div class="skills-groups">${groups.join('')}</div></section>`;
+  return `<section><h2>${h}</h2><div class="skills-groups">${groups.join('')}</div></section>`;
 }
 
-function renderLanguages(languages: LocalizedTakuhon['languages']): string {
+function renderLanguages(languages: LocalizedTakuhon['languages'], heading: string): string {
   if (languages.length === 0) return '';
   const items = languages
     .map((l) => `<li>${escapeHtml(`${l.displayName ?? l.language} — ${l.proficiency}`)}</li>`)
     .join('');
-  return `<section><h2>Languages</h2><ul class="entries">${items}</ul></section>`;
+  return `<section><h2>${escapeHtml(heading)}</h2><ul class="entries">${items}</ul></section>`;
 }
 
-function renderRecommendations(recs: LocalizedTakuhon['recommendations']): string {
+function renderRecommendations(recs: LocalizedTakuhon['recommendations'], heading: string): string {
   if (recs.length === 0) return '';
   const items = recs
     .map((r) => {
@@ -479,10 +617,10 @@ function renderRecommendations(recs: LocalizedTakuhon['recommendations']): strin
       return `<figure class="rec"><blockquote>${escapeHtml(r.body)}</blockquote><figcaption>— ${caption}${rel}</figcaption></figure>`;
     })
     .join('');
-  return `<section><h2>Recommendations</h2>${items}</section>`;
+  return `<section><h2>${escapeHtml(heading)}</h2>${items}</section>`;
 }
 
-function renderContact(contact: LocalizedTakuhon['contact']): string {
+function renderContact(contact: LocalizedTakuhon['contact'], heading: string): string {
   const items: string[] = [];
   if (contact.email) {
     items.push(
@@ -494,7 +632,7 @@ function renderContact(contact: LocalizedTakuhon['contact']): string {
     items.push(`<li><a href="${escapeHtml(formHref)}">Contact form</a></li>`);
   }
   if (items.length === 0) return '';
-  return `<section><h2>Contact</h2><ul class="entries">${items.join('')}</ul></section>`;
+  return `<section><h2>${escapeHtml(heading)}</h2><ul class="entries">${items.join('')}</ul></section>`;
 }
 
 /**
@@ -503,11 +641,11 @@ function renderContact(contact: LocalizedTakuhon['contact']): string {
  * `@takuhon/core` from stored numbers only — no external badge image — so the
  * page works under an `img-src 'self'` CSP.
  */
-function renderActivity(snapshot: ActivitySnapshot | undefined): string {
+function renderActivity(snapshot: ActivitySnapshot | undefined, heading: string): string {
   if (!snapshot) return '';
   const svg = renderActivitySvg(snapshot);
   if (svg === '') return '';
-  return `<section class="activity"><h2>Activity</h2>${svg}</section>`;
+  return `<section class="activity"><h2>${escapeHtml(heading)}</h2>${svg}</section>`;
 }
 
 function renderJsonLdScript(data: LocalizedTakuhon): string {
@@ -515,7 +653,7 @@ function renderJsonLdScript(data: LocalizedTakuhon): string {
   return `<script type="application/ld+json">${escapeJsonLd(payload)}</script>`;
 }
 
-function renderLocaleNav(localeNav: readonly LocaleLink[]): string {
+function renderLocaleNav(localeNav: readonly LocaleLink[], ariaLabel: string): string {
   const items = localeNav
     .map((l) =>
       l.current
@@ -523,7 +661,7 @@ function renderLocaleNav(localeNav: readonly LocaleLink[]): string {
         : `<a href="${escapeHtml(l.href)}">${escapeHtml(l.locale)}</a>`,
     )
     .join('');
-  return `<nav class="locales" aria-label="Language">${items}</nav>`;
+  return `<nav class="locales" aria-label="${escapeHtml(ariaLabel)}">${items}</nav>`;
 }
 
 /** Render a complete static HTML document for one locale-resolved profile. */
@@ -531,6 +669,13 @@ export function renderProfileHtml(input: RenderInput): string {
   const d = input.localized;
   const p = d.profile;
   const description = p.tagline ?? p.bio ?? '';
+
+  // Section headings + chrome labels: English defaults, overridden per-key by
+  // the caller for the resolved locale. `omit` suppresses a section's visible
+  // rendering (never its JSON-LD, generated from the full document below).
+  const L: SectionLabels = { ...DEFAULT_LABELS, ...input.labels };
+  const omit = new Set<OmittableSection>(input.omitSections ?? []);
+  const keep = (key: OmittableSection, html: string): string => (omit.has(key) ? '' : html);
 
   const head = [
     '<meta charset="utf-8">',
@@ -547,150 +692,186 @@ export function renderProfileHtml(input: RenderInput): string {
     input.jsonLd ? renderJsonLdScript(d) : '',
     input.contact ? '<link rel="stylesheet" href="/contact-widget.css">' : '',
     `<style>${buildTokenCss(d.settings.appearance)}\n${CSS}</style>`,
+    // First-party <head> slot (raw, unescaped): OG tags, manifest link, etc.
+    input.slots?.head ?? '',
   ]
     .filter(Boolean)
     .join('\n  ');
 
   const body = [
-    input.localeNav.length > 1 ? renderLocaleNav(input.localeNav) : '',
+    input.localeNav.length > 1 ? renderLocaleNav(input.localeNav, L.localeNav) : '',
     renderHeader(p),
-    renderLinks(d.links),
-    entryList(
-      'Experience',
-      d.careers.map((c) => ({
-        heading: c.role,
-        sub: c.organization,
-        dates: dateRange(c.startDate, {
-          end: c.endDate,
-          isCurrent: c.isCurrent,
-          locale: d.resolvedLocale,
-        }),
-        body: c.description,
-        url: c.url,
-        current: c.isCurrent,
-      })),
-      'timeline',
-    ),
-    entryList(
-      'Projects',
-      d.projects.map((x) => ({
-        heading: x.title,
-        dates: dateRange(x.startDate, { end: x.endDate, locale: d.resolvedLocale }),
-        body: x.description,
-        url: x.url,
-        tags: x.tags,
-        highlighted: x.highlighted,
-      })),
-      'cards',
-    ),
-    renderSkills(d.skills, d.settings.skillCategories),
-    renderActivity(input.activitySnapshot),
-    entryList(
-      'Education',
-      d.education.map((e) => {
-        const degree = nonEmpty([e.degree, e.fieldOfStudy], ', ');
-        return {
-          heading: degree ?? e.institution,
-          sub: degree ? e.institution : undefined,
-          dates: dateRange(e.startDate, {
-            end: e.endDate,
-            isCurrent: e.isCurrent,
+    renderLinks(d.links, L.featuredLinks, L.otherLinks),
+    keep(
+      'experience',
+      entryList(
+        L.experience,
+        d.careers.map((c) => ({
+          heading: c.role,
+          sub: c.organization,
+          dates: dateRange(c.startDate, {
+            end: c.endDate,
+            isCurrent: c.isCurrent,
             locale: d.resolvedLocale,
           }),
-          body: e.description,
-          url: e.url,
-        };
-      }),
+          body: c.description,
+          url: c.url,
+          current: c.isCurrent,
+        })),
+        'timeline',
+      ),
     ),
-    entryList(
-      'Certifications',
-      d.certifications.map((c) => ({
-        heading: c.title,
-        sub: c.issuingOrganization,
-        dates: dateRange(c.issueDate, { end: c.expirationDate, locale: d.resolvedLocale }),
-        url: c.url,
-      })),
+    keep(
+      'projects',
+      entryList(
+        L.projects,
+        d.projects.map((x) => ({
+          heading: x.title,
+          dates: dateRange(x.startDate, { end: x.endDate, locale: d.resolvedLocale }),
+          body: x.description,
+          url: x.url,
+          tags: x.tags,
+          highlighted: x.highlighted,
+        })),
+        'cards',
+      ),
     ),
-    entryList(
-      'Publications',
-      d.publications.map((x) => ({
-        heading: x.title,
-        sub: nonEmpty([x.publisher, x.coAuthors?.join(', ')], ' · '),
-        dates: dateRange(x.date, { locale: d.resolvedLocale }),
-        body: x.description,
-        url: x.url ?? (x.doi ? `https://doi.org/${x.doi}` : undefined),
-      })),
-    ),
-    entryList(
-      'Honors & awards',
-      d.honors.map((x) => ({
-        heading: x.title,
-        sub: x.issuer,
-        dates: dateRange(x.date, { locale: d.resolvedLocale }),
-        body: x.description,
-        url: x.url,
-      })),
-    ),
-    entryList(
-      'Memberships',
-      d.memberships.map((x) => ({
-        heading: x.role ?? x.organization,
-        sub: x.role ? x.organization : undefined,
-        dates: dateRange(x.startDate, {
-          end: x.endDate,
-          isCurrent: x.isCurrent,
-          locale: d.resolvedLocale,
+    keep('skills', renderSkills(d.skills, d.settings.skillCategories, L.skills)),
+    keep('activity', renderActivity(input.activitySnapshot, L.activity)),
+    keep(
+      'education',
+      entryList(
+        L.education,
+        d.education.map((e) => {
+          const degree = nonEmpty([e.degree, e.fieldOfStudy], ', ');
+          return {
+            heading: degree ?? e.institution,
+            sub: degree ? e.institution : undefined,
+            dates: dateRange(e.startDate, {
+              end: e.endDate,
+              isCurrent: e.isCurrent,
+              locale: d.resolvedLocale,
+            }),
+            body: e.description,
+            url: e.url,
+          };
         }),
-        body: x.description,
-        url: x.url,
-      })),
+      ),
     ),
-    entryList(
-      'Volunteering',
-      d.volunteering.map((x) => ({
-        heading: x.role,
-        sub: nonEmpty([x.organization, x.cause], ' · '),
-        dates: dateRange(x.startDate, {
-          end: x.endDate,
-          isCurrent: x.isCurrent,
-          locale: d.resolvedLocale,
-        }),
-        body: x.description,
-        url: x.url,
-      })),
+    keep(
+      'certifications',
+      entryList(
+        L.certifications,
+        d.certifications.map((c) => ({
+          heading: c.title,
+          sub: c.issuingOrganization,
+          dates: dateRange(c.issueDate, { end: c.expirationDate, locale: d.resolvedLocale }),
+          url: c.url,
+        })),
+      ),
     ),
-    entryList(
-      'Courses',
-      d.courses.map((x) => ({
-        heading: x.title,
-        sub: x.provider,
-        dates: dateRange(x.completionDate, { locale: d.resolvedLocale }),
-        body: x.description,
-        url: x.certificateUrl,
-      })),
+    keep(
+      'publications',
+      entryList(
+        L.publications,
+        d.publications.map((x) => ({
+          heading: x.title,
+          sub: nonEmpty([x.publisher, x.coAuthors?.join(', ')], ' · '),
+          dates: dateRange(x.date, { locale: d.resolvedLocale }),
+          body: x.description,
+          url: x.url ?? (x.doi ? `https://doi.org/${x.doi}` : undefined),
+        })),
+      ),
     ),
-    entryList(
-      'Patents',
-      d.patents.map((x) => ({
-        heading: x.title,
-        sub: nonEmpty([x.patentNumber, x.office, x.status, x.coInventors?.join(', ')], ' · '),
-        dates: dateRange(x.filingDate ?? x.grantDate, { locale: d.resolvedLocale }),
-        body: x.description,
-        url: x.url,
-      })),
+    keep(
+      'honors',
+      entryList(
+        L.honors,
+        d.honors.map((x) => ({
+          heading: x.title,
+          sub: x.issuer,
+          dates: dateRange(x.date, { locale: d.resolvedLocale }),
+          body: x.description,
+          url: x.url,
+        })),
+      ),
     ),
-    entryList(
-      'Test scores',
-      d.testScores.map((x) => ({
-        heading: `${x.title}: ${x.score}`,
-        dates: dateRange(x.date, { locale: d.resolvedLocale }),
-        body: x.description,
-        url: x.url,
-      })),
+    keep(
+      'memberships',
+      entryList(
+        L.memberships,
+        d.memberships.map((x) => ({
+          heading: x.role ?? x.organization,
+          sub: x.role ? x.organization : undefined,
+          dates: dateRange(x.startDate, {
+            end: x.endDate,
+            isCurrent: x.isCurrent,
+            locale: d.resolvedLocale,
+          }),
+          body: x.description,
+          url: x.url,
+        })),
+      ),
     ),
-    renderLanguages(d.languages),
-    renderRecommendations(d.recommendations),
-    renderContact(d.contact),
+    keep(
+      'volunteering',
+      entryList(
+        L.volunteering,
+        d.volunteering.map((x) => ({
+          heading: x.role,
+          sub: nonEmpty([x.organization, x.cause], ' · '),
+          dates: dateRange(x.startDate, {
+            end: x.endDate,
+            isCurrent: x.isCurrent,
+            locale: d.resolvedLocale,
+          }),
+          body: x.description,
+          url: x.url,
+        })),
+      ),
+    ),
+    keep(
+      'courses',
+      entryList(
+        L.courses,
+        d.courses.map((x) => ({
+          heading: x.title,
+          sub: x.provider,
+          dates: dateRange(x.completionDate, { locale: d.resolvedLocale }),
+          body: x.description,
+          url: x.certificateUrl,
+        })),
+      ),
+    ),
+    keep(
+      'patents',
+      entryList(
+        L.patents,
+        d.patents.map((x) => ({
+          heading: x.title,
+          sub: nonEmpty([x.patentNumber, x.office, x.status, x.coInventors?.join(', ')], ' · '),
+          dates: dateRange(x.filingDate ?? x.grantDate, { locale: d.resolvedLocale }),
+          body: x.description,
+          url: x.url,
+        })),
+      ),
+    ),
+    keep(
+      'testScores',
+      entryList(
+        L.testScores,
+        d.testScores.map((x) => ({
+          heading: `${x.title}: ${x.score}`,
+          dates: dateRange(x.date, { locale: d.resolvedLocale }),
+          body: x.description,
+          url: x.url,
+        })),
+      ),
+    ),
+    keep('languages', renderLanguages(d.languages, L.languages)),
+    keep('recommendations', renderRecommendations(d.recommendations, L.recommendations)),
+    keep('contact', renderContact(d.contact, L.contact)),
+    input.slots?.mainEnd ?? '',
   ]
     .filter(Boolean)
     .join('\n');
@@ -707,8 +888,15 @@ export function renderProfileHtml(input: RenderInput): string {
       ' defer></script>\n'
     : '';
 
+  // Skip link (always on): a visually-hidden a11y affordance that becomes
+  // visible on focus and jumps past the chrome to `<main id="main">`.
+  const skipLink = `<a class="skip-link" href="#main">${escapeHtml(L.skipLink)}</a>\n`;
+  // First-party pre-`</body>` slot (raw, unescaped): analytics beacon, SW
+  // registration, etc.
+  const bodyEnd = input.slots?.bodyEnd ?? '';
+
   return (
     `<!DOCTYPE html>\n<html lang="${escapeHtml(d.resolvedLocale)}">\n<head>\n  ${head}\n</head>\n` +
-    `<body>\n<main>\n${body}\n</main>\n${footer ? `${footer}\n` : ''}${contactScript}</body>\n</html>\n`
+    `<body>\n${skipLink}<main id="main">\n${body}\n</main>\n${footer ? `${footer}\n` : ''}${contactScript}${bodyEnd}</body>\n</html>\n`
   );
 }
