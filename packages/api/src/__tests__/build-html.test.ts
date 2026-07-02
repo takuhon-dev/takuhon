@@ -560,3 +560,83 @@ describe('renderProfileHtml() section layouts (timeline / cards)', () => {
     expect(html).not.toContain('<ul class="entries entries--cards">');
   });
 });
+
+describe('renderProfileHtml() composition seam (skip link / labels / slots / omitSections)', () => {
+  it('always emits a skip link targeting <main id="main">', () => {
+    const html = render(localized());
+    expect(html).toContain('<a class="skip-link" href="#main">Skip to main content</a>');
+    expect(html).toContain('<main id="main">');
+  });
+
+  it('overrides section headings and chrome labels for the resolved locale (defaults stay English)', () => {
+    const html = render(localized(), {
+      labels: {
+        experience: '経歴',
+        skills: 'スキル',
+        skipLink: 'メインコンテンツへスキップ',
+        featuredLinks: '主要リンク',
+      },
+    });
+    expect(html).toContain('<h2>経歴</h2>');
+    expect(html).toContain('<h2>スキル</h2>');
+    expect(html).toContain('<a class="skip-link" href="#main">メインコンテンツへスキップ</a>');
+    expect(html).toContain('aria-label="主要リンク"');
+    // An un-overridden label keeps its English default.
+    expect(html).not.toContain('<h2>Experience</h2>');
+    expect(html).not.toContain('<h2>Skills</h2>');
+  });
+
+  it('escapes overridden label text', () => {
+    const html = render(localized(), { labels: { skills: '<b>x</b>' } });
+    expect(html).toContain('<h2>&lt;b&gt;x&lt;/b&gt;</h2>');
+    expect(html).not.toContain('<h2><b>x</b></h2>');
+  });
+
+  it('injects the head slot verbatim (raw, not escaped) after the <style> block', () => {
+    const html = render(localized(), {
+      slots: { head: '<meta property="og:title" content="Pat & Co">' },
+    });
+    const head = /<head>([\s\S]*?)<\/head>/.exec(html)![1] ?? '';
+    expect(head).toContain('<meta property="og:title" content="Pat & Co">');
+    expect(head.indexOf('</style>')).toBeLessThan(head.indexOf('og:title'));
+  });
+
+  it('injects the mainEnd slot inside <main>, after the sections', () => {
+    const html = render(localized(), {
+      slots: { mainEnd: '<section id="social">posts</section>' },
+    });
+    const main = /<main id="main">([\s\S]*?)<\/main>/.exec(html)![1] ?? '';
+    expect(main).toContain('<section id="social">posts</section>');
+    // Sits after a rendered section (Skills is present in the fixture).
+    expect(main.indexOf('<h2>Skills</h2>')).toBeLessThan(main.indexOf('id="social"'));
+  });
+
+  it('injects the bodyEnd slot before </body>, after the contact script', () => {
+    const html = render(localized(), {
+      slots: { bodyEnd: '<script>beacon()</script>' },
+    });
+    expect(html).toContain('<script>beacon()</script></body>');
+    // Outside <main>.
+    const main = /<main id="main">([\s\S]*?)<\/main>/.exec(html)![1] ?? '';
+    expect(main).not.toContain('beacon()');
+  });
+
+  it('emits nothing for absent slots (byte-identical to no-slots)', () => {
+    const withEmpty = render(localized(), { slots: {} });
+    const without = render(localized());
+    expect(withEmpty).toBe(without);
+  });
+
+  it('omitSections suppresses a section in the visible body but NOT in the JSON-LD', () => {
+    const withSkills = render(localized());
+    const omitted = render(localized(), { omitSections: ['skills'] });
+    // Visible section gone.
+    expect(withSkills).toContain('<h2>Skills</h2>');
+    expect(omitted).not.toContain('<h2>Skills</h2>');
+    // JSON-LD is generated from the full document, so it is byte-identical
+    // regardless of which visible sections are omitted.
+    const jsonLd = (h: string) =>
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(h)![1];
+    expect(jsonLd(omitted)).toBe(jsonLd(withSkills));
+  });
+});
