@@ -17,7 +17,7 @@ types. These path definitions are derived from:
 
 - Simple Icons (https://simpleicons.org) — CC0-1.0 (public domain). All glyphs
   except LinkedIn: github, gitlab, x, mastodon, bluesky, instagram, youtube,
-  threads, facebook, rss.
+  threads, facebook, rss, npm, linktree, wakatime, wordpress.
 
 - Bootstrap Icons (https://icons.getbootstrap.com) — MIT License,
   Copyright (c) 2019-2024 The Bootstrap Authors. The LinkedIn glyph only

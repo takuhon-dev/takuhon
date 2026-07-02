@@ -221,6 +221,7 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
       jsonLd: profile.settings.enableJsonLd !== false,
       activitySnapshot: snapshot ?? undefined,
       contact,
+      year: new Date().getFullYear(),
     });
 
     c.header('etag', `"${version}"`);

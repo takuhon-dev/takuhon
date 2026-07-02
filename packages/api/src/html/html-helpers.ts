@@ -55,17 +55,19 @@ export function presentLabel(locale: LocaleTag): string {
  * required, so a call that forgets it is a compile error rather than a silently
  * mis-formatted output. The result is fully escaped — callers insert it raw,
  * without {@link escapeHtml}; the only non-escaped literals are the static
- * en-dash separator and the `<time>` tags themselves.
+ * separator and the `<time>` tags themselves. `separator` defaults to a
+ * spaced en-dash; a caller can pass another safe, static separator (the profile
+ * renderer uses a wave dash) — never user data, since it is inserted raw.
  */
 export function dateRange(
   start: string | undefined,
-  opts: { end?: string | null; isCurrent?: boolean; locale: LocaleTag },
+  opts: { end?: string | null; isCurrent?: boolean; locale: LocaleTag; separator?: string },
 ): string {
-  const { end, isCurrent, locale } = opts;
+  const { end, isCurrent, locale, separator = ' – ' } = opts;
   const left = start ? timeTag(start, locale) : '';
   const right =
     isCurrent === true || end === null ? presentLabel(locale) : end ? timeTag(end, locale) : '';
-  if (left && right) return `${left} – ${right}`;
+  if (left && right) return `${left}${separator}${right}`;
   return left || right;
 }
 
