@@ -8,7 +8,7 @@
  * matrix), plus curated labels and help text. The data schema stays UI-free.
  */
 
-import { type Takuhon } from '@takuhon/core';
+import { LABEL_KEYS, type Takuhon } from '@takuhon/core';
 
 import { getAdminLabel, type AdminLabelKey } from '../admin-labels.js';
 
@@ -18,7 +18,17 @@ import {
   renderAvatar,
   renderVisibilityMatrix,
 } from './custom-fields.js';
-import { type FieldRegistry } from './field-registry.js';
+import { humanize, type FieldRegistry } from './field-registry.js';
+
+/**
+ * Hints for each `settings.sectionLabels.<key>` override field. The field's own
+ * humanized name would collide with a section fieldset / visibility checkbox of
+ * the same name (both "Education", "Contact", …), so each is suffixed with
+ * "label" to read as "the heading override for X" and stay unambiguous.
+ */
+const SECTION_LABEL_HINTS: FieldRegistry = Object.fromEntries(
+  LABEL_KEYS.map((key) => [`settings.sectionLabels.${key}`, { label: `${humanize(key)} label` }]),
+);
 
 export interface AdminSection {
   key: keyof Takuhon;
@@ -102,6 +112,10 @@ export const SECTION_REGISTRY: FieldRegistry = {
   'settings.activity.github': { label: 'GitHub' },
   'settings.activity.wakatime': { label: 'WakaTime' },
   'settings.publicVisibility': { render: renderVisibilityMatrix },
+  // Section order + data-driven heading overrides (1.4.0).
+  'settings.sectionOrder': { label: 'Section order' },
+  'settings.sectionLabels': { label: 'Section headings' },
+  ...SECTION_LABEL_HINTS,
   // Contact form (1.1.0) — labelled "Contact form" so its group legend does not
   // collide with the profile "Contact" section. Only public config lives here;
   // the Turnstile secret and recipient are environment configuration.

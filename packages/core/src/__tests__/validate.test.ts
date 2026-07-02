@@ -202,6 +202,41 @@ describe('validate() schema-level failures', () => {
     );
   });
 
+  it('accepts settings.sectionOrder and settings.sectionLabels (schema 1.4.0)', () => {
+    const doc = cloneExample();
+    doc.settings.sectionOrder = ['about', 'projects', 'careers'];
+    doc.settings.sectionLabels = { skills: { en: 'Toolbox', ja: '道具箱' } } as never;
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('rejects an unknown settings.sectionOrder value (enum)', () => {
+    const broken = cloneExample();
+    broken.settings.sectionOrder = ['about', 'bogus'] as never;
+    const result = validate(broken);
+    expectError(result, (e) => e.keyword === 'enum' && e.pointer === '/settings/sectionOrder/1');
+  });
+
+  it('rejects duplicate settings.sectionOrder values (uniqueItems)', () => {
+    const broken = cloneExample();
+    broken.settings.sectionOrder = ['about', 'about'] as never;
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'uniqueItems' && e.pointer === '/settings/sectionOrder',
+    );
+  });
+
+  it('rejects an unknown settings.sectionLabels key (closed object)', () => {
+    const broken = cloneExample();
+    broken.settings.sectionLabels = { bogusKey: { en: 'X' } } as never;
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) =>
+        e.keyword === 'additionalProperties' && e.pointer === '/settings/sectionLabels/bogusKey',
+    );
+  });
+
   it('rejects negative Link.order (minimum)', () => {
     const broken = cloneExample();
     const firstLink = broken.links[0];

@@ -975,4 +975,73 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
     expect(ja).toContain('</time> 〜 <time'); // wave dash for Japanese
     expect(ja).not.toContain(' – ');
   });
+
+  it('honors settings.sectionOrder (partial list reorders; unlisted keep default order)', () => {
+    const html = render(
+      localized({
+        profile: { displayName: { en: 'Pat' }, tagline: { en: 'M' }, bio: { en: 'Hi.' } },
+        careers: [
+          { id: 'c', organization: { en: 'Acme' }, role: { en: 'Eng' }, startDate: '2020-01' },
+        ],
+        projects: [{ id: 'p', title: { en: 'Proj' } }],
+        skills: [{ id: 's', label: 'TypeScript' }],
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          // Name only two sections; the rest keep their default relative order.
+          sectionOrder: ['skills', 'projects'],
+        },
+      }),
+    );
+    const order = [
+      html.indexOf('<h2>Skills</h2>'),
+      html.indexOf('<h2>Projects</h2>'),
+      html.indexOf('<section class="bio">'), // about — unlisted, default order (before careers)
+      html.indexOf('<h2>Experience</h2>'), // careers — unlisted
+    ];
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  it('merges settings.sectionLabels over the pack and under RenderInput.labels', () => {
+    const doc = {
+      skills: [{ id: 's', label: 'TypeScript' }],
+      careers: [
+        { id: 'c', organization: { en: 'Acme' }, role: { en: 'Eng' }, startDate: '2020-01' },
+      ],
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        sectionLabels: {
+          skills: { en: 'Toolbox' },
+          careers: { en: 'Work history' },
+        },
+      },
+    };
+    // Data override wins over the built-in pack.
+    const html = render(localized(doc));
+    expect(html).toContain('<h2>Toolbox</h2>');
+    expect(html).toContain('<h2>Work history</h2>');
+    expect(html).not.toContain('<h2>Skills</h2>');
+    // The per-request `labels` override wins over settings.sectionLabels.
+    const withCode = render(localized(doc), { labels: { skills: 'Code override' } });
+    expect(withCode).toContain('<h2>Code override</h2>');
+    expect(withCode).not.toContain('<h2>Toolbox</h2>');
+    // careers still comes from settings.sectionLabels (only skills was overridden).
+    expect(withCode).toContain('<h2>Work history</h2>');
+  });
+
+  it('localizes settings.sectionLabels for the resolved locale', () => {
+    const doc = {
+      profile: { displayName: { en: 'Pat', ja: 'パット' }, tagline: { en: 'M', ja: 'M' } },
+      skills: [{ id: 's', label: 'TypeScript' }],
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en', 'ja'],
+        sectionLabels: { skills: { en: 'Toolbox', ja: '道具箱' } },
+      },
+    };
+    expect(render(localized(doc, 'ja'))).toContain('<h2>道具箱</h2>');
+    expect(render(localized(doc, 'en'))).toContain('<h2>Toolbox</h2>');
+  });
 });

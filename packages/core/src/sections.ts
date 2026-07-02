@@ -46,3 +46,29 @@ export const SECTION_KEYS = [
 
 /** One of the canonical {@link SECTION_KEYS}. */
 export type SectionKey = (typeof SECTION_KEYS)[number];
+
+/**
+ * Non-section "chrome" labels the renderer emits (skip link, nav aria-labels,
+ * the other-links heading, the footer credit lead-in). Together with the
+ * section headings these form the full set of localizable labels a caller can
+ * override.
+ */
+export const CHROME_LABEL_KEYS = [
+  'skipLink',
+  'localeNav',
+  'featuredLinks',
+  'otherLinks',
+  'poweredBy',
+] as const;
+
+/**
+ * Every overridable label key: one per {@link SECTION_KEYS} heading plus the
+ * {@link CHROME_LABEL_KEYS}. This is the single source of truth for the label
+ * set shared by the renderer's `SectionLabels`, the `settings.sectionLabels`
+ * data override, and the per-request label override — so all three stay in
+ * lock-step.
+ */
+export const LABEL_KEYS = [...SECTION_KEYS, ...CHROME_LABEL_KEYS] as const;
+
+/** One of the {@link LABEL_KEYS}. */
+export type LabelKey = (typeof LABEL_KEYS)[number];

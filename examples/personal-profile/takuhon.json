@@ -501,7 +501,12 @@
         "label": { "en": "Design & accessibility", "ja": "デザイン・アクセシビリティ" }
       },
       { "id": "language", "label": { "en": "Languages", "ja": "言語" } }
-    ]
+    ],
+    "sectionOrder": ["about", "projects", "careers", "skills"],
+    "sectionLabels": {
+      "projects": { "en": "Selected work", "ja": "主な制作" },
+      "volunteering": { "en": "Open-source contributions", "ja": "OSS コントリビューション" }
+    }
   },
   "meta": {
     "createdAt": "2026-01-15T09:00:00Z",

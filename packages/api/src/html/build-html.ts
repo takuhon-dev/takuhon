@@ -22,6 +22,7 @@ import type {
   ActivitySnapshot,
   AppearanceColors,
   AppearanceSettings,
+  LabelKey,
   LocalizedTakuhon,
   SectionKey,
 } from '@takuhon/core';
@@ -145,23 +146,15 @@ export interface RenderSlots {
 }
 
 /**
- * Section headings (one per {@link SectionKey}) plus chrome labels the caller
- * can localize via {@link RenderInput.labels}. The renderer ships Japanese and
- * English packs and picks one by the resolved locale ({@link pickLabelPack});
- * `labels` overrides individual strings on top.
+ * Section headings (one per {@link SectionKey}) plus chrome labels (skip link,
+ * nav aria-labels, the other-links heading, the footer credit lead-in) the
+ * caller can localize. The full key set is the core {@link LabelKey} taxonomy,
+ * so this type, `settings.sectionLabels`, and {@link RenderInput.labels} stay in
+ * lock-step. The renderer ships Japanese and English packs and picks one by the
+ * resolved locale ({@link pickLabelPack}); `settings.sectionLabels` then
+ * `labels` override individual strings on top.
  */
-export type SectionLabels = Record<SectionKey, string> & {
-  /** Visually-hidden skip-to-content link text. */
-  skipLink: string;
-  /** `aria-label` for the language switcher nav. */
-  localeNav: string;
-  /** `aria-label` for the featured-links nav. */
-  featuredLinks: string;
-  /** Heading for the bottom "other links" section. */
-  otherLinks: string;
-  /** Footer "Powered by" lead-in (precedes the "Takuhon" link). */
-  poweredBy: string;
-};
+export type SectionLabels = Record<LabelKey, string>;
 
 /** Built-in English label pack. */
 const LABELS_EN: SectionLabels = {
@@ -918,11 +911,16 @@ export function renderProfileHtml(input: RenderInput): string {
   const locale = d.resolvedLocale;
   const description = p.tagline ?? p.bio ?? '';
 
-  // Section headings + chrome labels: the built-in pack for the resolved locale,
-  // then any per-key overrides the caller supplied. `omit` suppresses a
-  // section's visible rendering (never its JSON-LD, generated from the full
-  // document below).
-  const L: SectionLabels = { ...pickLabelPack(locale), ...input.labels };
+  // Section headings + chrome labels, merged in precedence order: the built-in
+  // pack for the resolved locale, then the owner's `settings.sectionLabels`
+  // (data-driven overrides), then the caller's per-request `labels` (code seam).
+  // `omit` suppresses a section's visible rendering (never its JSON-LD, generated
+  // from the full document below).
+  const L: SectionLabels = {
+    ...pickLabelPack(locale),
+    ...(d.settings.sectionLabels ?? {}),
+    ...input.labels,
+  };
   const omit = new Set<SectionKey>(input.omitSections ?? []);
   const keep = (key: SectionKey, html: string): string => (omit.has(key) ? '' : html);
 
@@ -1090,11 +1088,26 @@ export function renderProfileHtml(input: RenderInput): string {
   const localeNavHtml =
     input.localeNav.length > 1 ? renderLocaleNav(input.localeNav, L.localeNav) : '';
 
+  // Resolve the section order: the owner's `settings.sectionOrder` first (valid,
+  // de-duplicated keys only), then every remaining section in the default order,
+  // so a partial list reorders what it names and leaves the rest untouched.
+  const seenKeys = new Set<SectionKey>();
+  const orderedKeys: SectionKey[] = [];
+  for (const key of d.settings.sectionOrder ?? []) {
+    if (SECTION_KEYS.includes(key) && !seenKeys.has(key)) {
+      seenKeys.add(key);
+      orderedKeys.push(key);
+    }
+  }
+  for (const key of SECTION_KEYS) {
+    if (!seenKeys.has(key)) orderedKeys.push(key);
+  }
+
   const body = [
     renderHeader(p, localeNavHtml),
     // Featured links at the top; the remaining links are a fixed bottom section.
     renderFeaturedLinks(d.links, L.featuredLinks),
-    ...SECTION_KEYS.map((key) => keep(key, sections[key])),
+    ...orderedKeys.map((key) => keep(key, sections[key])),
     renderOtherLinks(d.links, L.otherLinks),
     input.slots?.mainEnd ?? '',
   ]
