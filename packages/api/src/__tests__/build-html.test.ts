@@ -640,3 +640,69 @@ describe('renderProfileHtml() composition seam (skip link / labels / slots / omi
     expect(jsonLd(omitted)).toBe(jsonLd(withSkills));
   });
 });
+
+describe('renderProfileHtml() Markdown About section', () => {
+  const bioDoc = {
+    profile: {
+      displayName: { en: 'Pat Rivera' },
+      tagline: { en: 'Maintainer' },
+      bio: {
+        en: 'Intro paragraph.\n\n## Section One\n\n- point **one**\n- point two\n\n---\n\nClosing text.',
+      },
+    },
+  };
+
+  it('renders bio as an "About" section (heading + markdown), not a header paragraph', () => {
+    const html = render(localized(bioDoc));
+    expect(html).toContain('<section class="bio"><h2>About</h2><div class="bio-body">');
+    // Markdown blocks: ## -> h3, - -> ul/li, **bold** -> strong, --- -> hr, prose -> p.
+    expect(html).toContain('<h3>Section One</h3>');
+    expect(html).toContain('<li>point <strong>one</strong></li>');
+    expect(html).toContain('<hr>');
+    expect(html).toContain('<p>Intro paragraph.</p>');
+    // The old header paragraph form is gone.
+    expect(html).not.toContain('<p class="bio">');
+  });
+
+  it('places the About section after the links and before Experience', () => {
+    const html = render(
+      localized({
+        ...bioDoc,
+        links: [{ id: 'site', type: 'website', url: 'https://example.com', featured: true }],
+      }),
+    );
+    expect(html.indexOf('class="featured-links"')).toBeLessThan(
+      html.indexOf('<section class="bio">'),
+    );
+    expect(html.indexOf('<section class="bio">')).toBeLessThan(html.indexOf('<h2>Experience</h2>'));
+  });
+
+  it('emits no About section (and no header bio) when bio is absent', () => {
+    const html = render(localized());
+    expect(html).not.toContain('<section class="bio">');
+    expect(html).not.toContain('<p class="bio">');
+  });
+
+  it('localizes the About heading and can be omitted', () => {
+    const ja = render(localized(bioDoc), { labels: { about: '自己紹介' } });
+    expect(ja).toContain('<h2>自己紹介</h2>');
+    const omitted = render(localized(bioDoc), { omitSections: ['about'] });
+    expect(omitted).not.toContain('<section class="bio">');
+  });
+
+  it('escapes markdown text so it cannot inject markup', () => {
+    const html = render(
+      localized({
+        profile: {
+          displayName: { en: 'Pat' },
+          tagline: { en: 'M' },
+          bio: { en: 'Danger <script>alert(1)</script> **bold**' },
+        },
+      }),
+    );
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    // Bold still applies to the (escaped) text.
+    expect(html).toContain('<strong>bold</strong>');
+  });
+});

@@ -136,6 +136,7 @@ export interface RenderSlots {
  * not suppressible).
  */
 export type OmittableSection =
+  | 'about'
   | 'experience'
   | 'projects'
   | 'skills'
@@ -155,6 +156,7 @@ export type OmittableSection =
 
 /** Section headings and chrome labels the caller can localize via {@link RenderInput.labels}. */
 export interface SectionLabels {
+  about: string;
   experience: string;
   projects: string;
   skills: string;
@@ -183,6 +185,7 @@ export interface SectionLabels {
 
 /** Built-in English defaults for {@link SectionLabels}; overridden per-key by {@link RenderInput.labels}. */
 const DEFAULT_LABELS: SectionLabels = {
+  about: 'About',
   experience: 'Experience',
   projects: 'Projects',
   skills: 'Skills',
@@ -379,8 +382,13 @@ header{margin-bottom:var(--takuhon-space-6);display:flow-root}
 header .avatar{width:96px;height:96px;border-radius:var(--takuhon-radius-full);object-fit:cover;float:left;margin:0 var(--takuhon-space-3) var(--takuhon-space-3) 0;shape-outside:circle();border:1px solid var(--takuhon-color-border)}
 .tagline{font-size:var(--takuhon-font-size-lg);color:var(--takuhon-color-text-muted);margin:0 0 var(--takuhon-space-2)}
 .location{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted);margin:0}
-.bio{margin:var(--takuhon-space-3) 0 0}
 section{margin:0 0 var(--takuhon-space-6)}
+.bio-body h3{font-size:var(--takuhon-font-size-lg);font-weight:600;margin:var(--takuhon-space-5) 0 var(--takuhon-space-2)}
+.bio-body h4{font-size:var(--takuhon-font-size-base);font-weight:600;margin:var(--takuhon-space-4) 0 var(--takuhon-space-2)}
+.bio-body p{margin:0 0 var(--takuhon-space-3)}
+.bio-body ul{list-style:disc;margin:0 0 var(--takuhon-space-3);padding-left:var(--takuhon-space-5)}
+.bio-body li{margin:0 0 var(--takuhon-space-1)}
+.bio-body hr{border:0;border-top:1px solid var(--takuhon-color-border);margin:var(--takuhon-space-5) 0}
 ul{padding:0;margin:0;list-style:none}
 .entries>li{margin:0 0 var(--takuhon-space-4)}
 .entries--timeline>li{position:relative;display:flex;flex-direction:column;margin:0 0 0 var(--takuhon-space-2);padding:0 0 var(--takuhon-space-5) var(--takuhon-space-4);border-left:2px solid var(--takuhon-color-border)}
@@ -478,6 +486,91 @@ function entryList(title: string, entries: readonly EntryView[], variant?: Entri
     .join('')}</ul></section>`;
 }
 
+/**
+ * Render a `**bold**` inline run. Text is HTML-escaped FIRST, then the `**`
+ * markers (plain ASCII, untouched by escaping) are turned into `<strong>` — so
+ * escaped user content can never inject a tag. Non-greedy, non-nesting.
+ */
+function renderInline(text: string): string {
+  return escapeHtml(text).replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+}
+
+/**
+ * Minimal, dependency-free Markdown subset for `profile.bio`: `## ` → `<h3>`,
+ * `### ` → `<h4>`, `---` → `<hr>`, `- ` → `<ul><li>`, `**bold**`, and
+ * blank-line-separated paragraphs. Every text node is HTML-escaped before inline
+ * markers are applied ({@link renderInline}), so content cannot inject markup.
+ * Anything not matching a block marker becomes a paragraph — so a plain one-line
+ * bio degrades to a single `<p>`. No inline links/images (kept deliberately out
+ * of the subset so the section needs no URL-safety gate).
+ */
+function renderMarkdown(input: string): string {
+  const lines = input.split('\n');
+  const out: string[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const trimmed = (lines[i] ?? '').trim();
+    if (trimmed === '') {
+      i++;
+      continue;
+    }
+    if (trimmed === '---') {
+      out.push('<hr>');
+      i++;
+      continue;
+    }
+    if (trimmed.startsWith('### ')) {
+      out.push(`<h4>${renderInline(trimmed.slice(4))}</h4>`);
+      i++;
+      continue;
+    }
+    if (trimmed.startsWith('## ')) {
+      out.push(`<h3>${renderInline(trimmed.slice(3))}</h3>`);
+      i++;
+      continue;
+    }
+    if (trimmed.startsWith('- ')) {
+      const items: string[] = [];
+      while (i < lines.length) {
+        const cur = (lines[i] ?? '').trim();
+        if (!cur.startsWith('- ')) break;
+        items.push(`<li>${renderInline(cur.slice(2))}</li>`);
+        i++;
+      }
+      out.push(`<ul>${items.join('')}</ul>`);
+      continue;
+    }
+    const para: string[] = [];
+    while (i < lines.length) {
+      const cur = (lines[i] ?? '').trim();
+      if (
+        cur === '' ||
+        cur === '---' ||
+        cur.startsWith('## ') ||
+        cur.startsWith('### ') ||
+        cur.startsWith('- ')
+      ) {
+        break;
+      }
+      para.push(cur);
+      i++;
+    }
+    if (para.length > 0) out.push(`<p>${renderInline(para.join(' '))}</p>`);
+  }
+  return out.join('\n');
+}
+
+/**
+ * Render the "About" section from `profile.bio` as a Markdown-subset block
+ * ({@link renderMarkdown}). Returns `''` when there is no bio. The section
+ * carries a heading so it reads consistently with the other sections; a plain
+ * prose bio still renders (as a single paragraph).
+ */
+function renderBio(bio: string | undefined, heading: string): string {
+  if (!bio) return '';
+  return `<section class="bio"><h2>${escapeHtml(heading)}</h2><div class="bio-body">${renderMarkdown(bio)}</div></section>`;
+}
+
 function renderHeader(p: LocalizedProfile): string {
   const parts: string[] = [];
   const avatarSrc = p.avatar?.url ? safeUrl(p.avatar.url) : undefined;
@@ -489,7 +582,10 @@ function renderHeader(p: LocalizedProfile): string {
   parts.push(`<h1>${escapeHtml(p.displayName)}</h1>`);
   if (p.tagline) parts.push(`<p class="tagline">${escapeHtml(p.tagline)}</p>`);
   if (p.location?.display) parts.push(`<p class="location">${escapeHtml(p.location.display)}</p>`);
-  if (p.bio) parts.push(`<p class="bio">${escapeHtml(p.bio)}</p>`);
+  // `p.bio` is no longer rendered here: it is now its own Markdown "About"
+  // section ({@link renderBio}) placed after the links. It still feeds the
+  // `<meta name="description">` fallback and the JSON-LD, both built from the
+  // document rather than this markup.
   return `<header>${parts.join('')}</header>`;
 }
 
@@ -702,6 +798,7 @@ export function renderProfileHtml(input: RenderInput): string {
     input.localeNav.length > 1 ? renderLocaleNav(input.localeNav, L.localeNav) : '',
     renderHeader(p),
     renderLinks(d.links, L.featuredLinks, L.otherLinks),
+    keep('about', renderBio(p.bio, L.about)),
     keep(
       'experience',
       entryList(
