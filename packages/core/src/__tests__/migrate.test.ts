@@ -443,7 +443,7 @@ describe('migrateTakuhon', () => {
     expect(validate(out).ok).toBe(true);
   });
 
-  it('migrates a 1.3.0 input forward to 1.4.0 (version stamp; Project.role is optional)', () => {
+  it('migrates a 1.3.0 input forward to 1.4.0 (initializes highlights; Project.role optional)', () => {
     const v130 = {
       schemaVersion: '1.3.0',
       profile: { displayName: { en: 'Test' } },
@@ -458,10 +458,37 @@ describe('migrateTakuhon', () => {
 
     const out = migrateTakuhon(v130, '1.4.0');
     expect(out.schemaVersion).toBe('1.4.0');
-    // Pure version stamp: 1.4.0 only adds the optional Project.role field.
+    // 1.4.0 adds the optional Project.role field (absent here) and the new
+    // top-level `highlights[]` array, which the migration initializes to [] so a
+    // migrated document is complete at the 1.4.0 shape.
     expect(out.profile.displayName).toEqual({ en: 'Test' });
     expect(out.projects[0]!.role).toBeUndefined();
+    expect(out.highlights).toEqual([]);
     expect(validate(out).ok).toBe(true);
+  });
+
+  it('preserves a pre-existing highlights value when migrating 1.3.0 → 1.4.0', () => {
+    const forwardAuthored = {
+      schemaVersion: '1.3.0',
+      profile: { displayName: { en: 'Test' } },
+      highlights: [
+        {
+          id: 'h1',
+          platform: 'x',
+          url: 'https://x.com/p',
+          image: '/i.jpg',
+          alt: { en: 'a' },
+          title: { en: 't' },
+        },
+      ],
+      contact: {},
+      settings: { defaultLocale: 'en', availableLocales: ['en'] },
+      meta: { contentLicense: { spdxId: 'CC0-1.0' } },
+    } as unknown as Takuhon;
+
+    const out = migrateTakuhon(forwardAuthored, '1.4.0');
+    expect(out.highlights).toHaveLength(1);
+    expect(out.highlights[0]!.id).toBe('h1');
   });
 
   it('chains 0.1.0 → 0.6.0 through all five registered migrations', () => {

@@ -58,6 +58,7 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   { key: 'patents', label: 'section.patents' },
   { key: 'testScores', label: 'section.testScores' },
   { key: 'recommendations', label: 'section.recommendations' },
+  { key: 'highlights', label: 'section.highlights' },
   { key: 'contact', label: 'section.contact' },
   { key: 'meta', label: 'section.meta' },
 ] as const satisfies readonly AdminSection[];
@@ -145,6 +146,17 @@ export const SECTION_REGISTRY: FieldRegistry = {
 
   // Languages — disambiguate from the profile's "Display name".
   'languages.displayName': { label: 'Language name' },
+
+  // Highlights (selected posts) — tags are a comma-separated list like projects;
+  // the rest carry format hints. Localized/text fields render generically.
+  'highlights.tags': { render: csvListRenderer({ hint: 'hint.tags', emptyToUndefined: true }) },
+  'highlights.platform': {
+    hint: 'Free-form, e.g. instagram, x, github, blog. Known platforms show a brand glyph.',
+  },
+  'highlights.image': {
+    hint: 'Absolute URL or root-relative path, e.g. /images/social/post.jpg. Serving the file is the deployment responsibility.',
+  },
+  'highlights.postedAt': { hint: 'Format: YYYY-MM-DD (e.g. 2025-12-22).' },
 
   // Metadata — auto-managed, never hand-edited.
   'meta.createdAt': { hidden: true },

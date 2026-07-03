@@ -55,6 +55,7 @@ const EN = {
   'section.patents': 'Patents',
   'section.testScores': 'Test scores',
   'section.recommendations': 'Recommendations',
+  'section.highlights': 'Selected posts',
   'section.contact': 'Contact',
   'section.meta': 'Metadata',
 
@@ -125,6 +126,7 @@ const EN = {
   'field.publicVisibility.patents': 'Patents',
   'field.publicVisibility.testScores': 'Test scores',
   'field.publicVisibility.recommendations': 'Recommendations',
+  'field.publicVisibility.highlights': 'Selected posts',
   'field.publicVisibility.contact': 'Contact',
 
   'item.link': 'Link',

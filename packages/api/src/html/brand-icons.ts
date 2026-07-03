@@ -184,3 +184,22 @@ export function brandIconForLink(link: { type: LinkType; url: string }): string 
   const glyph = link.type === 'custom' ? hostGlyph(link.url) : TYPE_GLYPHS[link.type];
   return glyph ? renderGlyph(glyph) : '';
 }
+
+/**
+ * Inline SVG glyph for a highlight's free-form `platform`, or `''` when none is
+ * known. Resolved by the platform name first — a direct glyph match, with
+ * `blog` reusing the RSS mark like link types do — then by the post URL's host
+ * ({@link hostGlyph}). So `instagram` / `x` / `github` / … get a badge glyph
+ * while an unknown platform (`zenn`, `event`, …) resolves to none and the
+ * renderer falls back to a text-only badge. Decorative (`aria-hidden`); the
+ * adjacent platform name carries the meaning.
+ */
+export function brandIconForPlatform(platform: string, url: string): string {
+  const key = platform.trim().toLowerCase();
+  // `Object.hasOwn`, not `key in GLYPHS`: `platform` is a free-form string, so a
+  // value like "constructor" / "toString" would otherwise match an inherited
+  // Object.prototype member and feed a non-icon into renderGlyph.
+  const named = key === 'blog' ? 'rss' : Object.hasOwn(GLYPHS, key) ? key : null;
+  const glyph = named ?? hostGlyph(url);
+  return glyph ? renderGlyph(glyph) : '';
+}

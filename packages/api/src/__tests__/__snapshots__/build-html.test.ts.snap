@@ -75,5 +75,26 @@ footer.powered{max-width:var(--takuhon-max-content-width);margin:var(--takuhon-s
 footer.powered p{margin:0 0 var(--takuhon-space-2)}
 footer.powered p:last-child{margin-bottom:0}
 footer.powered .powered-by a{color:var(--takuhon-color-primary);text-decoration:none}
-footer.powered .powered-by a:hover{text-decoration:underline}"
+footer.powered .powered-by a:hover{text-decoration:underline}
+.highlights .highlights-intro{color:var(--takuhon-color-text-muted);margin:0 0 var(--takuhon-space-3)}
+.highlights-track{display:flex;gap:var(--takuhon-space-3);list-style:none;margin:0;padding:0 0 var(--takuhon-space-2);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:var(--takuhon-space-1);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.highlight-card{position:relative;flex:0 0 85%;scroll-snap-align:start;display:flex;flex-direction:column;background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md);overflow:hidden}
+@media (min-width:640px){.highlight-card{flex-basis:calc((100% - var(--takuhon-space-3)) / 2)}}
+@media (min-width:960px){.highlight-card{flex-basis:calc((100% - 2 * var(--takuhon-space-3)) / 3)}}
+.highlight-card:hover{border-color:var(--takuhon-color-accent)}
+.highlight-card:focus-within{outline:2px solid var(--takuhon-color-accent);outline-offset:2px}
+.highlight-thumb{aspect-ratio:1 / 1;background:var(--takuhon-color-bg)}
+.highlight-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.highlight-body{padding:var(--takuhon-space-3);display:flex;flex-direction:column;gap:var(--takuhon-space-2)}
+.highlight-body>*{margin:0}
+.highlight-badge{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted)}
+.highlight-badge .brand-icon{width:1em;height:1em;opacity:.85}
+.highlight-title{font-size:var(--takuhon-font-size-base);font-weight:600}
+.highlight-title a{color:var(--takuhon-color-text);text-decoration:none}
+.highlight-title a:hover{color:var(--takuhon-color-primary)}
+.highlight-title a::after{content:"";position:absolute;inset:0}
+.highlight-title a:focus-visible{outline:none}
+.highlight-date{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted)}
+.highlight-desc{font-size:var(--takuhon-font-size-sm)}
+.highlight-cta{font-size:var(--takuhon-font-size-sm);font-weight:600;color:var(--takuhon-color-primary)}"
 `;

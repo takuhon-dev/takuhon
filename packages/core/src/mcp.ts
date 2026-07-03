@@ -54,6 +54,7 @@ export const MCP_PROFILE_SECTIONS = [
   'patents',
   'testScores',
   'recommendations',
+  'highlights',
   'contact',
 ] as const;
 

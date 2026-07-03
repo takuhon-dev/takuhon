@@ -159,6 +159,13 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   }
   out.recommendations = stableSortByOrder(out.recommendations);
 
+  for (const h of out.highlights) {
+    cleanRequiredLocalized(h.alt);
+    cleanRequiredLocalized(h.title);
+    cleanOptionalLocalized(h, 'description');
+  }
+  out.highlights = stableSortByOrder(out.highlights);
+
   return out;
 }
 
@@ -233,4 +240,5 @@ const NORMALIZED_ARRAYS = [
   'patents',
   'testScores',
   'recommendations',
+  'highlights',
 ] as const;

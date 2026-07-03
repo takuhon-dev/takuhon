@@ -9,8 +9,9 @@
  * same input.
  *
  * A CV is a curated *subset* of the profile: the web-page-specific sections
- * (links, recommendations, the activity dashboard, test scores) are omitted,
- * and the rest appear in the order a résumé conventionally uses. Entry order
+ * (links, recommendations, the activity dashboard, test scores, and the
+ * curated `highlights` carousel) are omitted, and the rest appear in the order
+ * a résumé conventionally uses. Entry order
  * within a section is preserved from the input (already normalized by `order`
  * upstream), so the owner's `order` field controls it — `deriveCv` never
  * re-sorts. Empty sections are dropped so the renderer can iterate without

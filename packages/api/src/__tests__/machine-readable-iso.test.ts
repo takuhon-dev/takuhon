@@ -59,6 +59,7 @@ function fixture(): Takuhon {
     testScores: [],
     publications: [],
     recommendations: [],
+    highlights: [],
     contact: {},
     settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
     meta: { contentLicense: { spdxId: 'CC0-1.0' } },

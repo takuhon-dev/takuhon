@@ -39,6 +39,7 @@ import type {
   Certification,
   Course,
   Education,
+  Highlight,
   Honor,
   Language,
   Link,
@@ -50,6 +51,7 @@ import type {
   LocalizedCertification,
   LocalizedCourse,
   LocalizedEducation,
+  LocalizedHighlight,
   LocalizedHonor,
   LocalizedLanguage,
   LocalizedLink,
@@ -113,6 +115,7 @@ export function resolveLocale(
     patents: data.patents.map((p) => resolvePatent(p, candidates)),
     testScores: data.testScores.map((t) => resolveTestScore(t, candidates)),
     recommendations: data.recommendations.map((r) => resolveRecommendation(r, candidates)),
+    highlights: data.highlights.map((h) => resolveHighlight(h, candidates)),
     contact: data.contact,
     settings: resolveSettings(data.settings, candidates),
     meta: data.meta,
@@ -174,13 +177,14 @@ function pickLocalized(
 
 /**
  * Resolve the parts of `settings` that carry localized values: `skillCategories`
- * labels (collapsed to the resolved string, falling back to the raw category id)
- * and `sectionLabels` (each override collapsed to the resolved string; an entry
- * with no matching candidate is dropped). Every other settings field —
- * including `sectionOrder` — is passed through unchanged.
+ * labels (collapsed to the resolved string, falling back to the raw category id),
+ * `sectionLabels` (each override collapsed to the resolved string; an entry with
+ * no matching candidate is dropped), and `highlightsIntro` (collapsed to the
+ * resolved string; dropped when no candidate matches). Every other settings
+ * field — including `sectionOrder` — is passed through unchanged.
  */
 function resolveSettings(settings: Settings, candidates: LocaleTag[]): LocalizedSettings {
-  const { skillCategories, sectionLabels, ...rest } = settings;
+  const { skillCategories, sectionLabels, highlightsIntro, ...rest } = settings;
   const resolved: LocalizedSettings = { ...rest };
   if (skillCategories) {
     resolved.skillCategories = skillCategories.map((c) => ({
@@ -196,6 +200,8 @@ function resolveSettings(settings: Settings, candidates: LocaleTag[]): Localized
     }
     resolved.sectionLabels = out;
   }
+  const intro = pickLocalized(highlightsIntro, candidates);
+  if (intro !== undefined) resolved.highlightsIntro = intro;
   return resolved;
 }
 
@@ -510,5 +516,23 @@ function resolveRecommendationAuthor(
   const headline = pickLocalized(author.headline, candidates);
   if (headline !== undefined) out.headline = headline;
   if (author.url !== undefined) out.url = author.url;
+  return out;
+}
+
+function resolveHighlight(highlight: Highlight, candidates: LocaleTag[]): LocalizedHighlight {
+  const out: LocalizedHighlight = {
+    id: highlight.id,
+    platform: highlight.platform,
+    url: highlight.url,
+    image: highlight.image,
+    alt: pickLocalized(highlight.alt, candidates) ?? '',
+    title: pickLocalized(highlight.title, candidates) ?? '',
+  };
+  const description = pickLocalized(highlight.description, candidates);
+  if (description !== undefined) out.description = description;
+  if (highlight.postedAt !== undefined) out.postedAt = highlight.postedAt;
+  if (highlight.tags !== undefined) out.tags = highlight.tags;
+  if (highlight.order !== undefined) out.order = highlight.order;
+  if (highlight.visibility !== undefined) out.visibility = highlight.visibility;
   return out;
 }

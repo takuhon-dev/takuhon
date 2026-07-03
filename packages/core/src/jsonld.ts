@@ -18,6 +18,10 @@
  *   no placeholder is fabricated.
  * - `profile.tagline` is intentionally not surfaced. `description` carries
  *   `profile.bio` only, matching the spec exemplar. Phase 2 may revisit.
+ * - The curated `highlights` (selected posts) are intentionally NOT surfaced:
+ *   Schema.org has no natural vocabulary for an owner-curated set of off-site
+ *   posts, so they stay a page/API/MCP feature and are absent from JSON-LD (a
+ *   deliberate omission, consistent with the derived CV).
  * - `contact.email` is surfaced only when `contact.showEmail === true`
  *   (privacy by default).
  * - URLs pass through verbatim. Relative paths in the input remain relative

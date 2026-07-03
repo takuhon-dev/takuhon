@@ -480,6 +480,45 @@
       "order": 1
     }
   ],
+  "highlights": [
+    {
+      "id": "post-axe-helpers-launch",
+      "platform": "github",
+      "url": "https://example.com/pat/axe-helpers",
+      "image": "/assets/highlights/axe-helpers.webp",
+      "alt": {
+        "en": "Terminal screenshot of axe-helpers running in a test suite.",
+        "ja": "テストスイートで axe-helpers が動作するターミナルのスクリーンショット。"
+      },
+      "title": {
+        "en": "axe-helpers hits 1.0",
+        "ja": "axe-helpers が 1.0 に到達"
+      },
+      "description": {
+        "en": "The accessibility test utilities are now stable, with docs and recipes.",
+        "ja": "アクセシビリティテストユーティリティが安定版に。ドキュメントとレシピも整備。"
+      },
+      "postedAt": "2024-05-18",
+      "tags": ["accessibility", "release"],
+      "order": 0
+    },
+    {
+      "id": "post-a11y-meetup-talk",
+      "platform": "event",
+      "url": "https://example.org/meetups/a11y-lisbon-2024",
+      "image": "/assets/highlights/a11y-meetup.webp",
+      "alt": {
+        "en": "Pat presenting on stage at a local accessibility meetup.",
+        "ja": "地域のアクセシビリティ勉強会で登壇する Pat。"
+      },
+      "title": {
+        "en": "Talk: Testing for non-visual journeys",
+        "ja": "登壇: 非視覚的な導線をテストする"
+      },
+      "postedAt": "2024-03-09",
+      "order": 1
+    }
+  ],
   "contact": {
     "email": "pat@example.com",
     "showEmail": false,
@@ -506,6 +545,10 @@
     "sectionLabels": {
       "projects": { "en": "Selected work", "ja": "主な制作" },
       "volunteering": { "en": "Open-source contributions", "ja": "OSS コントリビューション" }
+    },
+    "highlightsIntro": {
+      "en": "A few recent posts and talks.",
+      "ja": "最近の投稿と登壇をいくつか。"
     }
   },
   "meta": {

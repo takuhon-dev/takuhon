@@ -363,6 +363,42 @@ export interface Recommendation extends VisibilityControlled {
   order?: number;
 }
 
+/**
+ * One curated "selected post" (added in 1.4.0), rendered as a card in the
+ * highlights carousel: a hand-picked link to an off-site post (Instagram, X, a
+ * blog, a talk, …) with a self-hosted thumbnail — deliberately not an automated
+ * social feed. It appears on the public page, `/api/profile`, `/takuhon.json`,
+ * and MCP, but is intentionally omitted from JSON-LD and the derived CV (no
+ * natural vocabulary / résumé slot for it).
+ */
+export interface Highlight extends VisibilityControlled {
+  id: Slug;
+  /**
+   * Free-form source platform (e.g. `'instagram'`, `'x'`, `'github'`, `'blog'`,
+   * `'event'`). A value with a matching brand glyph renders a badge icon; others
+   * fall back to a text badge. Not an enum, so new platforms need no schema
+   * change.
+   */
+  platform: string;
+  /** Permalink to the original post; the card links here. */
+  url: string;
+  /**
+   * Self-hosted thumbnail, as an absolute URL or a root-relative path (like
+   * {@link Avatar.url}). Serving the asset is the deployment's responsibility.
+   */
+  image: string;
+  /** Required alt text for the thumbnail — the card must not rely on the image alone. */
+  alt: LocalizedTitle;
+  /** Localized card title / caption. */
+  title: LocalizedTitle;
+  /** Optional localized supporting text shown under the title. */
+  description?: LocalizedBody;
+  /** Optional post date, ISO `YYYY-MM-DD` (a full date, unlike the YYYY-MM used elsewhere). */
+  postedAt?: string;
+  tags?: string[];
+  order?: number;
+}
+
 export interface Contact {
   email?: string;
   showEmail?: boolean;
@@ -412,6 +448,11 @@ export interface Settings {
    * the built-in labels.
    */
   sectionLabels?: SectionLabelOverrides;
+  /**
+   * Localized intro line shown under the highlights section heading (added in
+   * 1.4.0). Absent = no intro line.
+   */
+  highlightsIntro?: LocalizedTitle;
 }
 
 /** Localized label overrides for {@link Settings.sectionLabels}. */
@@ -527,6 +568,7 @@ export interface PublicVisibility {
   patents?: boolean;
   testScores?: boolean;
   recommendations?: boolean;
+  highlights?: boolean;
   contact?: boolean;
 }
 
@@ -618,6 +660,7 @@ export interface Takuhon {
   patents: Patent[];
   testScores: TestScore[];
   recommendations: Recommendation[];
+  highlights: Highlight[];
   contact: Contact;
   settings: Settings;
   meta: Meta;
@@ -857,6 +900,20 @@ export interface LocalizedRecommendation extends VisibilityControlled {
   order?: number;
 }
 
+/** Highlight with `alt`, `title`, `description` collapsed to single strings. */
+export interface LocalizedHighlight extends VisibilityControlled {
+  id: Slug;
+  platform: string;
+  url: string;
+  image: string;
+  alt: string;
+  title: string;
+  description?: string;
+  postedAt?: string;
+  tags?: string[];
+  order?: number;
+}
+
 /**
  * One skill-category group after locale resolution: the localized `label` map
  * collapsed to the single resolved string. See {@link SkillCategory}.
@@ -872,10 +929,15 @@ export interface LocalizedSkillCategory {
  * ({@link LocalizedSkillCategory}); every other settings field is passed
  * through unchanged.
  */
-export type LocalizedSettings = Omit<Settings, 'skillCategories' | 'sectionLabels'> & {
+export type LocalizedSettings = Omit<
+  Settings,
+  'skillCategories' | 'sectionLabels' | 'highlightsIntro'
+> & {
   skillCategories?: LocalizedSkillCategory[];
   /** {@link Settings.sectionLabels} with each value collapsed to the resolved string. */
   sectionLabels?: Partial<Record<LabelKey, string>>;
+  /** {@link Settings.highlightsIntro} collapsed to the resolved string. */
+  highlightsIntro?: string;
 };
 
 /**
@@ -905,6 +967,7 @@ export interface LocalizedTakuhon {
   patents: LocalizedPatent[];
   testScores: LocalizedTestScore[];
   recommendations: LocalizedRecommendation[];
+  highlights: LocalizedHighlight[];
   contact: Contact;
   settings: LocalizedSettings;
   meta: Meta;

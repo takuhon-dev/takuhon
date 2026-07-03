@@ -37,6 +37,7 @@ describe('examples/personal-profile/takuhon.json', () => {
         'patents',
         'testScores',
         'recommendations',
+        'highlights',
         'contact',
         'settings',
         'meta',

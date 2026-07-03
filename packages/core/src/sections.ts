@@ -3,18 +3,16 @@
  * renderer emits. One key per orderable `<section>`.
  *
  * This is the single source of truth for section identity and default ordering,
- * shared so the renderer, `settings.sectionOrder` (a future additive schema
- * field), and the section-level privacy controls cannot drift apart. Two kinds
- * of keys appear:
+ * shared so the renderer, `settings.sectionOrder`, and the section-level privacy
+ * controls cannot drift apart. Two kinds of keys appear:
  *
  * - **Data sections** — the array/object sections of the document, named exactly
- *   as in {@link PublicVisibility} (`careers`, `projects`, …). A parity test
- *   guarantees every visibility-controlled data section is represented here.
- * - **Page-only sections** — `about` (rendered from `profile.bio`), `activity`
- *   (rendered from a synced snapshot, not stored document data), and
- *   `highlights` (a curated-posts section; its data model lands in a later
- *   additive schema change — until then the renderer reserves its ordinal
- *   position and emits nothing).
+ *   as in {@link PublicVisibility} (`careers`, `projects`, `highlights`, …). A
+ *   parity test guarantees every visibility-controlled data section is
+ *   represented here. `highlights` (the curated "selected posts" carousel, its
+ *   own top-level array added in 1.4.0) is one of these.
+ * - **Page-only sections** — `about` (rendered from `profile.bio`) and
+ *   `activity` (rendered from a synced snapshot, not stored document data).
  *
  * `links` is deliberately absent: featured links render at the top and the
  * remaining links render as a fixed bottom section, so link placement is not

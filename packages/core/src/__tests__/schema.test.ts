@@ -27,6 +27,7 @@ const expectedPropertyKeys = [
   'patents',
   'testScores',
   'recommendations',
+  'highlights',
 ] as const;
 
 const expectedDefs = [
@@ -39,6 +40,7 @@ const expectedDefs = [
   'Course',
   'Education',
   'Email',
+  'Highlight',
   'Honor',
   'Iso3166Alpha2',
   'IsoDateTime',
@@ -108,6 +110,7 @@ describe('takuhon.schema.json structural shape', () => {
     expect(schema.properties.patents.maxItems).toBe(50);
     expect(schema.properties.testScores.maxItems).toBe(30);
     expect(schema.properties.recommendations.maxItems).toBe(50);
+    expect(schema.properties.highlights.maxItems).toBe(50);
   });
 
   it('models Recommendation as owner-curated (id/body/author required; author.name required)', () => {
@@ -185,6 +188,7 @@ describe('takuhon.schema.json structural shape', () => {
       'TestScore',
       'Recommendation',
       'RecommendationAuthor',
+      'Highlight',
     ] as const;
     for (const name of closedDefs) {
       expect(schema.$defs[name].additionalProperties).toBe(false);

@@ -115,9 +115,15 @@ describe('resolveLocale() non-localized passthrough', () => {
     const {
       skillCategories: resolvedCats,
       sectionLabels: resolvedLabels,
+      highlightsIntro: resolvedIntro,
       ...resolvedRest
     } = resolved.settings;
-    const { skillCategories: rawCats, sectionLabels: rawLabels, ...rawRest } = data.settings;
+    const {
+      skillCategories: rawCats,
+      sectionLabels: rawLabels,
+      highlightsIntro: rawIntro,
+      ...rawRest
+    } = data.settings;
     expect(resolvedRest).toEqual(rawRest);
     // skillCategories labels are collapsed to the resolved locale's string.
     expect(resolvedCats).toEqual((rawCats ?? []).map((c) => ({ id: c.id, label: c.label.ja })));
@@ -125,6 +131,8 @@ describe('resolveLocale() non-localized passthrough', () => {
     expect(resolvedLabels).toEqual(
       Object.fromEntries(Object.entries(rawLabels ?? {}).map(([k, v]) => [k, v.ja])),
     );
+    // highlightsIntro collapses to the resolved locale's string.
+    expect(resolvedIntro).toEqual(rawIntro?.ja);
   });
 
   it('preserves Career endDate:null and Project tags arrays verbatim', () => {
