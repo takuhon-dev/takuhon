@@ -66,6 +66,9 @@ ul{padding:0;margin:0;list-style:none}
 .vol-org a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
 .vol-role{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 .vol-desc{margin:var(--takuhon-space-1) 0 0;font-size:var(--takuhon-font-size-sm)}
+.vol-secondary{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);margin-top:var(--takuhon-space-2);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);color:var(--takuhon-color-text);text-decoration:none}
+.vol-secondary:hover{border-color:var(--takuhon-color-accent)}
+.vol-secondary .brand-icon{width:1em;height:1em;opacity:.85}
 .rec{margin:0 0 var(--takuhon-space-4)}
 .rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
 .rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}

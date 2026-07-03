@@ -861,3 +861,65 @@ describe('highlights (1.4.0)', () => {
     expectError(result, (e) => e.keyword === 'uniqueItems' && e.pointer.startsWith('/highlights/'));
   });
 });
+
+describe('Skill.label localization (1.4.0 — anyOf[string, LocalizedTitle])', () => {
+  it('accepts a plain-string label (backward compatible)', () => {
+    const doc = cloneExample();
+    doc.skills[0]!.label = 'Rust';
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('accepts a localized-map label', () => {
+    const doc = cloneExample();
+    doc.skills[0]!.label = { en: 'Design tokens', ja: 'デザイントークン' };
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('rejects a blank localized label value (LocalizedTitle \\S pattern)', () => {
+    const doc = cloneExample();
+    doc.skills[0]!.label = { en: '   ' } as never;
+    expect(validate(doc).ok).toBe(false);
+  });
+
+  it('rejects a label that is neither a string nor a localized map', () => {
+    const doc = cloneExample();
+    doc.skills[0]!.label = 42 as never;
+    const result = validate(doc);
+    expectError(result, (e) => e.pointer === '/skills/0/label');
+  });
+});
+
+describe('Volunteering.secondaryLink (1.4.0)', () => {
+  it('accepts a secondary link with a url and localized label (the bundled example)', () => {
+    const doc = cloneExample();
+    expect(doc.volunteering[0]!.secondaryLink).toBeDefined();
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('accepts a secondary link with only a url (label optional)', () => {
+    const doc = cloneExample();
+    doc.volunteering[0]!.secondaryLink = { url: 'https://github.com/example' } as never;
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('rejects a secondary link missing its required url', () => {
+    const broken = cloneExample();
+    delete (broken.volunteering[0]!.secondaryLink as unknown as Record<string, unknown>).url;
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'required' && e.pointer === '/volunteering/0/secondaryLink/url',
+    );
+  });
+
+  it('rejects an unknown property on a secondary link (closed object)', () => {
+    const broken = cloneExample();
+    (broken.volunteering[0]!.secondaryLink as unknown as Record<string, unknown>).bogus = 'x';
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) =>
+        e.keyword === 'additionalProperties' && e.pointer === '/volunteering/0/secondaryLink/bogus',
+    );
+  });
+});

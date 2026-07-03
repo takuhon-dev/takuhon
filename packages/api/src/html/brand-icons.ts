@@ -203,3 +203,14 @@ export function brandIconForPlatform(platform: string, url: string): string {
   const glyph = named ?? hostGlyph(url);
   return glyph ? renderGlyph(glyph) : '';
 }
+
+/**
+ * Inline SVG glyph resolved purely from a URL's host ({@link hostGlyph}), or
+ * `''` when the host carries no known brand. Used for secondary links whose only
+ * signal is the URL (e.g. a volunteering entry's GitHub org page). Decorative
+ * (`aria-hidden`); the adjacent label carries the meaning.
+ */
+export function brandIconForHost(url: string): string {
+  const glyph = hostGlyph(url);
+  return glyph ? renderGlyph(glyph) : '';
+}

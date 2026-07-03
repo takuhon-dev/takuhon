@@ -121,6 +121,43 @@ describe('classifyNode — arrays and objects', () => {
   });
 });
 
+describe('classifyNode — string | Localized unions (1.4.0 additive localization)', () => {
+  it('classifies anyOf[string, LocalizedTitle] as the locale-tabs title editor', () => {
+    const node: SchemaNode = {
+      anyOf: [{ type: 'string', maxLength: 100 }, { $ref: '#/$defs/LocalizedTitle' }],
+    };
+    expect(classifyNode(root, node)).toEqual({ widget: 'localizedTitle' });
+  });
+
+  it('classifies anyOf[string, LocalizedBody] as the locale-tabs body editor', () => {
+    const node: SchemaNode = {
+      anyOf: [{ type: 'string' }, { $ref: '#/$defs/LocalizedBody' }],
+    };
+    expect(classifyNode(root, node)).toEqual({ widget: 'localizedBody' });
+  });
+
+  it('classifies the real Skill.label union as localizedTitle', () => {
+    const section = sectionFieldKind(root, 'skills');
+    if (section.widget !== 'array' || section.item.widget !== 'object') {
+      throw new Error('expected array of objects');
+    }
+    expect(entry(section.item.fields, 'label').kind.widget).toBe('localizedTitle');
+  });
+
+  it('classifies the real Volunteering.secondaryLink as a nested object with a localized label', () => {
+    const section = sectionFieldKind(root, 'volunteering');
+    if (section.widget !== 'array' || section.item.widget !== 'object') {
+      throw new Error('expected array of objects');
+    }
+    const secondary = entry(section.item.fields, 'secondaryLink');
+    expect(secondary.required).toBe(false);
+    expect(secondary.kind.widget).toBe('object');
+    if (secondary.kind.widget !== 'object') throw new Error('unreachable');
+    expect(entry(secondary.kind.fields, 'url').kind.widget).toBe('url');
+    expect(entry(secondary.kind.fields, 'label').kind.widget).toBe('localizedTitle');
+  });
+});
+
 describe('sectionFieldKind — real sections', () => {
   it('treats array sections as a repeater of objects', () => {
     for (const section of ['careers', 'education', 'certifications', 'recommendations']) {

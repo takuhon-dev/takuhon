@@ -27,7 +27,7 @@ import type {
   SectionKey,
 } from '@takuhon/core';
 
-import { brandIconForLink, brandIconForPlatform } from './brand-icons.js';
+import { brandIconForHost, brandIconForLink, brandIconForPlatform } from './brand-icons.js';
 import { dateRange, escapeHtml, nonEmpty, safeUrl, timeTag } from './html-helpers.js';
 
 // Re-exported for existing importers (e.g. dev-command, tests) that pull
@@ -453,6 +453,9 @@ ul{padding:0;margin:0;list-style:none}
 .vol-org a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
 .vol-role{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 .vol-desc{margin:var(--takuhon-space-1) 0 0;font-size:var(--takuhon-font-size-sm)}
+.vol-secondary{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);margin-top:var(--takuhon-space-2);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);color:var(--takuhon-color-text);text-decoration:none}
+.vol-secondary:hover{border-color:var(--takuhon-color-accent)}
+.vol-secondary .brand-icon{width:1em;height:1em;opacity:.85}
 .rec{margin:0 0 var(--takuhon-space-4)}
 .rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
 .rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}
@@ -822,13 +825,46 @@ function renderSkills(
 }
 
 type LocalizedVolunteering = LocalizedTakuhon['volunteering'][number];
+type LocalizedSecondaryLink = NonNullable<LocalizedVolunteering['secondaryLink']>;
+
+/**
+ * A human-ish label from a URL host (leading `www.` dropped). Falls back to the
+ * raw URL when the URL is unparseable OR carries no host (e.g. `mailto:` / `tel:`,
+ * whose `hostname` is `''`) — so a label-less secondary link never renders as an
+ * empty pill.
+ */
+function hostLabel(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    return host || url;
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * A small trailing pill for a volunteering entry's secondary link (e.g. its
+ * GitHub org page). The brand glyph is resolved from the URL host; the label
+ * falls back to the host when absent. Rendered as a plain (non-link) span when
+ * the URL is unsafe, so the label is never dropped but no unsafe href is emitted.
+ */
+function secondaryLinkPill(link: LocalizedSecondaryLink): string {
+  const label = escapeHtml(link.label ?? hostLabel(link.url));
+  const href = safeUrl(link.url);
+  const glyph = href ? brandIconForHost(link.url) : '';
+  const inner = `${glyph}<span>${label}</span>`;
+  return href
+    ? `<a class="vol-secondary" href="${escapeHtml(href)}" rel="noopener">${inner}</a>`
+    : `<span class="vol-secondary">${inner}</span>`;
+}
 
 /**
  * Render the Volunteering section as a compact list of one-line-head entries:
  * the organization (linked, when a URL is present, with the external-link icon)
- * and the role on a single wrapping line, then an optional description. Dates
- * are intentionally not shown — this reads as an "involved with" list rather
- * than a dated timeline. Returns `''` when there are none.
+ * and the role on a single wrapping line, then an optional description and an
+ * optional secondary-link pill. Dates are intentionally not shown — this reads
+ * as an "involved with" list rather than a dated timeline. Returns `''` when
+ * there are none.
  */
 function renderVolunteering(items: readonly LocalizedVolunteering[], heading: string): string {
   if (items.length === 0) return '';
@@ -839,7 +875,8 @@ function renderVolunteering(items: readonly LocalizedVolunteering[], heading: st
       : escapeHtml(v.organization);
     const role = v.role ? `<span class="vol-role">${escapeHtml(v.role)}</span>` : '';
     const desc = v.description ? `<p class="vol-desc">${escapeHtml(v.description)}</p>` : '';
-    return `<li class="vol"><div class="vol-head"><span class="vol-org">${org}</span>${role}</div>${desc}</li>`;
+    const secondary = v.secondaryLink ? secondaryLinkPill(v.secondaryLink) : '';
+    return `<li class="vol"><div class="vol-head"><span class="vol-org">${org}</span>${role}</div>${desc}${secondary}</li>`;
   };
   return `<section><h2>${escapeHtml(heading)}</h2><ul class="vol-list">${items
     .map(li)

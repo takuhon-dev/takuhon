@@ -125,6 +125,23 @@ export function classifyNode(root: SchemaNode, node: SchemaNode): FieldKind {
     if (known) return known;
   }
 
+  // A `string | LocalizedTitle` (or LocalizedBody) union: the additive
+  // localization of a formerly-plain-string field (e.g. `Skill.label`, 1.4.0).
+  // `deref` leaves such a two-non-null-variant `anyOf` intact (it only unwraps
+  // nullable unions), so classify it here by the localized branch. The editor
+  // is the locale-tabs widget; a legacy plain-string value is coerced for
+  // display in the renderer (see `SchemaForm`), and re-saving upgrades it to a
+  // localized map — both remain schema-valid.
+  const localizedVariant = resolved.anyOf?.find((variant) => {
+    const name = refName(variant);
+    return name === 'LocalizedTitle' || name === 'LocalizedBody';
+  });
+  if (localizedVariant) {
+    return refName(localizedVariant) === 'LocalizedBody'
+      ? { widget: 'localizedBody' }
+      : { widget: 'localizedTitle' };
+  }
+
   if (Array.isArray(resolved.enum)) {
     return { widget: 'select', options: resolved.enum.map((value) => String(value)) };
   }

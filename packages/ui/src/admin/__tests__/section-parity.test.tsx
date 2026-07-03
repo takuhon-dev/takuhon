@@ -124,13 +124,25 @@ describe('projects', () => {
 });
 
 describe('skills', () => {
-  it('edits the plain-string label', () => {
+  it('edits the label via the localized editor (string | LocalizedTitle)', () => {
     const onChange = vi.fn();
     renderSection('skills', [{ id: 's1', label: 'TypeScript' }], { onChange });
     const item = screen.getByRole('group', { name: 'TypeScript' });
-    // `label` is required, so its control's accessible name carries a required marker.
-    fireEvent.change(within(item).getByLabelText(/^Label/), { target: { value: 'Rust' } });
-    expect(onChange).toHaveBeenLastCalledWith([{ id: 's1', label: 'Rust' }]);
+    // `Skill.label` widened to `string | LocalizedTitle` (1.4.0), so the field
+    // is the locale-tabs editor; editing writes a localized map for the active
+    // locale (LOCALES[0] = 'en').
+    fireEvent.change(within(item).getByLabelText('Label (en)'), { target: { value: 'Rust' } });
+    expect(onChange).toHaveBeenLastCalledWith([{ id: 's1', label: { en: 'Rust' } }]);
+  });
+
+  it('shows a legacy plain-string label in the localized editor without rewriting it', () => {
+    const onChange = vi.fn();
+    renderSection('skills', [{ id: 's1', label: 'TypeScript' }], { onChange });
+    const item = screen.getByRole('group', { name: 'TypeScript' });
+    // Display-only coercion: the plain string appears under the first locale, and
+    // nothing is written back until the user actually edits.
+    expect(within(item).getByLabelText('Label (en)')).toHaveValue('TypeScript');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 

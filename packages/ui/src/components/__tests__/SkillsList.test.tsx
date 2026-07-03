@@ -1,10 +1,14 @@
+import { resolveLocale } from '@takuhon/core';
+import type { Takuhon } from '@takuhon/core';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { SkillsList } from '../SkillsList.js';
 
-const skills = exampleJson.skills;
+// SkillsList takes locale-resolved skills (label collapsed to a single string),
+// mirroring how TakuhonProfile passes `LocalizedTakuhon.skills`.
+const skills = resolveLocale(exampleJson as Takuhon, 'en').skills;
 
 describe('SkillsList', () => {
   it('renders a labelled Skills section', () => {

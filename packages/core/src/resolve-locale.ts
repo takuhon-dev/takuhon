@@ -62,7 +62,9 @@ import type {
   LocalizedPublication,
   LocalizedRecommendation,
   LocalizedRecommendationAuthor,
+  LocalizedSecondaryLink,
   LocalizedSettings,
+  LocalizedSkill,
   LocalizedTakuhon,
   LocalizedTestScore,
   LocalizedTitle,
@@ -74,7 +76,9 @@ import type {
   Publication,
   Recommendation,
   RecommendationAuthor,
+  SecondaryLink,
   Settings,
+  Skill,
   Takuhon,
   TestScore,
   Volunteering,
@@ -103,7 +107,7 @@ export function resolveLocale(
     links: data.links.map((l) => resolveLink(l, candidates)),
     careers: data.careers.map((c) => resolveCareer(c, candidates)),
     projects: data.projects.map((p) => resolveProject(p, candidates)),
-    skills: data.skills,
+    skills: data.skills.map((s) => resolveSkill(s, candidates)),
     certifications: data.certifications.map((c) => resolveCertification(c, candidates)),
     memberships: data.memberships.map((m) => resolveMembership(m, candidates)),
     volunteering: data.volunteering.map((v) => resolveVolunteering(v, candidates)),
@@ -358,8 +362,40 @@ function resolveVolunteering(v: Volunteering, candidates: LocaleTag[]): Localize
   if (v.endDate !== undefined) out.endDate = v.endDate;
   if (v.isCurrent !== undefined) out.isCurrent = v.isCurrent;
   if (v.url !== undefined) out.url = v.url;
+  if (v.secondaryLink !== undefined) {
+    out.secondaryLink = resolveSecondaryLink(v.secondaryLink, candidates);
+  }
   if (v.order !== undefined) out.order = v.order;
   if (v.visibility !== undefined) out.visibility = v.visibility;
+  return out;
+}
+
+function resolveSecondaryLink(
+  link: SecondaryLink,
+  candidates: LocaleTag[],
+): LocalizedSecondaryLink {
+  const out: LocalizedSecondaryLink = { url: link.url };
+  const label = pickLocalized(link.label, candidates);
+  if (label !== undefined) out.label = label;
+  return out;
+}
+
+/**
+ * Resolve a {@link Skill}. `label` is a plain string (locale-independent, used
+ * as-is) or a localized map (collapsed to the resolved string, empty when no
+ * candidate matches). Every other field passes through unchanged.
+ */
+function resolveSkill(skill: Skill, candidates: LocaleTag[]): LocalizedSkill {
+  const out: LocalizedSkill = {
+    id: skill.id,
+    label:
+      typeof skill.label === 'string'
+        ? skill.label
+        : (pickLocalized(skill.label, candidates) ?? ''),
+  };
+  if (skill.category !== undefined) out.category = skill.category;
+  if (skill.order !== undefined) out.order = skill.order;
+  if (skill.visibility !== undefined) out.visibility = skill.visibility;
   return out;
 }
 
