@@ -41,6 +41,8 @@
  * smuggling undeclared keys into the contract — schema 1.0.0 now rejects them.
  */
 
+import type { LabelKey, SectionKey } from './sections.js';
+
 /** BCP-47 language tag, e.g. 'en', 'ja', 'zh-Hant', 'pt-BR'. */
 export type LocaleTag = string;
 
@@ -396,7 +398,24 @@ export interface Settings {
    * `category` is unlisted (or absent) renders in a trailing group.
    */
   skillCategories?: SkillCategory[];
+  /**
+   * Explicit section display order (added in 1.4.0). A partial list is allowed:
+   * any renderable section not named here follows, in the default order. Absent
+   * = the default order. Keys are the canonical {@link SectionKey}s.
+   */
+  sectionOrder?: SectionKey[];
+  /**
+   * Localized overrides for section headings and chrome labels (added in 1.4.0).
+   * A partial map keyed by {@link LabelKey}; the renderer merges it over the
+   * built-in locale pack and under a per-request override, so an owner can
+   * retitle any section or chrome label straight from `takuhon.json`. Absent =
+   * the built-in labels.
+   */
+  sectionLabels?: SectionLabelOverrides;
 }
+
+/** Localized label overrides for {@link Settings.sectionLabels}. */
+export type SectionLabelOverrides = Partial<Record<LabelKey, LocalizedTitle>>;
 
 /**
  * One skill-category display group (added in 1.3.0). Maps a `Skill.category`
@@ -853,8 +872,10 @@ export interface LocalizedSkillCategory {
  * ({@link LocalizedSkillCategory}); every other settings field is passed
  * through unchanged.
  */
-export type LocalizedSettings = Omit<Settings, 'skillCategories'> & {
+export type LocalizedSettings = Omit<Settings, 'skillCategories' | 'sectionLabels'> & {
   skillCategories?: LocalizedSkillCategory[];
+  /** {@link Settings.sectionLabels} with each value collapsed to the resolved string. */
+  sectionLabels?: Partial<Record<LabelKey, string>>;
 };
 
 /**

@@ -391,7 +391,66 @@
           "maxItems": 50,
           "items": { "$ref": "#/$defs/SkillCategory" },
           "description": "Ordered skill-category display groups (added in 1.3.0). When present, the rendered profile groups skills by their `category` under these localized headings, in array order; absent = the flat skill list. A skill whose `category` is not listed here (or which has none) renders in a trailing group so nothing is dropped."
-        }
+        },
+        "sectionOrder": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 18,
+          "items": {
+            "enum": [
+              "about",
+              "careers",
+              "projects",
+              "volunteering",
+              "skills",
+              "activity",
+              "education",
+              "certifications",
+              "publications",
+              "honors",
+              "memberships",
+              "courses",
+              "patents",
+              "testScores",
+              "languages",
+              "recommendations",
+              "highlights",
+              "contact"
+            ]
+          },
+          "description": "Explicit section display order (added in 1.4.0). A partial list is allowed — any renderable section not named here follows, in the default order. Absent = the default order."
+        },
+        "sectionLabels": { "$ref": "#/$defs/SectionLabelOverrides" }
+      }
+    },
+    "SectionLabelOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Localized overrides for section headings and chrome labels (added in 1.4.0). Each present key retitles that label; the renderer merges these over its built-in locale pack. Absent keys keep the built-in label.",
+      "properties": {
+        "about": { "$ref": "#/$defs/LocalizedTitle" },
+        "careers": { "$ref": "#/$defs/LocalizedTitle" },
+        "projects": { "$ref": "#/$defs/LocalizedTitle" },
+        "volunteering": { "$ref": "#/$defs/LocalizedTitle" },
+        "skills": { "$ref": "#/$defs/LocalizedTitle" },
+        "activity": { "$ref": "#/$defs/LocalizedTitle" },
+        "education": { "$ref": "#/$defs/LocalizedTitle" },
+        "certifications": { "$ref": "#/$defs/LocalizedTitle" },
+        "publications": { "$ref": "#/$defs/LocalizedTitle" },
+        "honors": { "$ref": "#/$defs/LocalizedTitle" },
+        "memberships": { "$ref": "#/$defs/LocalizedTitle" },
+        "courses": { "$ref": "#/$defs/LocalizedTitle" },
+        "patents": { "$ref": "#/$defs/LocalizedTitle" },
+        "testScores": { "$ref": "#/$defs/LocalizedTitle" },
+        "languages": { "$ref": "#/$defs/LocalizedTitle" },
+        "recommendations": { "$ref": "#/$defs/LocalizedTitle" },
+        "highlights": { "$ref": "#/$defs/LocalizedTitle" },
+        "contact": { "$ref": "#/$defs/LocalizedTitle" },
+        "skipLink": { "$ref": "#/$defs/LocalizedTitle" },
+        "localeNav": { "$ref": "#/$defs/LocalizedTitle" },
+        "featuredLinks": { "$ref": "#/$defs/LocalizedTitle" },
+        "otherLinks": { "$ref": "#/$defs/LocalizedTitle" },
+        "poweredBy": { "$ref": "#/$defs/LocalizedTitle" }
       }
     },
     "AppearanceSettings": {

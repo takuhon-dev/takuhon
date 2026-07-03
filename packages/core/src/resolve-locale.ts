@@ -31,6 +31,7 @@
  */
 
 import { expandRegional, isValidBcp47, lookupCaseInsensitive } from './locale-tag.js';
+import type { LabelKey } from './sections.js';
 import type {
   Address,
   Avatar,
@@ -172,21 +173,30 @@ function pickLocalized(
 }
 
 /**
- * Resolve the parts of `settings` that carry localized values. Only
- * `skillCategories` labels are localized (collapsed to the resolved string,
- * falling back to the raw category id when no candidate matches); every other
- * settings field is passed through unchanged.
+ * Resolve the parts of `settings` that carry localized values: `skillCategories`
+ * labels (collapsed to the resolved string, falling back to the raw category id)
+ * and `sectionLabels` (each override collapsed to the resolved string; an entry
+ * with no matching candidate is dropped). Every other settings field —
+ * including `sectionOrder` — is passed through unchanged.
  */
 function resolveSettings(settings: Settings, candidates: LocaleTag[]): LocalizedSettings {
-  const { skillCategories, ...rest } = settings;
-  if (!skillCategories) return rest;
-  return {
-    ...rest,
-    skillCategories: skillCategories.map((c) => ({
+  const { skillCategories, sectionLabels, ...rest } = settings;
+  const resolved: LocalizedSettings = { ...rest };
+  if (skillCategories) {
+    resolved.skillCategories = skillCategories.map((c) => ({
       id: c.id,
       label: pickLocalized(c.label, candidates) ?? c.id,
-    })),
-  };
+    }));
+  }
+  if (sectionLabels) {
+    const out: Partial<Record<LabelKey, string>> = {};
+    for (const [key, value] of Object.entries(sectionLabels)) {
+      const s = pickLocalized(value, candidates);
+      if (s !== undefined) out[key as LabelKey] = s;
+    }
+    resolved.sectionLabels = out;
+  }
+  return resolved;
 }
 
 function resolveProfile(
