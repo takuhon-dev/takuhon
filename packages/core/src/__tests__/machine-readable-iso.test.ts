@@ -63,6 +63,7 @@ function fixture(): Takuhon {
     patents: [],
     testScores: [],
     recommendations: [],
+    highlights: [],
     contact: {},
     settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
     meta: {

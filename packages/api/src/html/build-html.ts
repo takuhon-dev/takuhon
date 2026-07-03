@@ -27,8 +27,8 @@ import type {
   SectionKey,
 } from '@takuhon/core';
 
-import { brandIconForLink } from './brand-icons.js';
-import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
+import { brandIconForLink, brandIconForPlatform } from './brand-icons.js';
+import { dateRange, escapeHtml, nonEmpty, safeUrl, timeTag } from './html-helpers.js';
 
 // Re-exported for existing importers (e.g. dev-command, tests) that pull
 // `escapeHtml` from this module; the implementation now lives in html-helpers.
@@ -462,7 +462,28 @@ footer.powered{max-width:var(--takuhon-max-content-width);margin:var(--takuhon-s
 footer.powered p{margin:0 0 var(--takuhon-space-2)}
 footer.powered p:last-child{margin-bottom:0}
 footer.powered .powered-by a{color:var(--takuhon-color-primary);text-decoration:none}
-footer.powered .powered-by a:hover{text-decoration:underline}`;
+footer.powered .powered-by a:hover{text-decoration:underline}
+.highlights .highlights-intro{color:var(--takuhon-color-text-muted);margin:0 0 var(--takuhon-space-3)}
+.highlights-track{display:flex;gap:var(--takuhon-space-3);list-style:none;margin:0;padding:0 0 var(--takuhon-space-2);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:var(--takuhon-space-1);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.highlight-card{position:relative;flex:0 0 85%;scroll-snap-align:start;display:flex;flex-direction:column;background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md);overflow:hidden}
+@media (min-width:640px){.highlight-card{flex-basis:calc((100% - var(--takuhon-space-3)) / 2)}}
+@media (min-width:960px){.highlight-card{flex-basis:calc((100% - 2 * var(--takuhon-space-3)) / 3)}}
+.highlight-card:hover{border-color:var(--takuhon-color-accent)}
+.highlight-card:focus-within{outline:2px solid var(--takuhon-color-accent);outline-offset:2px}
+.highlight-thumb{aspect-ratio:1 / 1;background:var(--takuhon-color-bg)}
+.highlight-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.highlight-body{padding:var(--takuhon-space-3);display:flex;flex-direction:column;gap:var(--takuhon-space-2)}
+.highlight-body>*{margin:0}
+.highlight-badge{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted)}
+.highlight-badge .brand-icon{width:1em;height:1em;opacity:.85}
+.highlight-title{font-size:var(--takuhon-font-size-base);font-weight:600}
+.highlight-title a{color:var(--takuhon-color-text);text-decoration:none}
+.highlight-title a:hover{color:var(--takuhon-color-primary)}
+.highlight-title a::after{content:"";position:absolute;inset:0}
+.highlight-title a:focus-visible{outline:none}
+.highlight-date{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted)}
+.highlight-desc{font-size:var(--takuhon-font-size-sm)}
+.highlight-cta{font-size:var(--takuhon-font-size-sm);font-weight:600;color:var(--takuhon-color-primary)}`;
 
 interface EntryView {
   heading: string;
@@ -866,6 +887,98 @@ function renderContact(contact: LocalizedTakuhon['contact'], heading: string): s
   return `<section><h2>${escapeHtml(heading)}</h2><ul class="entries">${items.join('')}</ul></section>`;
 }
 
+type LocalizedHighlight = LocalizedTakuhon['highlights'][number];
+
+/**
+ * Human display names for common highlight platforms. `highlights[].platform` is
+ * a free-form string (not an enum), so an unknown platform shows its raw value.
+ */
+const PLATFORM_DISPLAY: Record<string, string> = {
+  instagram: 'Instagram',
+  x: 'X',
+  linkedin: 'LinkedIn',
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  youtube: 'YouTube',
+  threads: 'Threads',
+  facebook: 'Facebook',
+  mastodon: 'Mastodon',
+  bluesky: 'Bluesky',
+  zenn: 'Zenn',
+  qiita: 'Qiita',
+  note: 'note',
+  blog: 'Blog',
+  event: 'Event',
+  artwork: 'Artwork',
+  project: 'Project',
+};
+
+/** A platform's display label: a curated name for known keys, else the raw value. */
+function platformDisplay(platform: string): string {
+  // `platform` is free-form, so a `typeof` guard on the looked-up value both
+  // narrows away `undefined` (noUncheckedIndexedAccess) and rejects an inherited
+  // Object.prototype member (e.g. "constructor" / "toString" resolve to
+  // functions, not strings) — falling back to the raw value in either case.
+  const label = PLATFORM_DISPLAY[platform.trim().toLowerCase()];
+  return typeof label === 'string' ? label : platform;
+}
+
+/** The platform badge: brand glyph (when resolvable) + platform name. */
+function highlightBadge(h: LocalizedHighlight): string {
+  return `<span class="highlight-badge">${brandIconForPlatform(h.platform, h.url)}<span>${escapeHtml(platformDisplay(h.platform))}</span></span>`;
+}
+
+/**
+ * Render one highlight ("selected post") card: a square self-hosted thumbnail,
+ * a platform badge, the title (a stretched link over the whole card when a URL
+ * is present), an optional date/description/tags, and a decorative CTA. The
+ * whole-card link uses the CSS stretched-link pattern (`.highlight-title
+ * a::after`), so there is exactly one focusable link per card and the heading
+ * semantics are preserved; the CTA is `aria-hidden` since the link's aria-label
+ * already carries it.
+ */
+function renderHighlightCard(h: LocalizedHighlight, locale: string): string {
+  const imgSrc = h.image ? safeUrl(h.image) : undefined;
+  const img = imgSrc
+    ? `<div class="highlight-thumb"><img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(h.alt)}" loading="lazy" decoding="async"></div>`
+    : '';
+  const href = h.url ? safeUrl(h.url) : undefined;
+  const name = platformDisplay(h.platform);
+  const cta = isJapaneseLocale(locale) ? `${name}で見る` : `View on ${name}`;
+  const title = escapeHtml(h.title);
+  const titleEl = href
+    ? `<h3 class="highlight-title"><a href="${escapeHtml(href)}" rel="noopener" aria-label="${escapeHtml(`${h.title} — ${cta}`)}">${title}</a></h3>`
+    : `<h3 class="highlight-title">${title}</h3>`;
+  // `timeTag` returns an already-escaped <time> fragment, so it is inserted raw.
+  const date = h.postedAt ? `<p class="highlight-date">${timeTag(h.postedAt, locale)}</p>` : '';
+  const desc = h.description ? `<p class="highlight-desc">${escapeHtml(h.description)}</p>` : '';
+  const tags =
+    h.tags && h.tags.length > 0
+      ? `<ul class="tags">${h.tags.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`
+      : '';
+  const ctaEl = href
+    ? `<span class="highlight-cta" aria-hidden="true">${escapeHtml(cta)} →</span>`
+    : '';
+  return `<li class="highlight-card">${img}<div class="highlight-body">${highlightBadge(h)}${titleEl}${date}${desc}${tags}${ctaEl}</div></li>`;
+}
+
+/**
+ * Render the curated highlights ("selected posts") carousel: a CSS scroll-snap
+ * track of cards (no JS, no autoplay), with an optional intro line under the
+ * heading. Returns `''` when there are no highlights, so the section is omitted.
+ */
+function renderHighlights(
+  items: readonly LocalizedHighlight[],
+  heading: string,
+  intro: string | undefined,
+  locale: string,
+): string {
+  if (items.length === 0) return '';
+  const introEl = intro ? `<p class="highlights-intro">${escapeHtml(intro)}</p>` : '';
+  const cards = items.map((h) => renderHighlightCard(h, locale)).join('');
+  return `<section class="highlights"><h2>${escapeHtml(heading)}</h2>${introEl}<ul class="highlights-track" role="list">${cards}</ul></section>`;
+}
+
 /**
  * Render the developer-activity section from the synced snapshot, or `''`
  * when there is none (or it carries no metric data). The SVG is generated by
@@ -965,9 +1078,7 @@ export function renderProfileHtml(input: RenderInput): string {
     .join('\n  ');
 
   // Rendered HTML for every content section, keyed by its canonical
-  // {@link SectionKey}. Assembled in the default order below; a `highlights`
-  // section is reserved (its data model lands in a later additive schema
-  // change) and renders nothing for now.
+  // {@link SectionKey}. Assembled in the default order below.
   const sections: Record<SectionKey, string> = {
     about: renderBio(p.bio, L.about),
     careers: entryList(
@@ -1081,7 +1192,7 @@ export function renderProfileHtml(input: RenderInput): string {
     ),
     languages: renderLanguages(d.languages, L.languages),
     recommendations: renderRecommendations(d.recommendations, L.recommendations),
-    highlights: '',
+    highlights: renderHighlights(d.highlights, L.highlights, d.settings.highlightsIntro, locale),
     contact: renderContact(d.contact, L.contact),
   };
 

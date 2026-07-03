@@ -49,6 +49,7 @@ function createMinimalFixture(): Takuhon {
     patents: [],
     testScores: [],
     recommendations: [],
+    highlights: [],
     contact: {},
     settings: { defaultLocale: 'en', availableLocales: ['en'] },
     meta: { contentLicense: { spdxId: 'CC0-1.0' } },

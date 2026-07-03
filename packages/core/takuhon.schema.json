@@ -88,6 +88,11 @@
       "maxItems": 50,
       "items": { "$ref": "#/$defs/Recommendation" }
     },
+    "highlights": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/Highlight" }
+    },
     "contact": { "$ref": "#/$defs/Contact" },
     "settings": { "$ref": "#/$defs/Settings" },
     "meta": { "$ref": "#/$defs/Meta" }
@@ -420,7 +425,11 @@
           },
           "description": "Explicit section display order (added in 1.4.0). A partial list is allowed — any renderable section not named here follows, in the default order. Absent = the default order."
         },
-        "sectionLabels": { "$ref": "#/$defs/SectionLabelOverrides" }
+        "sectionLabels": { "$ref": "#/$defs/SectionLabelOverrides" },
+        "highlightsIntro": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "Optional localized intro line shown under the highlights section heading (added in 1.4.0). Absent = no intro line."
+        }
       }
     },
     "SectionLabelOverrides": {
@@ -606,6 +615,10 @@
         "recommendations": {
           "type": "boolean",
           "description": "Default true. When false, recommendations[] is emitted empty on public surfaces."
+        },
+        "highlights": {
+          "type": "boolean",
+          "description": "Default true. When false, highlights[] is emitted empty on public surfaces."
         },
         "contact": {
           "type": "boolean",
@@ -995,6 +1008,56 @@
           "$ref": "#/$defs/Url",
           "description": "Link to the recommender's profile, for external verification by the reader."
         }
+      }
+    },
+    "Highlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "platform", "url", "image", "alt", "title"],
+      "description": "One curated \"selected post\" (added in 1.4.0), rendered as a card in the highlights carousel. A hand-picked link to an off-site post (Instagram, X, a blog, a talk, …) with a self-hosted thumbnail — deliberately not an automated social feed. Appears on the public page, /api/profile, /takuhon.json, and MCP; it is intentionally omitted from JSON-LD and the derived CV (no natural vocabulary/résumé slot).",
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Free-form source platform (e.g. 'instagram', 'x', 'github', 'blog', 'event'). A value with a matching brand glyph renders a badge icon; others fall back to a text badge. Not an enum, so new platforms need no schema change."
+        },
+        "url": {
+          "$ref": "#/$defs/Url",
+          "description": "Permalink to the original post; the card links here."
+        },
+        "image": {
+          "type": "string",
+          "format": "uri-reference",
+          "maxLength": 2048,
+          "description": "Self-hosted thumbnail, as an absolute URL or a root-relative path (like avatar). Serving the asset is the deployment's responsibility (a static build does not copy it; a Cloudflare deploy serves it via its assets binding / /assets/*). Do not point at a third-party CDN URL — those can be signed/expiring and leak visitor data."
+        },
+        "alt": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "Required alt text for the thumbnail — the card must not depend on the image alone."
+        },
+        "title": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "Localized card title / caption."
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedBody",
+          "description": "Optional localized supporting text shown under the title."
+        },
+        "postedAt": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+          "description": "Optional post date, ISO 'YYYY-MM-DD' (full date, unlike the YYYY-MM dates used elsewhere — a post has a specific day)."
+        },
+        "tags": {
+          "type": "array",
+          "maxItems": 30,
+          "items": { "type": "string", "minLength": 1, "maxLength": 50 }
+        },
+        "order": { "type": "integer", "minimum": 0 }
       }
     }
   }

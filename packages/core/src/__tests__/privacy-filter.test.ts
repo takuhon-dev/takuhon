@@ -31,6 +31,7 @@ function profile(overrides: Partial<Takuhon> = {}): Takuhon {
     patents: [{ id: 'pat', title: { en: 'Widget' }, patentNumber: 'US-123', status: 'granted' }],
     testScores: [],
     recommendations: [],
+    highlights: [],
     contact: { email: 'me@example.com' },
     settings: { defaultLocale: 'en', availableLocales: ['en'] },
     meta: { contentLicense: { spdxId: 'CC0-1.0' } },
@@ -285,5 +286,24 @@ describe('applyPublicPrivacyFilter() — item visibility (<item>.visibility)', (
     const snapshot = JSON.stringify(input);
     applyPublicPrivacyFilter(input);
     expect(JSON.stringify(input)).toBe(snapshot);
+  });
+
+  it('tolerates a raw legacy document that lacks a whole section array', () => {
+    // The `/takuhon.json` route and the MCP `takuhon://profile` resource filter
+    // the stored document as-is (no normalize), so a pre-1.4.0 profile can reach
+    // the filter without a `highlights` key. It must not throw.
+    const legacy = profile();
+    delete (legacy as unknown as Record<string, unknown>).highlights;
+    expect(() => applyPublicPrivacyFilter(legacy)).not.toThrow();
+    // Also exercise the section-visibility path against the missing key.
+    const hidden = profile({
+      settings: {
+        defaultLocale: 'en',
+        availableLocales: ['en'],
+        publicVisibility: { highlights: false },
+      },
+    });
+    delete (hidden as unknown as Record<string, unknown>).highlights;
+    expect(() => applyPublicPrivacyFilter(hidden)).not.toThrow();
   });
 });

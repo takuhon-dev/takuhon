@@ -202,6 +202,7 @@ const COERCED_ARRAY_KEYS = [
   'patents',
   'testScores',
   'recommendations',
+  'highlights',
 ] as const;
 
 function coerceMissingArrays(data: Takuhon): void {
@@ -235,6 +236,7 @@ const ID_ARRAY_KEYS = [
   'patents',
   'testScores',
   'recommendations',
+  'highlights',
 ] as const;
 
 function findDuplicateId(data: Takuhon): { key: string; index: number; id: string } | undefined {

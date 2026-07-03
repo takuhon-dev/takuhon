@@ -1045,3 +1045,168 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
     expect(render(localized(doc, 'en'))).toContain('<h2>Toolbox</h2>');
   });
 });
+
+describe('renderProfileHtml() highlights (selected posts)', () => {
+  const oneHighlight = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
+    highlights: [
+      {
+        id: 'h1',
+        platform: 'github',
+        url: 'https://github.com/pat/repo',
+        image: '/images/social/h1.jpg',
+        alt: { en: 'A screenshot' },
+        title: { en: 'Shipped a thing' },
+        ...over,
+      },
+    ],
+  });
+
+  it('renders the carousel: section, scroll-snap track, square thumb, stretched-link title', () => {
+    const html = render(localized(oneHighlight()));
+    expect(html).toContain('<section class="highlights">');
+    expect(html).toContain('<h2>Selected posts</h2>');
+    expect(html).toContain('<ul class="highlights-track" role="list">');
+    expect(html).toContain('<li class="highlight-card">');
+    expect(html).toContain('<div class="highlight-thumb"><img src="/images/social/h1.jpg"');
+    expect(html).toContain('loading="lazy"');
+    // Stretched-link title with a CTA-bearing aria-label.
+    expect(html).toContain(
+      '<h3 class="highlight-title"><a href="https://github.com/pat/repo" rel="noopener" aria-label="Shipped a thing — View on GitHub">Shipped a thing</a></h3>',
+    );
+    expect(html).toContain(
+      '<span class="highlight-cta" aria-hidden="true">View on GitHub →</span>',
+    );
+  });
+
+  it('omits the whole section when there are no highlights (byte-neutral)', () => {
+    expect(render(localized())).not.toContain('class="highlights"');
+    expect(render(localized({ highlights: [] }))).not.toContain('class="highlights"');
+  });
+
+  it('shows a brand glyph for a known platform and a text-only badge for an unknown one', () => {
+    const known = render(localized(oneHighlight({ platform: 'github' })));
+    expect(known).toContain('highlight-badge');
+    expect(known).toContain('<svg class="brand-icon"'); // github glyph
+    // `zenn` has a display name (→ "Zenn") but no brand glyph; the URL host is
+    // unknown too, so the badge is text-only.
+    const unknown = render(
+      localized(oneHighlight({ platform: 'zenn', url: 'https://example.com/post' })),
+    );
+    expect(unknown).toContain('<span class="highlight-badge"><span>Zenn</span></span>');
+    expect(unknown).not.toContain('<svg class="brand-icon"');
+  });
+
+  it('renders the localized intro line under the heading, only with cards', () => {
+    const withIntro = oneHighlight();
+    const html = render(
+      localized({
+        ...withIntro,
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          highlightsIntro: { en: 'Recent posts.' },
+        },
+      }),
+    );
+    expect(html).toContain('<p class="highlights-intro">Recent posts.</p>');
+    // No cards → no intro (and no section).
+    const empty = render(
+      localized({
+        highlights: [],
+        settings: {
+          defaultLocale: 'en',
+          availableLocales: ['en'],
+          highlightsIntro: { en: 'Recent posts.' },
+        },
+      }),
+    );
+    // Guard against matching the CSS rule `.highlights-intro` — assert the element.
+    expect(empty).not.toContain('<p class="highlights-intro">');
+  });
+
+  it('localizes the heading and CTA (ja pack)', () => {
+    const html = render(
+      localized(
+        {
+          profile: { displayName: { en: 'Pat', ja: 'パット' }, tagline: { en: 'M', ja: 'M' } },
+          highlights: [
+            {
+              id: 'h1',
+              platform: 'x',
+              url: 'https://x.com/pat',
+              image: '/h1.jpg',
+              alt: { en: 'img', ja: '画像' },
+              title: { en: 'Hi', ja: 'やあ' },
+            },
+          ],
+          settings: { defaultLocale: 'en', availableLocales: ['en', 'ja'] },
+        },
+        'ja',
+      ),
+    );
+    expect(html).toContain('<h2>ピックアップ投稿</h2>');
+    expect(html).toContain('Xで見る →');
+  });
+
+  it('escapes highlight-derived text (title, alt) — no markup injection', () => {
+    const html = render(
+      localized(
+        oneHighlight({
+          title: { en: '<script>alert(1)</script>' },
+          alt: { en: '"><img src=x>' },
+        }),
+      ),
+    );
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).not.toContain('"><img src=x>');
+  });
+
+  it('drops a dangerous image/url scheme but still renders the card text', () => {
+    const html = render(
+      localized(oneHighlight({ image: 'javascript:alert(1)', url: 'javascript:alert(2)' })),
+    );
+    expect(html).not.toContain('javascript:alert(1)');
+    expect(html).not.toContain('javascript:alert(2)');
+    // Title still renders (as plain text, since the URL was rejected).
+    expect(html).toContain('Shipped a thing');
+  });
+
+  it('does not crash or emit a bogus glyph for a prototype-named platform', () => {
+    for (const platform of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
+      const html = render(localized(oneHighlight({ platform })));
+      expect(html).toContain('highlight-badge');
+      expect(html).not.toContain('viewBox="undefined"');
+      // The raw platform string is shown as the text badge.
+      expect(html).toContain(`<span>${platform}</span>`);
+    }
+  });
+
+  it('orders cards by `order` ascending', () => {
+    const html = render(
+      localized({
+        highlights: [
+          {
+            id: 'b',
+            platform: 'x',
+            url: 'https://x.com/b',
+            image: '/b.jpg',
+            alt: { en: 'b' },
+            title: { en: 'Second' },
+            order: 2,
+          },
+          {
+            id: 'a',
+            platform: 'x',
+            url: 'https://x.com/a',
+            image: '/a.jpg',
+            alt: { en: 'a' },
+            title: { en: 'First' },
+            order: 1,
+          },
+        ],
+      }),
+    );
+    expect(html.indexOf('First')).toBeLessThan(html.indexOf('Second'));
+  });
+});

@@ -90,6 +90,7 @@ const SECTION_ARRAY_KEYS = [
   'patents',
   'testScores',
   'recommendations',
+  'highlights',
 ] as const satisfies readonly (keyof PublicVisibility)[];
 
 type SectionArrayKey = (typeof SECTION_ARRAY_KEYS)[number];
@@ -105,10 +106,21 @@ export function applyPublicPrivacyFilter<T extends FilterableProfile>(profile: T
   const p: FilterableProfile = profile;
   const visibility = p.settings.publicVisibility;
 
+  // Read a section array defensively. The `/takuhon.json` route and the MCP
+  // `takuhon://profile` resource filter the RAW stored document (no `normalize`
+  // upstream), so a profile written before a section existed — e.g. a pre-1.4.0
+  // document that predates `highlights` — can lack the key entirely. Treat a
+  // missing array as empty so the filter never throws on such legacy input;
+  // `normalize`/`validate` coerce these to `[]` on every other path.
+  const sectionArray = (key: SectionArrayKey): readonly VisibilityControlled[] => {
+    const value: unknown = p[key];
+    return Array.isArray(value) ? (value as readonly VisibilityControlled[]) : [];
+  };
+
   // Section layer: which sections are hidden *and* actually carry content
   // worth removing (so an already-empty section keeps the identity return).
   const hiddenArrays: SectionArrayKey[] = visibility
-    ? SECTION_ARRAY_KEYS.filter((key) => visibility[key] === false && p[key].length > 0)
+    ? SECTION_ARRAY_KEYS.filter((key) => visibility[key] === false && sectionArray(key).length > 0)
     : [];
 
   // Item layer: sections that survive the section layer but carry at least one
@@ -117,8 +129,7 @@ export function applyPublicPrivacyFilter<T extends FilterableProfile>(profile: T
   const hiddenArraySet = new Set<SectionArrayKey>(hiddenArrays);
   const itemFilterArrays: SectionArrayKey[] = SECTION_ARRAY_KEYS.filter(
     (key) =>
-      !hiddenArraySet.has(key) &&
-      (p[key] as readonly VisibilityControlled[]).some((item) => item.visibility === 'private'),
+      !hiddenArraySet.has(key) && sectionArray(key).some((item) => item.visibility === 'private'),
   );
 
   const hideContactSection = visibility?.contact === false && Object.keys(p.contact).length > 0;

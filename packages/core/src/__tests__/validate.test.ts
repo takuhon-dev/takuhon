@@ -813,3 +813,51 @@ describe('settings.contact (1.1.0)', () => {
     );
   });
 });
+
+describe('highlights (1.4.0)', () => {
+  it('accepts a valid highlight and settings.highlightsIntro (the bundled example)', () => {
+    const doc = cloneExample();
+    expect(doc.highlights.length).toBeGreaterThan(0);
+    expect(doc.settings.highlightsIntro).toBeDefined();
+    expect(validate(doc).ok).toBe(true);
+  });
+
+  it('rejects a highlight missing a required field (title)', () => {
+    const broken = cloneExample();
+    delete (broken.highlights[0] as unknown as Record<string, unknown>).title;
+    const result = validate(broken);
+    expectError(result, (e) => e.keyword === 'required' && e.pointer === '/highlights/0/title');
+  });
+
+  it('rejects a highlight with a YYYY-MM postedAt (full date required)', () => {
+    const broken = cloneExample();
+    broken.highlights[0]!.postedAt = '2025-12';
+    const result = validate(broken);
+    expectError(result, (e) => e.pointer === '/highlights/0/postedAt');
+  });
+
+  it('rejects an impossible postedAt date (ajv format:date)', () => {
+    const broken = cloneExample();
+    broken.highlights[0]!.postedAt = '2025-02-30';
+    const result = validate(broken);
+    expectError(result, (e) => e.pointer === '/highlights/0/postedAt');
+  });
+
+  it('rejects an unknown property on a highlight (closed object)', () => {
+    const broken = cloneExample();
+    (broken.highlights[0] as unknown as Record<string, unknown>).bogus = 'x';
+    const result = validate(broken);
+    expectError(
+      result,
+      (e) => e.keyword === 'additionalProperties' && e.pointer === '/highlights/0/bogus',
+    );
+  });
+
+  it('rejects duplicate highlight ids (post-Ajv id-uniqueness)', () => {
+    const broken = cloneExample();
+    const dupe = JSON.parse(JSON.stringify(broken.highlights[0])) as (typeof broken.highlights)[0];
+    broken.highlights.push(dupe);
+    const result = validate(broken);
+    expectError(result, (e) => e.keyword === 'uniqueItems' && e.pointer.startsWith('/highlights/'));
+  });
+});

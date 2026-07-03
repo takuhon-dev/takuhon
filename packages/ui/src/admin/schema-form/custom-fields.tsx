@@ -151,6 +151,7 @@ const VISIBILITY_SECTIONS: { key: keyof PublicVisibility; label: AdminLabelKey }
   { key: 'patents', label: 'field.publicVisibility.patents' },
   { key: 'testScores', label: 'field.publicVisibility.testScores' },
   { key: 'recommendations', label: 'field.publicVisibility.recommendations' },
+  { key: 'highlights', label: 'field.publicVisibility.highlights' },
   { key: 'contact', label: 'field.publicVisibility.contact' },
 ];
 
