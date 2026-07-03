@@ -46,9 +46,9 @@ import type {
   LocalizedPatent,
   LocalizedProject,
   LocalizedPublication,
+  LocalizedSkill,
   LocalizedTakuhon,
   LocalizedVolunteering,
-  Skill,
 } from './types.js';
 
 /**
@@ -288,7 +288,7 @@ function buildSameAs(links: LocalizedLink[]): string[] | undefined {
   return out.length === 0 ? undefined : out;
 }
 
-function buildKnowsAbout(skills: Skill[]): string[] | undefined {
+function buildKnowsAbout(skills: LocalizedSkill[]): string[] | undefined {
   if (skills.length === 0) return undefined;
   return skills.map((s) => s.label);
 }

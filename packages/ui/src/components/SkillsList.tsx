@@ -1,29 +1,29 @@
-import type { LocaleTag, Skill } from '@takuhon/core';
+import type { LocaleTag, LocalizedSkill } from '@takuhon/core';
 
 import { getUILabel } from '../lib/ui-labels.js';
 
 import styles from './SkillsList.module.css';
 
 export interface SkillsListProps {
-  skills: Skill[];
+  skills: LocalizedSkill[];
   locale?: LocaleTag;
 }
 
 interface SkillGroup {
   category: string;
-  skills: Skill[];
+  skills: LocalizedSkill[];
 }
 
 /** Internal grouping key for skills with no `category`; localized for display. */
 const UNCATEGORIZED = 'other';
 
-function groupSkills(skills: Skill[]): SkillGroup[] {
+function groupSkills(skills: LocalizedSkill[]): SkillGroup[] {
   const sorted = [...skills].sort((a, b) => {
     const aOrder = a.order ?? Number.POSITIVE_INFINITY;
     const bOrder = b.order ?? Number.POSITIVE_INFINITY;
     return aOrder - bOrder;
   });
-  const groups = new Map<string, Skill[]>();
+  const groups = new Map<string, LocalizedSkill[]>();
   for (const skill of sorted) {
     const key = skill.category ?? UNCATEGORIZED;
     const bucket = groups.get(key);

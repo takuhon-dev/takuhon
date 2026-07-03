@@ -171,7 +171,12 @@
     { "id": "aria", "label": "ARIA", "category": "design", "order": 3 },
     { "id": "storybook", "label": "Storybook", "category": "programming", "order": 4 },
     { "id": "playwright", "label": "Playwright", "category": "programming", "order": 5 },
-    { "id": "design-tokens", "label": "Design tokens", "category": "design", "order": 6 },
+    {
+      "id": "design-tokens",
+      "label": { "en": "Design tokens", "ja": "デザイントークン" },
+      "category": "design",
+      "order": 6
+    },
     { "id": "portuguese", "label": "Portuguese (B2)", "category": "language", "order": 7 }
   ],
   "certifications": [
@@ -253,6 +258,13 @@
       "endDate": "2024-06",
       "isCurrent": false,
       "url": "https://example.org/code-org",
+      "secondaryLink": {
+        "url": "https://github.com/code-dot-org",
+        "label": {
+          "en": "GitHub organization",
+          "ja": "GitHub Organization"
+        }
+      },
       "order": 0
     }
   ],

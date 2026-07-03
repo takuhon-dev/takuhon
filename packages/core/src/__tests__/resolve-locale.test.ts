@@ -104,10 +104,9 @@ describe('resolveLocale() per-field fallback', () => {
 });
 
 describe('resolveLocale() non-localized passthrough', () => {
-  it('passes skills, contact, and meta through unchanged; localizes settings.skillCategories', () => {
+  it('passes contact and meta through unchanged; localizes settings.skillCategories', () => {
     const data = cloneExample();
     const resolved = resolveLocale(data, 'ja');
-    expect(resolved.skills).toEqual(data.skills);
     expect(resolved.contact).toEqual(data.contact);
     expect(resolved.meta).toEqual(data.meta);
     // Every settings field except the localized ones passes through unchanged
@@ -133,6 +132,34 @@ describe('resolveLocale() non-localized passthrough', () => {
     );
     // highlightsIntro collapses to the resolved locale's string.
     expect(resolvedIntro).toEqual(rawIntro?.ja);
+  });
+
+  it('resolves Skill.label: plain string used as-is, localized map collapsed', () => {
+    const data = cloneExample();
+    // The example carries a mix: proper-noun skills as plain strings and
+    // `design-tokens` as a localized map.
+    const resolved = resolveLocale(data, 'ja');
+    const ts = resolved.skills.find((s) => s.id === 'typescript');
+    expect(ts?.label).toBe('TypeScript');
+    const tokens = resolved.skills.find((s) => s.id === 'design-tokens');
+    expect(tokens?.label).toBe('デザイントークン');
+    // Other fields pass through unchanged.
+    expect(tokens?.category).toBe('design');
+
+    const en = resolveLocale(data, 'en');
+    expect(en.skills.find((s) => s.id === 'design-tokens')?.label).toBe('Design tokens');
+  });
+
+  it('resolves Volunteering.secondaryLink label per locale, url verbatim', () => {
+    const data = cloneExample();
+    const ja = resolveLocale(data, 'ja');
+    const vol = ja.volunteering.find((v) => v.id === 'code-org-instructor');
+    expect(vol?.secondaryLink?.url).toBe('https://github.com/code-dot-org');
+    expect(vol?.secondaryLink?.label).toBe('GitHub Organization');
+    const en = resolveLocale(data, 'en');
+    expect(en.volunteering.find((v) => v.id === 'code-org-instructor')?.secondaryLink?.label).toBe(
+      'GitHub organization',
+    );
   });
 
   it('preserves Career endDate:null and Project tags arrays verbatim', () => {

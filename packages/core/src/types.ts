@@ -185,7 +185,12 @@ export interface Project extends VisibilityControlled {
 
 export interface Skill extends VisibilityControlled {
   id: Slug;
-  label: string;
+  /**
+   * Skill name. A plain `string` is locale-independent; a {@link LocalizedTitle}
+   * map (added in 1.4.0) resolves per request locale. The map form is purely
+   * additive — existing single-string labels stay valid.
+   */
+  label: string | LocalizedTitle;
   /**
    * Recommended values (extensible): programming, design, business, communication,
    * language, music, art, sports, other.
@@ -233,7 +238,20 @@ export interface Volunteering extends VisibilityControlled {
   endDate?: YearMonth | null;
   isCurrent?: boolean;
   url?: string;
+  /** An optional second link (added in 1.4.0), e.g. the organization's GitHub org page. */
+  secondaryLink?: SecondaryLink;
   order?: number;
+}
+
+/**
+ * A supplementary link with an optional localized label (added in 1.4.0). Used by
+ * {@link Volunteering.secondaryLink}. The renderer resolves the brand glyph from
+ * the URL host and, when {@link SecondaryLink.label} is absent, derives a display
+ * label from the host too.
+ */
+export interface SecondaryLink {
+  url: string;
+  label?: LocalizedTitle;
 }
 
 export interface Honor extends VisibilityControlled {
@@ -779,6 +797,12 @@ export interface LocalizedMembership extends VisibilityControlled {
   order?: number;
 }
 
+/** {@link SecondaryLink} with its localized label collapsed to a single string. */
+export interface LocalizedSecondaryLink {
+  url: string;
+  label?: string;
+}
+
 /** Volunteering with localized fields collapsed to single strings. */
 export interface LocalizedVolunteering extends VisibilityControlled {
   id: Slug;
@@ -790,6 +814,7 @@ export interface LocalizedVolunteering extends VisibilityControlled {
   endDate?: YearMonth | null;
   isCurrent?: boolean;
   url?: string;
+  secondaryLink?: LocalizedSecondaryLink;
   order?: number;
 }
 
@@ -915,6 +940,18 @@ export interface LocalizedHighlight extends VisibilityControlled {
 }
 
 /**
+ * {@link Skill} after locale resolution: its `label` — a plain string or a
+ * localized map — collapsed to the single resolved string. Every other field
+ * passes through unchanged.
+ */
+export interface LocalizedSkill extends VisibilityControlled {
+  id: Slug;
+  label: string;
+  category?: string;
+  order?: number;
+}
+
+/**
  * One skill-category group after locale resolution: the localized `label` map
  * collapsed to the single resolved string. See {@link SkillCategory}.
  */
@@ -945,9 +982,10 @@ export type LocalizedSettings = Omit<
  * plus a `resolvedLocale` field recording which tag was actually used as the
  * head of the fallback chain. `resolveLocale()` returns this shape.
  *
- * `Skill`, `Contact`, and `Meta` carry no localized fields and pass through
- * unchanged; `Settings` passes through too, except its `skillCategories`
- * labels are resolved to the single locale string (see {@link LocalizedSettings}).
+ * `Contact` and `Meta` carry no localized fields and pass through unchanged;
+ * `Settings` passes through too, except its `skillCategories` labels are
+ * resolved to the single locale string (see {@link LocalizedSettings}). `Skill`
+ * becomes {@link LocalizedSkill} once its `label` can be a localized map (1.4.0).
  */
 export interface LocalizedTakuhon {
   schemaVersion: string;
@@ -955,7 +993,7 @@ export interface LocalizedTakuhon {
   links: LocalizedLink[];
   careers: LocalizedCareer[];
   projects: LocalizedProject[];
-  skills: Skill[];
+  skills: LocalizedSkill[];
   certifications: LocalizedCertification[];
   memberships: LocalizedMembership[];
   volunteering: LocalizedVolunteering[];

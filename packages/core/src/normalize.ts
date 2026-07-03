@@ -83,6 +83,11 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
   }
   out.projects = stableSortByOrder(out.projects);
 
+  for (const s of out.skills) {
+    // `label` may be a plain string (locale-independent, left as-is) or a
+    // localized map, which is cleaned like any other required localized field.
+    if (typeof s.label !== 'string') cleanRequiredLocalized(s.label);
+  }
   out.skills = stableSortByOrder(out.skills);
 
   for (const cert of out.certifications) {
@@ -103,6 +108,7 @@ export function normalize(data: Takuhon): NormalizedTakuhon {
     cleanRequiredLocalized(v.role);
     cleanOptionalLocalized(v, 'cause');
     cleanOptionalLocalized(v, 'description');
+    if (v.secondaryLink) cleanOptionalLocalized(v.secondaryLink, 'label');
   }
   out.volunteering = stableSortByOrder(out.volunteering);
 

@@ -836,6 +836,90 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
     expect(section).not.toContain('<time');
   });
 
+  it('renders a volunteering secondary link as a pill with a host-resolved brand glyph', () => {
+    const html = render(
+      localized({
+        volunteering: [
+          {
+            id: 'v',
+            organization: { en: 'OSS Project' },
+            role: { en: 'Maintainer' },
+            startDate: '2020-01',
+            secondaryLink: {
+              url: 'https://github.com/oss-project',
+              label: { en: 'GitHub organization' },
+            },
+          },
+        ],
+      }),
+    );
+    expect(html).toContain(
+      '<a class="vol-secondary" href="https://github.com/oss-project" rel="noopener">',
+    );
+    expect(html).toContain('<span>GitHub organization</span>');
+    // The glyph is resolved from the URL host (github.com), decorative.
+    expect(/<a class="vol-secondary"[^>]*><svg class="brand-icon"/.test(html)).toBe(true);
+  });
+
+  it('falls back to the URL host for a secondary link with no label', () => {
+    const html = render(
+      localized({
+        volunteering: [
+          {
+            id: 'v',
+            organization: { en: 'OSS Project' },
+            role: { en: 'Maintainer' },
+            startDate: '2020-01',
+            secondaryLink: { url: 'https://www.example.org/team' },
+          },
+        ],
+      }),
+    );
+    // `www.` is dropped from the derived host label.
+    expect(html).toContain('<span>example.org</span>');
+  });
+
+  it('never renders an empty label for a host-less secondary link (mailto: fallback)', () => {
+    const html = render(
+      localized({
+        volunteering: [
+          {
+            id: 'v',
+            organization: { en: 'OSS Project' },
+            role: { en: 'Maintainer' },
+            startDate: '2020-01',
+            // mailto: is a safe scheme with an empty URL host — the label must
+            // fall back to the full URL rather than render an empty linked pill.
+            secondaryLink: { url: 'mailto:team@example.org' },
+          },
+        ],
+      }),
+    );
+    expect(html).toContain(
+      '<a class="vol-secondary" href="mailto:team@example.org" rel="noopener">',
+    );
+    expect(html).toContain('<span>mailto:team@example.org</span>');
+    expect(html).not.toContain('<span></span>');
+  });
+
+  it('renders an unsafe secondary-link URL as a plain span (no anchor, label kept)', () => {
+    const html = render(
+      localized({
+        volunteering: [
+          {
+            id: 'v',
+            organization: { en: 'OSS Project' },
+            role: { en: 'Maintainer' },
+            startDate: '2020-01',
+            secondaryLink: { url: 'javascript:alert(1)', label: { en: 'Bad' } },
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('<span class="vol-secondary"><span>Bad</span></span>');
+    expect(html).not.toContain('javascript:alert(1)');
+  });
+
   it('emits data-derived Open Graph tags (renderer-owned), leaving image tags to the host', () => {
     const html = render(localized(), { canonicalUrl: 'https://me.example/' });
     expect(html).toContain('<meta property="og:type" content="profile">');

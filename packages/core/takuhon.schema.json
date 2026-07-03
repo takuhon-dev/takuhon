@@ -311,7 +311,13 @@
       "properties": {
         "id": { "$ref": "#/$defs/Slug" },
         "visibility": { "$ref": "#/$defs/Visibility" },
-        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "label": {
+          "anyOf": [
+            { "type": "string", "minLength": 1, "maxLength": 100 },
+            { "$ref": "#/$defs/LocalizedTitle" }
+          ],
+          "description": "Skill name. A plain string is locale-independent; a localized map (added in 1.4.0) resolves per request locale. Existing single-string labels stay valid — the map form is purely additive."
+        },
         "category": {
           "type": "string",
           "minLength": 1,
@@ -801,7 +807,27 @@
         },
         "isCurrent": { "type": "boolean" },
         "url": { "$ref": "#/$defs/Url" },
+        "secondaryLink": {
+          "$ref": "#/$defs/SecondaryLink",
+          "description": "An optional second link for this entry (added in 1.4.0), rendered as a small pill beside the description — e.g. the organization's GitHub org page next to its main site. The brand glyph is resolved from the URL host; no vendor name is hard-coded."
+        },
         "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "SecondaryLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url"],
+      "description": "A supplementary link with an optional localized label (added in 1.4.0). When the label is absent the renderer shows the URL host. The brand glyph is resolved from the URL host.",
+      "properties": {
+        "url": {
+          "$ref": "#/$defs/Url",
+          "description": "The link target."
+        },
+        "label": {
+          "$ref": "#/$defs/LocalizedTitle",
+          "description": "Localized display label. When absent, the renderer derives a label from the URL host."
+        }
       }
     },
     "Honor": {

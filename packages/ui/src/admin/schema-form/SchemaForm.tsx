@@ -82,6 +82,26 @@ function asLocalized(value: unknown): Record<LocaleTag, string> | undefined {
   return value && typeof value === 'object' ? (value as Record<LocaleTag, string>) : undefined;
 }
 
+/**
+ * A localized-map view of a value that may be a legacy plain string. A field
+ * whose schema widened from `string` to `string | LocalizedTitle` (e.g.
+ * `Skill.label`, 1.4.0) can still hold a plain string; the locale-tabs editor
+ * needs a map, so a non-empty string is shown under the first locale for
+ * display only. The document keeps the string until the user actually edits
+ * (which fires `onChange` with a map and upgrades it); both forms are valid.
+ */
+function coerceLocalized(
+  value: unknown,
+  locales: readonly LocaleTag[],
+): Record<LocaleTag, string> | undefined {
+  if (typeof value === 'string') {
+    if (value === '') return undefined;
+    const key = locales[0] ?? 'en';
+    return { [key]: value };
+  }
+  return asLocalized(value);
+}
+
 function asString(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
@@ -142,7 +162,10 @@ function captionOf(item: unknown, itemKind: FieldKind, locales: readonly LocaleT
   const obj = asRecord(item);
   for (const field of itemKind.fields) {
     if (field.kind.widget === 'localizedTitle') {
-      const caption = firstLocalized(asLocalized(obj[field.name]), locales);
+      // The field may hold a legacy plain string (e.g. `Skill.label` before its
+      // localized form); use it directly, else the first localized value.
+      const raw = obj[field.name];
+      const caption = typeof raw === 'string' ? raw : firstLocalized(asLocalized(raw), locales);
       if (caption) return caption;
     }
   }
@@ -168,7 +191,7 @@ function renderScalar(
       return (
         <LocaleTabs
           label={ctx.label}
-          value={asLocalized(value)}
+          value={coerceLocalized(value, ctx.locales)}
           locales={ctx.locales}
           onChange={(next) => {
             onChange(next);

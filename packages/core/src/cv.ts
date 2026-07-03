@@ -32,9 +32,9 @@ import type {
   LocalizedMembership,
   LocalizedPatent,
   LocalizedPublication,
+  LocalizedSkill,
   LocalizedTakuhon,
   LocalizedVolunteering,
-  Skill,
 } from './types.js';
 
 /** The header block of a CV: identity and contact, drawn from `profile` + `contact`. */
@@ -56,7 +56,7 @@ export interface CvHeader {
 export type CvSection =
   | { kind: 'experience'; entries: LocalizedCareer[] }
   | { kind: 'education'; entries: LocalizedEducation[] }
-  | { kind: 'skills'; entries: Skill[] }
+  | { kind: 'skills'; entries: LocalizedSkill[] }
   | { kind: 'certifications'; entries: LocalizedCertification[] }
   | { kind: 'publications'; entries: LocalizedPublication[] }
   | { kind: 'honors'; entries: LocalizedHonor[] }

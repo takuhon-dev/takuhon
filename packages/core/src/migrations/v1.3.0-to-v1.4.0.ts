@@ -3,9 +3,10 @@
  *
  * 1.4.0 is additive over 1.3.0: it adds the optional `Project.role` field, the
  * optional `settings.sectionOrder` / `settings.sectionLabels` /
- * `settings.highlightsIntro` fields, and the new top-level `highlights[]`
- * array (curated "selected posts"). Every addition is non-breaking — a valid
- * 1.3.0 document is a valid 1.4.0 document.
+ * `settings.highlightsIntro` fields, the new top-level `highlights[]` array
+ * (curated "selected posts"), the optional `Volunteering.secondaryLink` field,
+ * and widens `Skill.label` to also accept a localized map. Every addition is
+ * non-breaking — a valid 1.3.0 document is a valid 1.4.0 document.
  *
  * The optional fields need no transformation (absent = default), so this is
  * effectively a version stamp; the one substantive step is initializing the new
