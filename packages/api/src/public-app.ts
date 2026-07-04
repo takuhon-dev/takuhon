@@ -13,7 +13,7 @@ import {
 import { Hono } from 'hono';
 
 import { ERROR_SLUGS, problemResponse } from './error-envelope.js';
-import { renderProfileHtml } from './html/build-html.js';
+import { renderProfileHtml, type RenderInput } from './html/build-html.js';
 import { localePrefixGetPath, pathLocaleFromUrl } from './locale-prefix.js';
 import { resolveRequestLocales } from './locale-resolution.js';
 
@@ -25,6 +25,12 @@ declare module 'hono' {
      * that one response and the strict default everywhere else.
      */
     contactEnabled?: boolean;
+    /**
+     * Set by the `/` handler so the security-headers middleware serves the
+     * host-extended CSP (`deps.render.csp`) on the profile page only; every
+     * other route keeps the strict `'self'` policy.
+     */
+    profilePage?: boolean;
   }
 }
 
@@ -54,13 +60,136 @@ export interface PublicAppDeps {
    * endpoint they don't host.
    */
   mcpPath?: string;
+  /**
+   * First-party host composition applied to the server-rendered profile page
+   * (`GET /`): the renderer's `slots` / `labels` / `omitSections` (see
+   * {@link RenderInput}) plus an optional {@link PublicRenderCsp} that widens the
+   * page's Content-Security-Policy so injected slots can load their scripts.
+   * Absent (the turnkey default) leaves the page and its strict CSP untouched.
+   */
+  render?: PublicRenderOptions;
 }
+
+/**
+ * Declarative, additive extensions to the public profile page's
+ * Content-Security-Policy (see {@link PublicRenderOptions.csp}). Each list is
+ * appended to the corresponding base directive; `scriptHashes` (e.g.
+ * `'sha256-…'`) are appended to `script-src` so a specific inline script — such
+ * as a service-worker registration injected via a slot — is allowed WITHOUT a
+ * blanket `'unsafe-inline'`. Only the profile page's CSP is widened; every other
+ * public route keeps the strict `'self'` policy.
+ *
+ * Values are host-supplied deploy configuration (not user data), but each token
+ * is validated at construction and invalid entries are dropped (with a
+ * `console.warn` naming them):
+ * - Origin lists must be single CSP source expressions of printable-ASCII
+ *   characters with no `;` or `,`, so a malformed value can neither inject a
+ *   directive, split the header, nor crash header construction (a control
+ *   character or non-Latin-1 codepoint would throw in `Headers.set`). The two
+ *   most common blanket relaxations, `'unsafe-inline'` / `'unsafe-eval'`, are
+ *   also rejected — they are the usual copy-paste footgun. This is deliberately
+ *   narrow, NOT a comprehensive guardrail: `render.csp` is trusted host deploy
+ *   config, so a host can still broaden its own `script-src` with e.g. `*` or a
+ *   scheme source, exactly as it could by hand-writing the policy.
+ * - `scriptHashes` must be a CSP hash expression (`'sha256-…'` / `'sha384-…'` /
+ *   `'sha512-…'`); anything else (including `'unsafe-inline'`) is dropped.
+ */
+export interface PublicRenderCsp {
+  /** Extra `script-src` origins (e.g. an analytics beacon's script host). */
+  scriptSrc?: readonly string[];
+  /** Extra `connect-src` origins (e.g. where a beacon reports back). */
+  connectSrc?: readonly string[];
+  /** `worker-src` origins (e.g. `'self'` for a PWA service worker). Adds the directive when set. */
+  workerSrc?: readonly string[];
+  /** `'sha256-…'` / `'sha384-…'` / `'sha512-…'` hashes for specific inline scripts, appended to `script-src`. */
+  scriptHashes?: readonly string[];
+}
+
+/**
+ * Host composition for the server-rendered profile page: the renderer's
+ * first-party {@link RenderInput} seams (`slots` / `labels` / `omitSections`)
+ * plus an optional {@link PublicRenderCsp}. The CSP lives here, beside the slots
+ * whose scripts it authorizes.
+ */
+export type PublicRenderOptions = Pick<RenderInput, 'slots' | 'labels' | 'omitSections'> & {
+  csp?: PublicRenderCsp;
+};
 
 const FALLBACK_VERSION = 'bundled-fixture';
 
 // Cloudflare Turnstile (the contact widget's challenge) loads its script from,
 // renders its iframe on, and reports back to this single origin.
 const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
+
+/**
+ * A single CSP source expression: one or more printable-ASCII characters
+ * (`!`–`~`), which the {@link sanitizeCsp} predicate further narrows by rejecting
+ * `;` and `,`. This is an ALLOWLIST, not a `\s`-based denylist: a denylist
+ * silently passes control characters (NUL, DEL), C1 controls, and non-Latin-1
+ * codepoints (e.g. a copy-pasted zero-width space) — none of which are `\s` —
+ * and those then throw inside `Headers.set` (invalid header value / non-ByteString
+ * codepoint), 500-ing the profile page on every request. Restricting to printable
+ * ASCII means a malformed value can neither split the header, inject a directive,
+ * nor crash header construction; it is simply dropped.
+ */
+const CSP_SOURCE = /^[!-~]+$/;
+/**
+ * A CSP hash source — `'sha256-…'` / `'sha384-…'` / `'sha512-…'` (base64,
+ * optionally `=`-padded). Anything else offered as a `scriptHashes` entry
+ * (including `'unsafe-inline'`) is rejected.
+ */
+const CSP_HASH = /^'sha(256|384|512)-[A-Za-z0-9+/]+={0,2}'$/;
+/**
+ * The two most notorious blanket relaxations, refused from ANY directive so a
+ * host can't reintroduce them via `render.csp` — they are the usual copy-paste
+ * footgun (an analytics/embed snippet that says "add 'unsafe-inline'"). This is
+ * deliberately narrow, not a comprehensive guardrail: `render.csp` is trusted
+ * host deploy config, so broadening sources like `*` or a bare scheme remain the
+ * host's own choice (as in any hand-written policy). Compared case-insensitively
+ * because browsers match these keywords without regard to case.
+ */
+const CSP_BLANKET: ReadonlySet<string> = new Set(["'unsafe-inline'", "'unsafe-eval'"]);
+
+/**
+ * A host-supplied {@link PublicRenderCsp} after validation: every token is a
+ * guaranteed-safe CSP source (or hash), so {@link buildPublicCsp} appends it
+ * verbatim. Produced by {@link sanitizeCsp}.
+ */
+interface CleanCsp {
+  scriptSrc: readonly string[];
+  connectSrc: readonly string[];
+  workerSrc: readonly string[];
+  scriptHashes: readonly string[];
+}
+
+/**
+ * Validate a host-supplied {@link PublicRenderCsp} into a {@link CleanCsp}.
+ * Origin lists keep only well-formed source expressions that are not blanket
+ * relaxations (`'unsafe-inline'` / `'unsafe-eval'`); `scriptHashes` keeps only
+ * CSP hash expressions. Every rejected token is collected in `dropped` so the
+ * caller can warn — silently dropping a config typo would turn it into a
+ * production CSP-violation hunt.
+ */
+function sanitizeCsp(ext: PublicRenderCsp): { clean: CleanCsp; dropped: string[] } {
+  const dropped: string[] = [];
+  const keep = (tokens: readonly string[] | undefined, ok: (t: string) => boolean): string[] =>
+    (tokens ?? []).filter((t) => {
+      if (ok(t)) return true;
+      dropped.push(t);
+      return false;
+    });
+  const source = (t: string): boolean =>
+    CSP_SOURCE.test(t) && !t.includes(';') && !t.includes(',') && !CSP_BLANKET.has(t.toLowerCase());
+  return {
+    clean: {
+      scriptSrc: keep(ext.scriptSrc, source),
+      connectSrc: keep(ext.connectSrc, source),
+      workerSrc: keep(ext.workerSrc, source),
+      scriptHashes: keep(ext.scriptHashes, (t) => CSP_HASH.test(t)),
+    },
+    dropped,
+  };
+}
 
 /**
  * Build the public Content-Security-Policy. With `contact` the `@takuhon/contact`
@@ -71,8 +200,17 @@ const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
  * relaxation is applied ONLY to the HTML page that actually embeds the widget
  * (gated per-request in the `/` handler); every other route keeps the strict,
  * `'self'`-only policy below.
+ *
+ * `ext` (a validated {@link CleanCsp}) appends origins/hashes to the profile
+ * page's directives. When `ext` is undefined the output is byte-identical to the
+ * pre-extension policy, so the turnkey default is unchanged.
  */
-function buildPublicCsp(contact: boolean): string {
+function buildPublicCsp(contact: boolean, ext?: CleanCsp): string {
+  const turnstile = contact ? [TURNSTILE_ORIGIN] : [];
+  const scriptSrc = ["'self'", ...turnstile, ...(ext?.scriptSrc ?? []), ...(ext?.scriptHashes ?? [])]; // prettier-ignore
+  const connectSrc = ["'self'", ...turnstile, ...(ext?.connectSrc ?? [])];
+  const frameSrc = [...turnstile];
+  const workerSrc = ext?.workerSrc ?? [];
   return [
     "default-src 'self'",
     // `https:` lets the server-rendered profile page load remote avatar images
@@ -80,10 +218,11 @@ function buildPublicCsp(contact: boolean): string {
     // already blocks non-http(s) schemes); `data:` covers inline placeholders.
     "img-src 'self' https: data:",
     "style-src 'self' 'unsafe-inline'",
-    contact ? `script-src 'self' ${TURNSTILE_ORIGIN}` : "script-src 'self'",
+    `script-src ${scriptSrc.join(' ')}`,
     "font-src 'self'",
-    contact ? `connect-src 'self' ${TURNSTILE_ORIGIN}` : "connect-src 'self'",
-    ...(contact ? [`frame-src ${TURNSTILE_ORIGIN}`] : []),
+    `connect-src ${connectSrc.join(' ')}`,
+    ...(frameSrc.length > 0 ? [`frame-src ${frameSrc.join(' ')}`] : []),
+    ...(workerSrc.length > 0 ? [`worker-src ${workerSrc.join(' ')}`] : []),
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -116,6 +255,26 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
   // (`c.req.url`), which `getPath` does not mutate.
   const app = new Hono({ getPath: localePrefixGetPath });
 
+  // The profile page's CSP, widened by the host's `render.csp` (if any). Host
+  // tokens are validated (`sanitizeCsp`) and any rejected token is warned about
+  // once at construction, so a config typo surfaces in the logs rather than
+  // silently failing at runtime. With no extension these equal the base
+  // policies, so the profile page is byte-identical to every other route and no
+  // behavior changes.
+  const cspExt = deps.render?.csp;
+  let pageCsp = PUBLIC_CSP;
+  let pageCspWithContact = PUBLIC_CSP_WITH_CONTACT;
+  if (cspExt) {
+    const { clean, dropped } = sanitizeCsp(cspExt);
+    if (dropped.length > 0) {
+      console.warn(
+        `[takuhon] Ignored ${dropped.length} invalid render.csp token(s): ${dropped.join(', ')}`,
+      );
+    }
+    pageCsp = buildPublicCsp(false, clean);
+    pageCspWithContact = buildPublicCsp(true, clean);
+  }
+
   app.use('*', async (c, next) => {
     await next();
     const h = c.res.headers;
@@ -124,12 +283,21 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     h.set('x-frame-options', 'DENY');
     h.set('referrer-policy', 'strict-origin-when-cross-origin');
     h.set('permissions-policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
-    // The `/` handler sets `contactEnabled` only when it embeds the contact
-    // widget, so the relaxed (Turnstile-allowing) policy is scoped to that one
-    // page; every other route falls through to the strict default.
+    // The `/` handler sets `contactEnabled` (contact widget embedded) and
+    // `profilePage` (host `render.csp` extension applies), so both relaxations
+    // are scoped to that one page; every other route falls through to the strict
+    // default.
+    const contact = c.get('contactEnabled') === true;
+    const page = c.get('profilePage') === true;
     h.set(
       'content-security-policy',
-      c.get('contactEnabled') ? PUBLIC_CSP_WITH_CONTACT : PUBLIC_CSP,
+      page
+        ? contact
+          ? pageCspWithContact
+          : pageCsp
+        : contact
+          ? PUBLIC_CSP_WITH_CONTACT
+          : PUBLIC_CSP,
     );
     // Every route on this app is unauthenticated, read-only, and already
     // privacy-filtered, so the responses are safe to expose to any origin. This
@@ -211,6 +379,16 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     if (contact) c.set('contactEnabled', true);
 
     const html = renderProfileHtml({
+      // Host composition seams (slots / labels / omitSections). `csp` is a
+      // response-header concern handled above, not a renderer input, so it is
+      // intentionally excluded here.
+      ...(deps.render
+        ? {
+            slots: deps.render.slots,
+            labels: deps.render.labels,
+            omitSections: deps.render.omitSections,
+          }
+        : {}),
       localized,
       canonicalUrl: `${origin}${localePath(current)}`,
       alternates: [
@@ -227,6 +405,10 @@ export function createPublicApp(deps: PublicAppDeps): Hono {
     c.header('etag', `"${version}"`);
     c.header('cache-control', 'public, max-age=300');
     c.header('vary', 'Accept-Language, Cookie');
+    // Scope the host CSP extension (if any) to this page — set only now that the
+    // profile page rendered successfully, so a failure above never widens the
+    // CSP on the error response (mirrors `contactEnabled`).
+    c.set('profilePage', true);
     return c.html(html);
   });
 
