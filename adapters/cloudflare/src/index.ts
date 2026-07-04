@@ -8,6 +8,7 @@ import {
   problemResponse,
   type AuditLogger,
   type CachePurger,
+  type PublicRenderOptions,
 } from '@takuhon/api';
 import { handleContact } from '@takuhon/contact';
 import { contactWidgetCss, contactWidgetJs } from '@takuhon/contact/assets';
@@ -119,6 +120,15 @@ export interface CreateTakuhonWorkerOptions {
    * the resulting value.
    */
   readonly fallback: () => Takuhon;
+  /**
+   * First-party host composition for the server-rendered profile page: renderer
+   * `slots` / `labels` / `omitSections` plus an optional CSP extension (see
+   * {@link PublicRenderOptions}). Lets a host worker inject its own C-group
+   * (PWA registration, analytics beacon, extra `<head>` tags) and widen the
+   * page CSP to allow those scripts. Omitted (the turnkey default) leaves the
+   * page and its strict CSP untouched.
+   */
+  readonly render?: PublicRenderOptions;
 }
 
 function parseOrigins(raw: string | undefined): string[] {
@@ -421,6 +431,9 @@ export function createTakuhonWorker(opts: CreateTakuhonWorkerOptions): {
           activityStorage: new KvActivityStorage(env.TAKUHON_KV),
           // Advertise the read-only MCP endpoint in `/.well-known/takuhon.json`.
           mcpPath: '/mcp',
+          // Host composition (slots / labels / omitSections / CSP), passed
+          // straight through to the profile page. Undefined by default.
+          render: opts.render,
         }),
       );
 

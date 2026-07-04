@@ -17,7 +17,12 @@
  * host.
  */
 
-import { createPublicApp, localePrefixGetPath, type PublicAppDeps } from '@takuhon/api';
+import {
+  createPublicApp,
+  localePrefixGetPath,
+  type PublicAppDeps,
+  type PublicRenderOptions,
+} from '@takuhon/api';
 import { Hono } from 'hono';
 
 export { BundledTakuhonStorage, UrlTakuhonStorage } from './storage.js';
@@ -37,6 +42,13 @@ export interface CreateTakuhonVercelAppOptions {
    * Rarely needed for the bundled case, where the document is always present.
    */
   fallback?: PublicAppDeps['fallback'];
+  /**
+   * First-party host composition for the profile page: renderer `slots` /
+   * `labels` / `omitSections` plus an optional CSP extension (see
+   * {@link PublicRenderOptions}). Omitted (the default) leaves the page and its
+   * strict CSP untouched.
+   */
+  render?: PublicRenderOptions;
 }
 
 /**
@@ -62,6 +74,13 @@ export interface CreateTakuhonVercelAppOptions {
  */
 export function createTakuhonVercelApp(options: CreateTakuhonVercelAppOptions): Hono {
   const app = new Hono({ getPath: localePrefixGetPath });
-  app.route('/', createPublicApp({ storage: options.storage, fallback: options.fallback }));
+  app.route(
+    '/',
+    createPublicApp({
+      storage: options.storage,
+      fallback: options.fallback,
+      render: options.render,
+    }),
+  );
   return app;
 }

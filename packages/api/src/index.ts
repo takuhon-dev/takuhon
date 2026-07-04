@@ -17,7 +17,12 @@ export {
   type BuildProblemInput,
   type ProblemResponseInput,
 } from './error-envelope.js';
-export { createPublicApp, type PublicAppDeps } from './public-app.js';
+export {
+  createPublicApp,
+  type PublicAppDeps,
+  type PublicRenderOptions,
+  type PublicRenderCsp,
+} from './public-app.js';
 // Re-exported from @takuhon/core (it is a pure transform over core types and
 // now lives there); kept here for backwards compatibility.
 export { applyPublicPrivacyFilter } from '@takuhon/core';

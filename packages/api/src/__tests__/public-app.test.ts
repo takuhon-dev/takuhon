@@ -1,5 +1,5 @@
 import { SCHEMA_VERSION, normalize, validate, type Takuhon } from '@takuhon/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
 import { parseAcceptLanguage } from '../locale-resolution.js';
@@ -323,6 +323,225 @@ describe('contact widget turnkey (settings.contact)', () => {
         'challenges.cloudflare.com',
       );
     }
+  });
+});
+
+describe('render passthrough + CSP extension (PR6g)', () => {
+  function appWithRender(
+    render: Parameters<typeof createPublicApp>[0]['render'],
+  ): ReturnType<typeof createPublicApp> {
+    return createPublicApp({ storage: new FakeStorage(), fallback: () => makeSample(), render });
+  }
+
+  async function appBaselineCsp(): Promise<string> {
+    const app = createPublicApp({ storage: new FakeStorage(), fallback: () => makeSample() });
+    return (await fetchPath(app, '/')).headers.get('content-security-policy') ?? '';
+  }
+
+  it('injects host slots into the profile page', async () => {
+    const app = appWithRender({
+      slots: {
+        head: '<meta name="host-head" content="1">',
+        mainEnd: '<div id="host-main-end">extra</div>',
+        bodyEnd: '<script src="/sw-register.js" defer></script>',
+      },
+    });
+    const body = await (await fetchPath(app, '/')).text();
+    expect(body).toContain('<meta name="host-head" content="1">');
+    expect(body).toContain('<div id="host-main-end">extra</div>');
+    expect(body).toContain('<script src="/sw-register.js" defer></script>');
+  });
+
+  it('applies host label overrides and omitSections to the page', async () => {
+    const withoutOmit = await (await fetchPath(appWithRender({}), '/')).text();
+    expect(withoutOmit).toContain('<ul class="skills">');
+
+    const app = appWithRender({
+      labels: { volunteering: 'Open-source work' },
+      omitSections: ['skills'],
+    });
+    const body = await (await fetchPath(app, '/')).text();
+    expect(body).toContain('<h2>Open-source work</h2>');
+    // omitSections suppresses the visible section markup on the page.
+    expect(body).not.toContain('<ul class="skills">');
+  });
+
+  it('widens the profile-page CSP with render.csp (origins, worker-src, and inline-script hashes)', async () => {
+    const app = appWithRender({
+      csp: {
+        scriptSrc: ['https://static.cloudflareinsights.com'],
+        connectSrc: ['https://cloudflareinsights.com'],
+        workerSrc: ["'self'"],
+        scriptHashes: ["'sha256-abc123'"],
+      },
+    });
+    const csp = (await fetchPath(app, '/')).headers.get('content-security-policy') ?? '';
+    expect(csp).toContain(
+      "script-src 'self' https://static.cloudflareinsights.com 'sha256-abc123'",
+    );
+    expect(csp).toContain("connect-src 'self' https://cloudflareinsights.com");
+    expect(csp).toContain("worker-src 'self'");
+    // The extension does not smuggle in a blanket unsafe-inline.
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-inline/);
+  });
+
+  it('scopes the CSP extension to the profile page (non-HTML routes stay strict)', async () => {
+    const app = appWithRender({ csp: { scriptSrc: ['https://static.cloudflareinsights.com'] } });
+    for (const path of ['/api/profile', '/api/schema', '/takuhon.json']) {
+      const csp = (await fetchPath(app, path)).headers.get('content-security-policy') ?? '';
+      expect(csp, path).toContain("script-src 'self'");
+      expect(csp, path).not.toContain('static.cloudflareinsights.com');
+    }
+  });
+
+  it('drops malformed CSP tokens so a value cannot inject a directive or split the header', async () => {
+    const app = appWithRender({
+      csp: {
+        scriptSrc: ['https://ok.example', "evil.example; script-src 'unsafe-inline'", 'has space'],
+      },
+    });
+    const csp = (await fetchPath(app, '/')).headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("script-src 'self' https://ok.example;");
+    // The injected `'unsafe-inline'` (carried by a `;`-bearing token) never
+    // reaches script-src; the base style-src legitimately keeps its own.
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-inline/);
+    expect(csp).not.toContain('has space');
+    // Exactly one script-src directive — no injected second one.
+    expect(csp.match(/script-src/g)?.length).toBe(1);
+  });
+
+  it('leaves the profile-page CSP byte-identical to the strict default when no tokens survive', async () => {
+    // Baseline: a page with no render.csp at all.
+    const base = await appBaselineCsp();
+    // A render.csp that is present but whose every token is dropped (blanket +
+    // malformed) must produce the exact same header — not merely a superset.
+    const dropped = appWithRender({
+      csp: {
+        scriptSrc: ["'unsafe-inline'", 'has space'],
+        connectSrc: [],
+        workerSrc: ["'unsafe-eval'"],
+        scriptHashes: ['notahash'],
+      },
+    });
+    const droppedCsp = (await fetchPath(dropped, '/')).headers.get('content-security-policy') ?? '';
+    expect(droppedCsp).toBe(base);
+    // And it is the strict policy: no worker-src, self-only script/connect.
+    expect(base).toContain("script-src 'self'; font-src 'self'; connect-src 'self'");
+    expect(base).not.toContain('worker-src');
+  });
+
+  it('drops control-character and non-Latin-1 tokens that would otherwise crash Headers.set', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      // A NUL, a zero-width space (U+200B, not in JS `\s`), and a codepoint
+      // > 255 all slip past a naive `\s`-denylist, then throw in Headers.set
+      // (invalid header value / non-ByteString), 500-ing the page — drop them.
+      const nul = `https://a.example${String.fromCodePoint(0x0000)}x`;
+      const zwsp = `https://a.example${String.fromCodePoint(0x200b)}x`;
+      const wide = `https://a.example${String.fromCodePoint(0x0100)}x`;
+      const app = appWithRender({ csp: { scriptSrc: [nul, zwsp, wide, 'https://ok.example'] } });
+      const res = await fetchPath(app, '/');
+      // The page still renders — the bad tokens were dropped, not appended.
+      expect(res.status).toBe(200);
+      const csp = res.headers.get('content-security-policy') ?? '';
+      expect(csp).toContain("script-src 'self' https://ok.example");
+      expect(csp).not.toContain(nul);
+      expect(csp).not.toContain(zwsp);
+      expect(csp).not.toContain(wide);
+      // Dropping is not silent.
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('rejects blanket relaxations (unsafe-inline / unsafe-eval) from every origin list', async () => {
+    const app = appWithRender({
+      csp: {
+        scriptSrc: ["'unsafe-inline'", "'UNSAFE-EVAL'", 'https://ok.example'],
+        connectSrc: ["'unsafe-inline'"],
+        workerSrc: ["'unsafe-eval'"],
+      },
+    });
+    const csp = (await fetchPath(app, '/')).headers.get('content-security-policy') ?? '';
+    // The one legitimate origin survives; the blanket keywords never do — even
+    // case-shifted, since browsers match them case-insensitively.
+    expect(csp).toContain("script-src 'self' https://ok.example");
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-/);
+    expect(csp).not.toMatch(/connect-src[^;]*unsafe-inline/);
+    // workerSrc had only a rejected token, so no worker-src directive is emitted.
+    expect(csp).not.toContain('worker-src');
+  });
+
+  it('keeps only well-formed hash sources in scriptHashes', async () => {
+    const app = appWithRender({
+      csp: { scriptHashes: ["'sha256-Zm9v'", "'unsafe-inline'", 'notahash', "'sha1-old'"] },
+    });
+    const csp = (await fetchPath(app, '/')).headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("script-src 'self' 'sha256-Zm9v'");
+    expect(csp).not.toContain('notahash');
+    // sha1 is not an accepted algorithm; only sha256/384/512 pass.
+    expect(csp).not.toContain("'sha1-old'");
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-inline/);
+  });
+
+  it('never widens img-src or frame-src via render.csp (they are not extension points)', async () => {
+    const app = appWithRender({
+      csp: { scriptSrc: ['https://ok.example'], workerSrc: ["'self'"] },
+    });
+    const csp = (await fetchPath(app, '/')).headers.get('content-security-policy') ?? '';
+    // img-src stays the fixed base policy regardless of render.csp.
+    expect(csp).toContain("img-src 'self' https: data:");
+    // No contact widget here, so no frame-src exists — render.csp cannot add one.
+    expect(csp).not.toContain('frame-src');
+  });
+
+  it('warns once, naming the dropped tokens, when render.csp has invalid entries', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      appWithRender({
+        csp: { scriptSrc: ['bad token', "'unsafe-inline'"], scriptHashes: ['notahash'] },
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+      const msg = String(warn.mock.calls[0]?.[0] ?? '');
+      expect(msg).toContain('render.csp');
+      expect(msg).toContain('bad token');
+      expect(msg).toContain("'unsafe-inline'");
+      expect(msg).toContain('notahash');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn when every render.csp token is valid', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      appWithRender({
+        csp: { scriptSrc: ['https://ok.example'], scriptHashes: ["'sha256-Zm9v'"] },
+      });
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not widen the CSP on the error response when rendering fails (A1)', async () => {
+    const storage = new FakeStorage();
+    storage.getProfile = (): never => {
+      throw new Error('storage is down');
+    };
+    const app = createPublicApp({
+      storage,
+      fallback: () => makeSample(),
+      render: { csp: { scriptSrc: ['https://static.cloudflareinsights.com'] } },
+    });
+    const res = await fetchPath(app, '/');
+    expect(res.status).toBe(500);
+    const csp = res.headers.get('content-security-policy') ?? '';
+    // `profilePage` is set only on the success path, so a failure keeps the
+    // strict default CSP — the host extension never leaks onto an error page.
+    expect(csp).toContain("script-src 'self'; font-src 'self'");
+    expect(csp).not.toContain('static.cloudflareinsights.com');
   });
 });
 

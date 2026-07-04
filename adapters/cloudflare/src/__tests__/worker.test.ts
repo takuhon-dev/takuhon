@@ -2,7 +2,7 @@ import type { Takuhon } from '@takuhon/core';
 import { describe, expect, it } from 'vitest';
 
 import exampleJson from '../../../../examples/personal-profile/takuhon.json' with { type: 'json' };
-import worker, { type Env } from '../index.js';
+import worker, { createTakuhonWorker, type Env } from '../index.js';
 import { KV_KEY, type KvMetadata } from '../kv-storage.js';
 import { FakeKV } from '../test-utils/fake-kv.js';
 
@@ -25,6 +25,31 @@ describe('cloudflare worker — Phase 3.2', () => {
     expect(body).toContain('<script type="application/ld+json">');
     // Canonical / hreflang are derived from the request origin, no config needed.
     expect(body).toContain('<link rel="canonical" href="https://worker.example/">');
+  });
+
+  it('passes render options (host slot + CSP extension) through to the profile page', async () => {
+    const host = createTakuhonWorker({
+      fallback: () => exampleJson as Takuhon,
+      render: {
+        slots: { bodyEnd: '<script src="/sw-register.js" defer></script>' },
+        csp: {
+          scriptSrc: ['https://static.cloudflareinsights.com'],
+          workerSrc: ["'self'"],
+        },
+      },
+    });
+    const res = await host.fetch(new Request('https://worker.example/'), makeEnv().env);
+    const body = await res.text();
+    expect(body).toContain('<script src="/sw-register.js" defer></script>');
+    const csp = res.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("script-src 'self' https://static.cloudflareinsights.com");
+    expect(csp).toContain("worker-src 'self'");
+    // A route without host scripts keeps the strict default.
+    const apiCsp =
+      (
+        await host.fetch(new Request('https://worker.example/api/profile'), makeEnv().env)
+      ).headers.get('content-security-policy') ?? '';
+    expect(apiCsp).not.toContain('static.cloudflareinsights.com');
   });
 
   it('GET /api/profile falls back to bundled fixture when KV is empty', async () => {
