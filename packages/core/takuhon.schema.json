@@ -517,6 +517,10 @@
         "primaryContrast": {
           "$ref": "#/$defs/CssColor",
           "description": "Foreground color used on top of the primary color."
+        },
+        "heading": {
+          "$ref": "#/$defs/CssColor",
+          "description": "Heading color for the \"About\" section's Markdown sub-headings (##/###)."
         }
       }
     },

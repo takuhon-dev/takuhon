@@ -253,6 +253,7 @@ const DEFAULT_TOKENS: Record<string, string> = {
   '--takuhon-color-primary': '#2563eb',
   '--takuhon-color-primary-contrast': '#ffffff',
   '--takuhon-color-accent': '#4f46e5',
+  '--takuhon-color-heading': '#1e1888',
   '--takuhon-font-family':
     "system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif",
 };
@@ -271,6 +272,7 @@ const DEFAULT_TOKENS_DARK: Record<string, string> = {
   '--takuhon-color-primary': '#60a5fa',
   '--takuhon-color-primary-contrast': '#0f172a',
   '--takuhon-color-accent': '#818cf8',
+  '--takuhon-color-heading': '#c7d2fe',
 };
 
 /**
@@ -309,6 +311,7 @@ const COLOR_TOKEN_VARS: Record<keyof AppearanceColors, string> = {
   accent: '--takuhon-color-accent',
   primary: '--takuhon-color-primary',
   primaryContrast: '--takuhon-color-primary-contrast',
+  heading: '--takuhon-color-heading',
 };
 
 /**
@@ -406,8 +409,8 @@ header .avatar{width:96px;height:96px;border-radius:var(--takuhon-radius-full);o
 .tagline{font-size:var(--takuhon-font-size-lg);color:var(--takuhon-color-text-muted);margin:0 0 var(--takuhon-space-2)}
 .location{font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted);margin:0}
 section{margin:0 0 var(--takuhon-space-6)}
-.bio-body h3{font-size:var(--takuhon-font-size-lg);font-weight:600;margin:var(--takuhon-space-5) 0 var(--takuhon-space-2)}
-.bio-body h4{font-size:var(--takuhon-font-size-base);font-weight:600;margin:var(--takuhon-space-4) 0 var(--takuhon-space-2)}
+.bio-body h3{font-size:var(--takuhon-font-size-lg);font-weight:600;color:var(--takuhon-color-heading);margin:var(--takuhon-space-5) 0 var(--takuhon-space-2)}
+.bio-body h4{font-size:var(--takuhon-font-size-base);font-weight:600;color:var(--takuhon-color-heading);margin:var(--takuhon-space-4) 0 var(--takuhon-space-2)}
 .bio-body p{margin:0 0 var(--takuhon-space-3)}
 .bio-body ul{list-style:disc;margin:0 0 var(--takuhon-space-3);padding-left:var(--takuhon-space-5)}
 .bio-body li{margin:0 0 var(--takuhon-space-1)}
@@ -416,9 +419,10 @@ ul{padding:0;margin:0;list-style:none}
 .entries>li{margin:0 0 var(--takuhon-space-4)}
 .entries--timeline>li{position:relative;display:flex;flex-direction:column;margin:0 0 0 var(--takuhon-space-2);padding:0 0 var(--takuhon-space-5) var(--takuhon-space-4);border-left:2px solid var(--takuhon-color-border)}
 .entries--timeline>li:last-child{padding-bottom:0}
-.entries--timeline>li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:var(--takuhon-radius-full);background:var(--takuhon-color-primary)}
+.entries--timeline>li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:var(--takuhon-radius-full);background:var(--takuhon-color-text-muted)}
 .entries--timeline>li.is-current::before{background:var(--takuhon-color-accent)}
 .entries--timeline .meta{order:-1;margin:0 0 var(--takuhon-space-1)}
+.entries--timeline>li>h3{font-size:var(--takuhon-font-size-base);font-weight:600;margin:0}
 .entries--cards{display:grid;gap:var(--takuhon-space-3)}
 .entries--cards>li{margin:0;padding:var(--takuhon-space-4);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-md);background:var(--takuhon-color-surface)}
 .entries--cards>li.is-highlighted{border-color:var(--takuhon-color-accent)}
@@ -442,6 +446,8 @@ ul{padding:0;margin:0;list-style:none}
 .brand-icon{width:1.15em;height:1.15em;flex:none;opacity:.85}
 .skills,.tags{display:flex;flex-wrap:wrap;gap:var(--takuhon-space-2)}
 .skills>li,.tags>li{background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm)}
+.entries--cards .tags{margin-top:var(--takuhon-space-2)}
+.tags>li{background:var(--takuhon-color-bg);color:var(--takuhon-color-text-muted);padding:2px var(--takuhon-space-2)}
 .skills-groups{display:grid;gap:var(--takuhon-space-4)}
 .skill-group h3{font-size:var(--takuhon-font-size-base);margin:0 0 var(--takuhon-space-2);color:var(--takuhon-color-text-muted);text-transform:uppercase;letter-spacing:.04em}
 .vol-list{display:grid;gap:var(--takuhon-space-2)}
@@ -453,14 +459,18 @@ ul{padding:0;margin:0;list-style:none}
 .vol-org a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
 .vol-role{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 .vol-desc{margin:var(--takuhon-space-1) 0 0;font-size:var(--takuhon-font-size-sm)}
-.vol-secondary{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);margin-top:var(--takuhon-space-2);padding:var(--takuhon-space-1) var(--takuhon-space-3);font-size:var(--takuhon-font-size-sm);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);color:var(--takuhon-color-text);text-decoration:none}
-.vol-secondary:hover{border-color:var(--takuhon-color-accent)}
+.vol-secondary{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);margin-top:var(--takuhon-space-2);padding:2px var(--takuhon-space-2);font-size:var(--takuhon-font-size-sm);background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);color:var(--takuhon-color-text-muted);text-decoration:none}
+.vol-secondary:hover{color:var(--takuhon-color-text);border-color:var(--takuhon-color-accent)}
 .vol-secondary .brand-icon{width:1em;height:1em;opacity:.85}
 .rec{margin:0 0 var(--takuhon-space-4)}
 .rec blockquote{margin:0;padding-left:var(--takuhon-space-3);border-left:3px solid var(--takuhon-color-border)}
 .rec figcaption{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm);margin-top:var(--takuhon-space-2)}
 nav.locales{display:flex;justify-content:flex-end;gap:var(--takuhon-space-3);margin-bottom:var(--takuhon-space-4);font-size:var(--takuhon-font-size-sm)}
-.activity svg{max-width:100%;height:auto}
+nav.locales a,nav.locales [aria-current]{padding:var(--takuhon-space-1) var(--takuhon-space-2);border-radius:var(--takuhon-radius-sm);text-transform:uppercase}
+nav.locales a{color:var(--takuhon-color-primary);text-decoration:none}
+nav.locales a:hover{text-decoration:underline}
+nav.locales [aria-current]{color:var(--takuhon-color-text);font-weight:700;background:var(--takuhon-color-surface)}
+.activity svg{width:100%;height:auto}
 footer.powered{max-width:var(--takuhon-max-content-width);margin:var(--takuhon-space-6) auto 0;padding:var(--takuhon-space-4) var(--takuhon-space-4) var(--takuhon-space-6);border-top:1px solid var(--takuhon-color-border);text-align:center;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 footer.powered p{margin:0 0 var(--takuhon-space-2)}
 footer.powered p:last-child{margin-bottom:0}
@@ -479,7 +489,7 @@ footer.powered .powered-by a:hover{text-decoration:underline}
 .highlight-body>*{margin:0}
 .highlight-badge{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);font-size:var(--takuhon-font-size-sm);color:var(--takuhon-color-text-muted)}
 .highlight-badge .brand-icon{width:1em;height:1em;opacity:.85}
-.highlight-title{font-size:var(--takuhon-font-size-base);font-weight:600}
+.highlight-title{font-size:var(--takuhon-font-size-base)}
 .highlight-title a{color:var(--takuhon-color-text);text-decoration:none}
 .highlight-title a:hover{color:var(--takuhon-color-primary)}
 .highlight-title a::after{content:"";position:absolute;inset:0}
@@ -714,10 +724,13 @@ const LINK_TYPE_DISPLAY: Partial<Record<LocalizedLink['type'], string>> = {
 };
 
 /**
- * A small muted type pill (e.g. "GitHub") shown at the trailing edge of a link,
- * so a link whose label is a handle still names its platform. Omitted for
- * `custom` links (no canonical name) and when the type name would just repeat
- * the visible label.
+ * A small muted type pill (e.g. "GitHub") shown at the trailing edge of a link
+ * that has NO owner-supplied label, so a link whose visible text falls back to
+ * the raw URL still names its platform. When the owner set an explicit `label`,
+ * that label is authoritative and the brand glyph already signals the platform,
+ * so no pill is added (this also avoids a redundant English pill next to a
+ * localized label, e.g. "ブログ" + "Blog"). Omitted for `custom` links (no
+ * canonical type name) and when the type name would just repeat the URL text.
  */
 function linkTypePill(link: LocalizedLink, label: string): string {
   const display = LINK_TYPE_DISPLAY[link.type];
@@ -729,7 +742,9 @@ function linkTypePill(link: LocalizedLink, label: string): string {
 function renderLinkItem(link: LocalizedLink): string {
   const label = link.label ?? link.url;
   const main = `<span class="link-main">${brandIconForLink(link)}<span>${escapeHtml(label)}</span></span>`;
-  const pill = linkTypePill(link, label);
+  // The type pill only names the platform when there is no owner label (the main
+  // text is then the URL); an explicit label is authoritative, so no pill.
+  const pill = link.label == null ? linkTypePill(link, label) : '';
   const href = safeUrl(link.url);
   // rel="me" declares these as the owner's own profiles (IndieWeb / Mastodon
   // verification); noopener hardens the external navigation.
