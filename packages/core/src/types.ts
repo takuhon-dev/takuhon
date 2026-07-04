@@ -533,6 +533,12 @@ export interface AppearanceColors {
   primary?: string;
   /** Foreground color used on top of the primary color. */
   primaryContrast?: string;
+  /**
+   * Heading color for the "About" section's Markdown sub-headings (`##`/`###`).
+   * Defaults to a deep indigo (light) / soft indigo (dark) so sub-headings stand
+   * out from body text; override to re-tint them.
+   */
+  heading?: string;
 }
 
 /**

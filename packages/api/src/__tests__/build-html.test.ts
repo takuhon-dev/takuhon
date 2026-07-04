@@ -236,6 +236,27 @@ describe('renderProfileHtml() appearance tokens (settings.appearance)', () => {
     expect(darkBlock).toContain('--takuhon-color-text:#e2e8f0');
   });
 
+  it('ships a default heading color (light + dark) and applies it to the About Markdown sub-headings', () => {
+    const html = render(localized());
+    // Built-in indigo heading token, light and dark.
+    expect(html).toContain('--takuhon-color-heading:#1e1888');
+    expect(darkRoot(html)).toContain('--takuhon-color-heading:#c7d2fe');
+    // The Markdown sub-headings reference the token (not a hard-coded color).
+    expect(html).toContain('.bio-body h3{');
+    expect(html).toMatch(/\.bio-body h3\{[^}]*color:var\(--takuhon-color-heading\)/);
+    expect(html).toMatch(/\.bio-body h4\{[^}]*color:var\(--takuhon-color-heading\)/);
+  });
+
+  it('lets an owner override the heading color via settings.appearance', () => {
+    const html = render(
+      withAppearance({ colors: { heading: '#111827' }, colorsDark: { heading: '#f9fafb' } }),
+    );
+    expect(html).toContain('--takuhon-color-heading:#111827');
+    expect(darkRoot(html)).toContain('--takuhon-color-heading:#f9fafb');
+    // Declared once in :root — the override replaces the default.
+    expect(lightRoot(html).match(/--takuhon-color-heading:/g)).toHaveLength(1);
+  });
+
   it('the static rules reference tokens, not hard-coded colors', () => {
     const html = render(localized());
     expect(html).toContain('background:var(--takuhon-color-bg)');
@@ -985,25 +1006,22 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
     expect(featured).toContain('Elsewhere');
   });
 
-  it('shows a type pill when it adds information beyond the label', () => {
+  it('shows a type pill only for a link with no owner label (the URL fallback needs naming)', () => {
     const html = render(
       localized({
         links: [
-          // A handle label: the "GitHub" type pill names the platform.
-          {
-            id: 'gh',
-            type: 'github',
-            url: 'https://github.com/pat',
-            label: { en: '@pat' },
-            featured: true,
-          },
-          // A label that already says "GitHub": no redundant pill.
-          { id: 'gh2', type: 'github', url: 'https://github.com/org', label: { en: 'GitHub' } },
+          // No label: the visible text falls back to the URL, so the "GitHub"
+          // type pill names the platform.
+          { id: 'gh', type: 'github', url: 'https://github.com/pat', featured: true },
+          // An explicit label is authoritative (and the glyph already signals the
+          // platform), so no pill — even a handle label, and even when a localized
+          // label like "ブログ" differs from the English type name.
+          { id: 'gh2', type: 'github', url: 'https://github.com/org', label: { en: '@org' } },
         ],
       }),
     );
     expect(html).toContain('<span class="link-type">GitHub</span>');
-    // Exactly one pill — the redundant one is suppressed.
+    // Exactly one pill — only the unlabeled link gets it.
     expect((html.match(/<span class="link-type">/g) ?? []).length).toBe(1);
   });
 
