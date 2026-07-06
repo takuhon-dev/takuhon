@@ -4,6 +4,22 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [1.4.1] - 2026-07-06
+
+Patch release. Two renderer-only refinements — to the default profile page and to the activity badge. No schema, API, or configuration change: a valid 1.4.0 document renders unchanged, the schema stays at 1.4.0, and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.1). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
+
+### Changed — `@takuhon/api`
+
+- **Volunteering entries stack the organization and role as block lines.** The volunteering section previously laid the organization name and the role inline on one wrapping line; they now render as two stacked block `<p>` lines (organization above, role beneath). The `.vol-head` grouping wrapper is kept; its flex rule is dropped and the role gap uses the `--takuhon-space-1` token. Renderer markup + CSS only.
+
+### Changed — `@takuhon/core`
+
+- **The activity badge captions its time-windowed figures with their period.** The developer-activity SVG now labels the two time-windowed figures with the measurement window — `Contributions · N · last 12 months` and `Coding time · last 12 months` — so the numbers are no longer ambiguous about the period they cover. `Languages` and `Rank` are point-in-time (as of the `Last synced` date) and are left unsuffixed.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump 1.4.0 → 1.4.1.
+
 ## [1.4.0] - 2026-07-04
 
 Minor release. Completes the upstream half of the "bio design generalization" track: the standard renderer's **default layout is now the bio design** and it is **composable** enough that the bio prototype can migrate onto it and shed its bespoke 900-line renderer. This release makes the default profile page open a Markdown "About" section, split links into a featured grid and a bottom "other links" section, render an OSS-contributions block and a picked-posts carousel, auto-select built-in Japanese/English section headings from the resolved locale, and end with a footer — with everything reorderable, relabelable, and suppressible via new `settings`, and with adapters able to inject host-specific `<head>` / scripts and widen the page CSP to match.

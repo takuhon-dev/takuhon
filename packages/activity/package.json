@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/activity",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Developer-activity fetchers (GitHub, WakaTime) that build a takuhon activity snapshot",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",
