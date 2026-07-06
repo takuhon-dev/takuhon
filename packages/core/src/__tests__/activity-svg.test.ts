@@ -38,8 +38,8 @@ describe('renderActivitySvg()', () => {
     expect(svg).toContain('Languages');
     expect(svg).toContain('TypeScript 80%');
     expect(svg).toContain('CSS 20%');
-    expect(svg).toContain('Contributions · 1,234');
-    expect(svg).toContain('Coding time');
+    expect(svg).toContain('Contributions · 1,234 · last 12 months');
+    expect(svg).toContain('Coding time · last 12 months');
     expect(svg).toContain('125h 30m');
     expect(svg).toContain('Rank');
     expect(svg).toContain('score 62');
@@ -59,13 +59,25 @@ describe('renderActivitySvg()', () => {
       lastSyncedAt: '2026-06-11T00:00:00.000Z',
       codingTime: { totalSeconds: 60, hours: 0, minutes: 1, seconds: 0 },
     });
-    expect(svg).toContain('Coding time');
+    expect(svg).toContain('Coding time · last 12 months');
     expect(svg).toContain('0h 1m');
     expect(svg).not.toContain('Languages');
     expect(svg).not.toContain('Contributions');
     expect(svg).not.toContain('Rank');
     // Only the opaque background rect; coding time and the footer use <text>.
     expect(rectCount(svg)).toBe(1);
+  });
+
+  it('captions the time-windowed figures with the measurement period, and only those', () => {
+    const svg = renderActivitySvg(FULL);
+    expect(svg).toContain('Contributions · 1,234 · last 12 months');
+    expect(svg).toContain('Coding time · last 12 months');
+    // The period applies only to the two time-windowed metrics — the language
+    // breakdown and the rank are point-in-time, so they carry no period suffix.
+    expect(svg).not.toContain('Languages · last 12 months');
+    expect(svg).not.toContain('Rank · last 12 months');
+    // Exactly the two figures above are captioned with the period.
+    expect((svg.match(/last 12 months/g) ?? []).length).toBe(2);
   });
 
   it('XML-escapes externally-sourced language names', () => {
