@@ -834,7 +834,7 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
     );
   });
 
-  it('renders volunteering as a one-line head with no dates', () => {
+  it('renders volunteering with the org and role stacked as block lines and no dates', () => {
     const html = render(
       localized({
         volunteering: [
@@ -850,8 +850,8 @@ describe('renderProfileHtml() default layout (bio-derived)', () => {
       }),
     );
     const section = /<ul class="vol-list">[\s\S]*?<\/ul>/.exec(html)?.[0] ?? '';
-    expect(section).toContain('<div class="vol-head"><span class="vol-org">');
-    expect(section).toContain('<span class="vol-role">Maintainer</span>');
+    expect(section).toContain('<div class="vol-head"><p class="vol-org">');
+    expect(section).toContain('<p class="vol-role">Maintainer</p>');
     expect(section).toContain('<p class="vol-desc">Runs the project.</p>');
     // Dates are intentionally hidden for volunteering — no <time> element.
     expect(section).not.toContain('<time');
