@@ -453,11 +453,10 @@ ul{padding:0;margin:0;list-style:none}
 .vol-list{display:grid;gap:var(--takuhon-space-2)}
 .vol{padding:var(--takuhon-space-3) 0;border-bottom:1px solid var(--takuhon-color-border)}
 .vol:last-child{border-bottom:0}
-.vol-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--takuhon-space-1) var(--takuhon-space-3)}
-.vol-org{font-size:var(--takuhon-font-size-lg)}
+.vol-org{margin:0;font-size:var(--takuhon-font-size-lg)}
 .vol-org a{color:inherit;text-decoration:none}
 .vol-org a:hover{color:var(--takuhon-color-primary);text-decoration:underline}
-.vol-role{color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
+.vol-role{margin:var(--takuhon-space-1) 0 0;color:var(--takuhon-color-text-muted);font-size:var(--takuhon-font-size-sm)}
 .vol-desc{margin:var(--takuhon-space-1) 0 0;font-size:var(--takuhon-font-size-sm)}
 .vol-secondary{display:inline-flex;align-items:center;gap:var(--takuhon-space-1);margin-top:var(--takuhon-space-2);padding:2px var(--takuhon-space-2);font-size:var(--takuhon-font-size-sm);background:var(--takuhon-color-surface);border:1px solid var(--takuhon-color-border);border-radius:var(--takuhon-radius-full);color:var(--takuhon-color-text-muted);text-decoration:none}
 .vol-secondary:hover{color:var(--takuhon-color-text);border-color:var(--takuhon-color-accent)}
@@ -874,12 +873,12 @@ function secondaryLinkPill(link: LocalizedSecondaryLink): string {
 }
 
 /**
- * Render the Volunteering section as a compact list of one-line-head entries:
- * the organization (linked, when a URL is present, with the external-link icon)
- * and the role on a single wrapping line, then an optional description and an
- * optional secondary-link pill. Dates are intentionally not shown — this reads
- * as an "involved with" list rather than a dated timeline. Returns `''` when
- * there are none.
+ * Render the Volunteering section as a compact list. Each entry stacks the
+ * organization (linked, when a URL is present, with the external-link icon) and
+ * the role as block lines, then an optional description and an optional
+ * secondary-link pill. Dates are intentionally not shown — this reads as an
+ * "involved with" list rather than a dated timeline. Returns `''` when there
+ * are none.
  */
 function renderVolunteering(items: readonly LocalizedVolunteering[], heading: string): string {
   if (items.length === 0) return '';
@@ -888,10 +887,14 @@ function renderVolunteering(items: readonly LocalizedVolunteering[], heading: st
     const org = orgHref
       ? externalLink(orgHref, escapeHtml(v.organization))
       : escapeHtml(v.organization);
-    const role = v.role ? `<span class="vol-role">${escapeHtml(v.role)}</span>` : '';
+    const role = v.role ? `<p class="vol-role">${escapeHtml(v.role)}</p>` : '';
     const desc = v.description ? `<p class="vol-desc">${escapeHtml(v.description)}</p>` : '';
     const secondary = v.secondaryLink ? secondaryLinkPill(v.secondaryLink) : '';
-    return `<li class="vol"><div class="vol-head"><span class="vol-org">${org}</span>${role}</div>${desc}${secondary}</li>`;
+    // `.vol-head` groups the org + role as the entry's head, kept apart from the
+    // description and secondary-link body. It carries no layout CSS now that the
+    // two lines stack as blocks — it is retained as a stable grouping hook, not
+    // dead markup, so do not remove it when tidying the stylesheet.
+    return `<li class="vol"><div class="vol-head"><p class="vol-org">${org}</p>${role}</div>${desc}${secondary}</li>`;
   };
   return `<section><h2>${escapeHtml(heading)}</h2><ul class="vol-list">${items
     .map(li)
