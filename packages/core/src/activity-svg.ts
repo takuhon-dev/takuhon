@@ -42,6 +42,15 @@ const CALENDAR_ROWS = 7;
 const MAX_CALENDAR_DAYS = 53 * CALENDAR_ROWS;
 
 /**
+ * Period suffix for the two time-windowed figures. Both cover a trailing ~12
+ * months — GitHub's contribution calendar is always the last year, and the
+ * WakaTime coding-time range defaults to `last_year` (see `@takuhon/activity`) —
+ * so the figures are captioned with it rather than left as a bare, ambiguous
+ * number. English, like every other label on this self-contained badge.
+ */
+const PERIOD_LABEL = 'last 12 months';
+
+/**
  * Colour set for an activity card. Kept as plain data (no CSS variables, no
  * `currentColor`) so the rendered SVG is fully self-contained and legible when
  * served as an image through Camo, where no page styles apply.
@@ -242,7 +251,7 @@ export function renderActivitySvg(
       caption(
         PAD,
         y + 11,
-        `Contributions · ${groupDigits(snapshot.contributions.total)}`,
+        `Contributions · ${groupDigits(snapshot.contributions.total)} · ${PERIOD_LABEL}`,
         palette.muted,
       ),
     );
@@ -261,7 +270,7 @@ export function renderActivitySvg(
     const rankX = PAD + INNER - 120;
     if (hasCodingTime && snapshot.codingTime) {
       const t = snapshot.codingTime;
-      parts.push(caption(PAD, y + 11, 'Coding time', palette.muted));
+      parts.push(caption(PAD, y + 11, `Coding time · ${PERIOD_LABEL}`, palette.muted));
       parts.push(
         text(PAD, y + 38, `${groupDigits(t.hours)}h ${String(t.minutes)}m`, {
           size: 22,
