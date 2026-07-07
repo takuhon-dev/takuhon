@@ -179,7 +179,10 @@ describe('POST /api/contact mount gate', () => {
     expect(await res.json()).toEqual({ ok: true });
     expect(sent).toHaveLength(1);
     expect(sent[0]?.to).toBe('owner@example.com');
-    expect(sent[0]?.from).toEqual({ email: 'noreply@example.com' });
+    // No display name configured (env has no from name), so the transport must
+    // send a bare string `from` — the object form would throw in the real
+    // Cloudflare binding ("name field is not string").
+    expect(sent[0]?.from).toBe('noreply@example.com');
     expect(sent[0]?.replyTo).toBe('visitor@example.com');
     expect(sent[0]?.subject).toContain('[worker.example contact]');
   });

@@ -65,7 +65,11 @@ export function createTurnstileVerifier(
 export interface SendEmailBinding {
   send(message: {
     to: string | string[];
-    from: { email: string; name?: string };
+    // A bare string `from` (address only) or the object form with a display
+    // name. The Cloudflare binding's `EmailAddress` rejects the object form when
+    // `name` is `undefined` ("Incorrect type for the 'name' field on
+    // 'EmailAddress'"), so callers must pass a string when there is no name.
+    from: string | { email: string; name: string };
     replyTo?: string;
     subject: string;
     text?: string;
@@ -162,9 +166,15 @@ export function createSendEmailTransport(
   return {
     async send(inquiry) {
       const mail = buildInquiryEmail(inquiry, config);
+      // The Cloudflare `send_email` binding's `EmailAddress` requires `name` to
+      // be a string when the object form is used; `{ email }` (name undefined)
+      // throws at runtime. Send the object form only when a display name is
+      // present, otherwise a bare address string.
+      const name = config.from.name?.trim();
+      const from = name ? { email: config.from.email, name } : config.from.email;
       await binding.send({
         to: config.to,
-        from: config.from,
+        from,
         replyTo: inquiry.email,
         subject: mail.subject,
         text: mail.text,

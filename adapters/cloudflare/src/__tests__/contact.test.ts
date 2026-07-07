@@ -132,4 +132,52 @@ describe('createSendEmailTransport', () => {
     expect(sent[0]?.text).toContain('Hello <there>');
     expect(sent[0]?.html).toContain('&lt;there&gt;');
   });
+
+  it('passes a bare string `from` when no display name is configured', async () => {
+    // The Cloudflare send_email binding's EmailAddress rejects the object form
+    // when `name` is undefined, so the transport must send a string in that case.
+    const sent: Parameters<SendEmailBinding['send']>[0][] = [];
+    const binding: SendEmailBinding = {
+      send: (message) => {
+        sent.push(message);
+        return Promise.resolve();
+      },
+    };
+    const transport = createSendEmailTransport(binding, {
+      to: 'owner@tak3.jp',
+      from: { email: 'noreply@tak3.jp' },
+    });
+
+    await transport.send(inquiry);
+
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.from).toBe('noreply@tak3.jp');
+  });
+
+  it('sends a `from` the live binding accepts (guards the EmailAddress name contract)', async () => {
+    // A binding that models the real Cloudflare EmailAddress contract: the
+    // object form requires `name` to be a string, and `{ email }` (name
+    // undefined) throws — exactly as production does — while a bare string is
+    // accepted. This is the regression guard the permissive collector fake
+    // cannot provide: the pre-fix `from: config.from` path would throw here.
+    const sent: Parameters<SendEmailBinding['send']>[0][] = [];
+    const strictBinding: SendEmailBinding = {
+      send: (message) => {
+        const from = message.from as string | { email: string; name?: string };
+        if (typeof from !== 'string' && typeof from.name !== 'string') {
+          throw new TypeError("Incorrect type for the 'name' field on 'EmailAddress'");
+        }
+        sent.push(message);
+        return Promise.resolve();
+      },
+    };
+    const transport = createSendEmailTransport(strictBinding, {
+      to: 'owner@tak3.jp',
+      from: { email: 'noreply@tak3.jp' }, // turnkey case: no display name
+    });
+
+    await expect(transport.send(inquiry)).resolves.toBeUndefined();
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.from).toBe('noreply@tak3.jp');
+  });
 });
