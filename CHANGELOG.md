@@ -4,6 +4,18 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [1.4.3] - 2026-07-07
+
+Patch release. A single adapter fix to the turnkey contact form. No schema, API, or document change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.3). Turnkey deployments pick this up on their next `@takuhon/*` bump and redeploy.
+
+### Fixed — `@takuhon/cloudflare`
+
+- **The turnkey contact form no longer 502s when no From display name is configured.** Cloudflare's `send_email` binding rejects the `EmailAddress` object form when `name` is `undefined` (`Incorrect type for the 'name' field on 'EmailAddress'`), so `serveContact` — which passes `from: { email: env.TAKUHON_CONTACT_FROM }` with no name — threw at runtime and `handleContact`'s `catch` surfaced it as `502 send_failed` on every submission. `createSendEmailTransport` now sends the object form only when a display name is present and a bare address string otherwise (which the binding accepts), and `SendEmailBinding`'s `from` type is narrowed to `string | { email; name }` so the name-undefined object is a compile error. A new strict-binding regression test models the real `EmailAddress` contract that the previous permissive fake could not. Verified end-to-end against a live deployment.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump 1.4.2 → 1.4.3.
+
 ## [1.4.2] - 2026-07-07
 
 Patch release. Two follow-ups from the bio-design-generalization track, both dependency-free and schema-unchanged: the CV export now renders `profile.bio` as Markdown to match the profile page, and `@takuhon/cli` gains machine-checkable provenance for the admin form-UI bundle. No schema, API, or document change: a valid 1.4.0 / 1.4.1 document renders unchanged, the schema stays at 1.4.0, and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.2). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
