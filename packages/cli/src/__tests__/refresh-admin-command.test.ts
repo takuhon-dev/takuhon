@@ -4,6 +4,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  ADMIN_BUNDLE_MANIFEST,
+  hashBundleDir,
+  readAdminBundleManifest,
+  writeAdminBundleManifest,
+} from '../admin-bundle-manifest.js';
 import { runRefreshAdmin } from '../refresh-admin-command.js';
 import { ADMIN_DIST_DIRNAME } from '../scaffold/wrangler-toml.js';
 
@@ -57,12 +63,16 @@ describe('runRefreshAdmin() — takuhon admin update', () => {
     expect(js).toBe('console.log("new");');
   });
 
-  it('drops files the previous bundle had but the new one does not', async () => {
+  it('drops bundle files the previous manifest recorded but the new bundle no longer ships', async () => {
+    // Record the current (old) bundle in a manifest so the refresh knows which
+    // files it placed and may drop — stale.js is tracked, so it will go.
+    const adminDist = join(projectDir, ADMIN_DIST_DIRNAME);
+    await writeAdminBundleManifest(adminDist, '0.0.1', Object.keys(await hashBundleDir(adminDist)));
+
     await runRefreshAdmin([projectDir], { bundleDir });
 
-    await expect(
-      stat(join(projectDir, ADMIN_DIST_DIRNAME, 'assets', 'stale.js')),
-    ).rejects.toThrow();
+    await expect(stat(join(adminDist, 'assets', 'stale.js'))).rejects.toThrow();
+    expect(await readFile(join(adminDist, 'assets', 'app.js'), 'utf8')).toBe('console.log("new");');
   });
 
   it('refreshes the project in the current directory when no path is given', async () => {
@@ -135,5 +145,55 @@ describe('runRefreshAdmin() — takuhon admin update', () => {
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('is not a directory');
+  });
+
+  it('stamps a provenance manifest recording the CLI version and file hashes', async () => {
+    await runRefreshAdmin([projectDir], { bundleDir });
+
+    const manifest = await readAdminBundleManifest(join(projectDir, ADMIN_DIST_DIRNAME));
+    expect(manifest?.cliVersion).toMatch(/^\d+\.\d+\.\d+/);
+    // The manifest indexes the bundle files (not itself) with sha256 values.
+    expect(Object.keys(manifest?.files ?? {})).toEqual(['assets/app.js', 'index.html']);
+    for (const value of Object.values(manifest?.files ?? {})) {
+      expect(value).toMatch(/^sha256:[0-9a-f]{64}$/);
+    }
+    // The count in the success message excludes the manifest (source bundle files).
+    // (asserted by the "(2 files)" regex above.)
+  });
+
+  it('refreshes a shared --dir directory and preserves unrelated user files (incl. nested)', async () => {
+    // A shared assets dir (e.g. Cloudflare public/) holding both the admin bundle
+    // and the user's own files — including one NESTED under assets/, the very
+    // directory the bundle also uses. None of these are in any manifest.
+    const shared = join(projectDir, 'public');
+    await mkdir(join(shared, 'assets'), { recursive: true });
+    await writeFile(join(shared, 'sw.js'), 'self.addEventListener("fetch",()=>{});', 'utf8');
+    await writeFile(join(shared, 'assets', 'logo.png'), 'PNG-BYTES', 'utf8');
+
+    const result = await runRefreshAdmin([projectDir, '--dir', 'public'], { bundleDir });
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Refreshed public/ from @takuhon/cli@');
+
+    // Bundle files were written into public/…
+    expect(await readFile(join(shared, 'index.html'), 'utf8')).toBe(
+      '<!doctype html><title>new</title>',
+    );
+    expect(await readFile(join(shared, 'assets', 'app.js'), 'utf8')).toBe('console.log("new");');
+    // …a manifest was stamped…
+    await expect(stat(join(shared, ADMIN_BUNDLE_MANIFEST))).resolves.toBeDefined();
+    // …and the user's files survived — the top-level sibling AND the one nested
+    // under assets/ (file-level replacement, not a whole-directory wipe).
+    expect(await readFile(join(shared, 'sw.js'), 'utf8')).toBe(
+      'self.addEventListener("fetch",()=>{});',
+    );
+    expect(await readFile(join(shared, 'assets', 'logo.png'), 'utf8')).toBe('PNG-BYTES');
+  });
+
+  it('rejects an unsafe --dir value', async () => {
+    const result = await runRefreshAdmin([projectDir, '--dir', '../escape'], { bundleDir });
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("'--dir' must be a single directory name");
   });
 });

@@ -16,12 +16,13 @@
  * lets tests import this module without terminating the test runner.
  */
 
-import { readFileSync, realpathSync } from 'node:fs';
+import { realpathSync } from 'node:fs';
 import { stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
 import { runActivityShow, runActivitySync } from './activity-command.js';
+import { readCliVersion } from './admin-bundle-manifest.js';
 import { runAdmin } from './admin-command.js';
 import { runBuild } from './build-command.js';
 import { runDev } from './dev-command.js';
@@ -33,14 +34,12 @@ import { runRefreshAdmin } from './refresh-admin-command.js';
 import { runRestore } from './restore-command.js';
 import { runSync } from './sync-command.js';
 import { runValidate } from './validate-command.js';
+import { runVerifyAdmin } from './verify-admin-command.js';
 
-// Source the reported version from package.json (read at runtime relative to
-// this module) so `takuhon --version` can never drift from the published
-// release — there is no hand-maintained version literal to fall out of sync.
-const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
-  version: string;
-};
-const VERSION = pkg.version;
+// Source the reported version from package.json at runtime (via the shared
+// resolver) so `takuhon --version` can never drift from the published release —
+// there is no hand-maintained version literal to fall out of sync.
+const VERSION = readCliVersion();
 
 const HELP = `takuhon ${VERSION}
 
@@ -70,9 +69,12 @@ Commands:
                                        the form UI at /admin (writes takuhon.json, backs up
                                        first) with a preview at / (default port: 4322). Binds
                                        127.0.0.1; prints a per-run token to paste into the form.
-  takuhon admin update [path]          Refresh a project's admin-dist/ with the admin form UI
-                                       bundled in this @takuhon/cli (use after upgrading the
-                                       CLI). Updates an existing admin-dist/ only.
+  takuhon admin update [path]          Refresh a project's admin bundle with the admin form UI
+    [--dir <name>]                     bundled in this @takuhon/cli (use after upgrading the
+                                       CLI). Updates an existing admin-dist/ (or --dir) only,
+                                       and stamps a provenance manifest.
+  takuhon admin verify [path]          Check the committed admin bundle matches this
+    [--dir <name>]                     @takuhon/cli (provenance). Exits 1 on drift; good for CI.
   takuhon mcp [path]                   Serve a takuhon.json over the Model Context Protocol on
                                        stdio (read-only), so an MCP client such as Claude Desktop
                                        can read the profile. Re-reads the file per request.
@@ -131,6 +133,10 @@ async function main(argv: readonly string[]): Promise<number> {
     if (argv[1] === 'update') {
       // One-shot bundle refresh, not the long-lived server: goes through `emit`.
       return emit(await runRefreshAdmin(argv.slice(2)));
+    }
+    if (argv[1] === 'verify') {
+      // One-shot provenance check, not the long-lived server: goes through `emit`.
+      return emit(await runVerifyAdmin(argv.slice(2)));
     }
     // Long-lived server, like `dev`: returns the exit code directly.
     return runAdmin(argv.slice(1));
