@@ -16,6 +16,11 @@ import { cp, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  hashBundleDir,
+  readCliVersion,
+  writeAdminBundleManifest,
+} from '../admin-bundle-manifest.js';
 import type { ContentLicenseFragment } from '../licenses.js';
 
 import { renderEnvExample } from './env-example.js';
@@ -169,6 +174,12 @@ export async function copyAdminBundle(
   const dest = join(opts.targetDir, ADMIN_DIST_DIRNAME);
   try {
     await cp(bundleDir, dest, { recursive: true });
+    // Stamp provenance so `takuhon admin verify` can later confirm the committed
+    // bundle matches a specific @takuhon/cli. The manifest records only the
+    // bundle's own files (the source's file set), hashed as they landed in the
+    // project.
+    const relpaths = Object.keys(await hashBundleDir(bundleDir));
+    await writeAdminBundleManifest(dest, readCliVersion(), relpaths);
   } catch (err) {
     // The bundle ships inside @takuhon/cli, so a failure here means a broken
     // or incomplete install. Surface a sanitized message — the raw error would
