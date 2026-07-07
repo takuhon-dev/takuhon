@@ -139,4 +139,52 @@ describe('renderCvHtml()', () => {
     expect(html).toContain(`– ${getPresentLabel('ja')}`); // "現在"
     expect(html).not.toContain('Present');
   });
+
+  it('renders the bio as Markdown (parity with the profile page), not literal source', () => {
+    const html = render({
+      profile: {
+        displayName: { en: 'Pat Rivera' },
+        bio: {
+          en: '## Summary\n\nLead engineer with **wide** scope.\n\n- ships\n- reviews\n\n---\n\n### Focus\n\nPlatforms.',
+        },
+      },
+    });
+    // A block-level Markdown result must wrap in a <div>, never an inline <p>
+    // (h3/ul/p cannot nest inside a <p>).
+    expect(html).toContain('<div class="bio-body">');
+    expect(html).not.toContain('<p class="bio');
+    // Block markers become elements, not the literal "## " / "- " source.
+    expect(html).toContain('<h3>Summary</h3>');
+    expect(html).toContain('<h4>Focus</h4>');
+    expect(html).toContain('<strong>wide</strong>');
+    expect(html).toContain('<li>ships</li>');
+    expect(html).toContain('<hr>');
+    expect(html).not.toContain('## Summary');
+    expect(html).not.toContain('- ships');
+  });
+
+  it('degrades a plain one-line bio to a single paragraph', () => {
+    const html = render({
+      profile: { displayName: { en: 'Pat Rivera' }, bio: { en: 'Just a sentence.' } },
+    });
+    expect(html).toContain('<div class="bio-body"><p>Just a sentence.</p></div>');
+  });
+
+  it('omits the bio block entirely when there is no bio', () => {
+    // The default fixture has no profile.bio; a future refactor that emitted an
+    // unconditional empty <div class="bio-body"></div> would regress this.
+    const html = render();
+    expect(html).not.toContain('class="bio-body"');
+  });
+
+  it('escapes markup inside a Markdown bio (no injection)', () => {
+    const html = render({
+      profile: {
+        displayName: { en: 'Pat Rivera' },
+        bio: { en: '## <script>alert(1)</script>' },
+      },
+    });
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('<h3>&lt;script&gt;');
+  });
 });
