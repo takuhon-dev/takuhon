@@ -16,7 +16,7 @@
 
 import type { CvDocument, CvSection, LocaleTag, LocalizedLanguage } from '@takuhon/core';
 
-import { dateRange, escapeHtml, nonEmpty, safeUrl } from './html-helpers.js';
+import { dateRange, escapeHtml, nonEmpty, renderMarkdown, safeUrl } from './html-helpers.js';
 
 /** Heading shown for each section, by `kind`. Plain English (CV chrome). */
 const SECTION_TITLES: Record<CvSection['kind'], string> = {
@@ -44,7 +44,14 @@ h1{font-size:1.7rem;margin:0}
 .tagline{font-size:1.05rem;color:var(--muted);margin:.15rem 0 0}
 .contact{color:var(--muted);font-size:.85rem;margin:.4rem 0 0;display:flex;flex-wrap:wrap;gap:.25rem 1rem}
 .contact a{color:var(--accent)}
-.bio{margin:.75rem 0 0}
+.bio-body{margin:.75rem 0 0}
+.bio-body p{margin:.35rem 0 0}
+.bio-body p:first-child{margin-top:0}
+.bio-body h3{font-size:.95rem;margin:.6rem 0 .15rem}
+.bio-body h4{font-size:.85rem;margin:.5rem 0 .15rem}
+.bio-body ul{padding-left:1.1rem;margin:.2rem 0 0;list-style:disc}
+.bio-body li{margin:.05rem 0}
+.bio-body hr{border:0;border-top:1px solid var(--line);margin:.5rem 0}
 header{border-bottom:2px solid var(--fg);padding-bottom:.6rem;margin-bottom:.4rem}
 section{margin-top:1.1rem}
 h2{font-size:.95rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);border-bottom:1px solid var(--line);margin:0 0 .5rem;padding-bottom:.15rem}
@@ -236,7 +243,12 @@ function renderHeader(cv: CvDocument): string {
   if (formHref) contact.push(`<a href="${escapeHtml(formHref)}">Contact</a>`);
   if (contact.length > 0) parts.push(`<div class="contact">${contact.join('')}</div>`);
 
-  if (h.bio) parts.push(`<p class="bio">${escapeHtml(h.bio)}</p>`);
+  // `h.bio` carries the same Markdown-subset `profile.bio` the profile page
+  // renders (core's deriveCv copies it verbatim), so it goes through the shared
+  // {@link renderMarkdown} — one field, one meaning across both surfaces. The
+  // result is block-level markup, so it wraps in a `<div>`, never a `<p>`. The
+  // `.bio-body` class name mirrors the profile page's markdown content container.
+  if (h.bio) parts.push(`<div class="bio-body">${renderMarkdown(h.bio)}</div>`);
   return `<header>${parts.join('')}</header>`;
 }
 

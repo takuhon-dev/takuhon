@@ -81,3 +81,84 @@ export function nonEmpty(
     .join(separator);
   return joined.length > 0 ? joined : undefined;
 }
+
+/**
+ * Render a `**bold**` inline run. Text is HTML-escaped FIRST, then the `**`
+ * markers (plain ASCII, untouched by escaping) are turned into `<strong>` — so
+ * escaped user content can never inject a tag. Non-greedy, non-nesting.
+ * Internal to {@link renderMarkdown}; not part of the module's public surface.
+ */
+function renderInline(text: string): string {
+  return escapeHtml(text).replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+}
+
+/**
+ * Minimal, dependency-free Markdown subset for `profile.bio`: `## ` → `<h3>`,
+ * `### ` → `<h4>`, `---` → `<hr>`, `- ` → `<ul><li>`, `**bold**`, and
+ * blank-line-separated paragraphs. Every text node is HTML-escaped before inline
+ * markers are applied ({@link renderInline}), so content cannot inject markup.
+ * Anything not matching a block marker becomes a paragraph — so a plain one-line
+ * bio degrades to a single `<p>`. No inline links/images (kept deliberately out
+ * of the subset so the section needs no URL-safety gate).
+ *
+ * Shared by the profile page ({@link import('./build-html.js')}) and the CV
+ * ({@link import('./cv-html.js')}) so `profile.bio` renders identically on both
+ * surfaces — one field, one meaning. The returned string is block-level markup
+ * (`<p>`/`<h3>`/`<h4>`/`<hr>`/`<ul>`), so callers must wrap it in a block
+ * container (e.g. a `<div>`), never an inline `<p>`.
+ */
+export function renderMarkdown(input: string): string {
+  const lines = input.split('\n');
+  const out: string[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const trimmed = (lines[i] ?? '').trim();
+    if (trimmed === '') {
+      i++;
+      continue;
+    }
+    if (trimmed === '---') {
+      out.push('<hr>');
+      i++;
+      continue;
+    }
+    if (trimmed.startsWith('### ')) {
+      out.push(`<h4>${renderInline(trimmed.slice(4))}</h4>`);
+      i++;
+      continue;
+    }
+    if (trimmed.startsWith('## ')) {
+      out.push(`<h3>${renderInline(trimmed.slice(3))}</h3>`);
+      i++;
+      continue;
+    }
+    if (trimmed.startsWith('- ')) {
+      const items: string[] = [];
+      while (i < lines.length) {
+        const cur = (lines[i] ?? '').trim();
+        if (!cur.startsWith('- ')) break;
+        items.push(`<li>${renderInline(cur.slice(2))}</li>`);
+        i++;
+      }
+      out.push(`<ul>${items.join('')}</ul>`);
+      continue;
+    }
+    const para: string[] = [];
+    while (i < lines.length) {
+      const cur = (lines[i] ?? '').trim();
+      if (
+        cur === '' ||
+        cur === '---' ||
+        cur.startsWith('## ') ||
+        cur.startsWith('### ') ||
+        cur.startsWith('- ')
+      ) {
+        break;
+      }
+      para.push(cur);
+      i++;
+    }
+    if (para.length > 0) out.push(`<p>${renderInline(para.join(' '))}</p>`);
+  }
+  return out.join('\n');
+}
