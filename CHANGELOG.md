@@ -4,6 +4,23 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [1.4.2] - 2026-07-07
+
+Patch release. Two follow-ups from the bio-design-generalization track, both dependency-free and schema-unchanged: the CV export now renders `profile.bio` as Markdown to match the profile page, and `@takuhon/cli` gains machine-checkable provenance for the admin form-UI bundle. No schema, API, or document change: a valid 1.4.0 / 1.4.1 document renders unchanged, the schema stays at 1.4.0, and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.2). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
+
+### Fixed — `@takuhon/api`
+
+- **The CV export renders `profile.bio` as Markdown, matching the profile page.** `profile.bio` is a Markdown-subset field (`##` / `###` headings, `---`, `- ` lists, `**bold**`). The profile page already rendered it through the shared `renderMarkdown`, but the CV (`takuhon build --cv`) dumped the raw source into a single escaped `<p>`, so `## Heading` / `- item` appeared as literal text on the résumé. Both surfaces now share one renderer — one field, one meaning. `renderMarkdown` moves to `html-helpers.ts` (byte-identical, so the profile page is unchanged) and the CV wraps the result in a block `<div class="bio-body">`. Renderer only.
+
+### Added — `@takuhon/cli`
+
+- **Machine-checkable provenance for the admin bundle (`takuhon admin verify`).** `create-takuhon` / `takuhon admin update` now stamp a `.takuhon-admin-bundle.json` manifest (the CLI version plus a SHA-256 of every bundle file) into the admin bundle directory, and a new `takuhon admin verify [path] [--dir <name>]` re-derives the hashes to confirm the committed bundle is exactly what the installed (pinned) `@takuhon/cli` ships — exiting non-zero on byte drift, so it drops into CI. A stale recorded version whose bytes still match is a warning, not a failure. npm OIDC provenance already covers the published tarball; this covers a consumer's committed copy.
+- **`takuhon admin update` / `admin verify` accept `--dir <name>`.** The bundle directory defaults to `admin-dist/`; a project that serves the admin bundle from a shared assets directory (e.g. a Cloudflare `public/` that also holds PWA/static files) passes `--dir public`. `admin update` now replaces exactly the bundle's own files (tracked by the manifest) and drops the ones a previous bundle placed but the new one no longer ships, leaving a shared directory's unrelated files untouched — even ones nested under a directory the bundle also uses. It refuses a `--dir` that resolves outside the project.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump 1.4.1 → 1.4.2.
+
 ## [1.4.1] - 2026-07-06
 
 Patch release. Two renderer-only refinements — to the default profile page and to the activity badge. No schema, API, or configuration change: a valid 1.4.0 document renders unchanged, the schema stays at 1.4.0, and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.1). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
