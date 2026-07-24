@@ -63,7 +63,7 @@
     "@takuhon/api": "workspace:*",
     "@takuhon/core": "workspace:*",
     "@takuhon/mcp": "workspace:*",
-    "hono": "^4.12.25"
+    "hono": "^4.12.27"
   },
   "devDependencies": {
     "@takuhon/admin": "workspace:*"

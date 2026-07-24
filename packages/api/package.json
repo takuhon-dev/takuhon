@@ -49,6 +49,6 @@
   },
   "dependencies": {
     "@takuhon/core": "workspace:*",
-    "hono": "^4.12.25"
+    "hono": "^4.12.27"
   }
 }
