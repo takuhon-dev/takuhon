@@ -4,6 +4,8 @@ Filesystem-backed adapter for Takuhon — implements `TakuhonStorage` on Node.js
 
 This adapter targets local development, single-node Node.js servers, and git-driven workflows where the profile document is edited by hand and committed alongside the rest of the repository. For Cloudflare Workers deployments, use [`@takuhon/cloudflare`](../cloudflare) instead.
 
+> **Not published to npm.** This package lives in the monorepo as a filesystem implementation of `TakuhonStorage` and is not released with the `@takuhon/*` packages. To host a profile as static files, use `takuhon build` from [`@takuhon/cli`](../../packages/cli), which renders one HTML page per locale with build-time JSON-LD.
+
 ## Filesystem layout
 
 The adapter stores its state as two separate files under a caller-supplied base directory:
@@ -63,9 +65,9 @@ All error classes are re-exported from `@takuhon/core`; instances pass `instance
 
 ## Limitations & deferred work
 
-| Concern                                            | Status                                                | Tracked phase |
-| -------------------------------------------------- | ----------------------------------------------------- | ------------- |
-| Build CLI (static export of API endpoints to JSON) | Not implemented                                       | Phase 5       |
-| `TakuhonAssetStorage` (image / asset upload)       | Not implemented                                       | Phase 3.5+    |
-| Cross-process write coordination                   | Single-process only                                   | Phase 5+      |
-| Tested on Windows                                  | Best-effort only (path semantics are POSIX-validated) | Phase 5+      |
+| Concern                                      | Status                                                     | Tracked phase |
+| -------------------------------------------- | ---------------------------------------------------------- | ------------- |
+| Static export of API endpoints to JSON files | Not implemented (`takuhon build` writes no JSON API files) | Phase 5       |
+| `TakuhonAssetStorage` (image / asset upload) | Not implemented                                            | Phase 3.5+    |
+| Cross-process write coordination             | Single-process only                                        | Phase 5+      |
+| Tested on Windows                            | Best-effort only (path semantics are POSIX-validated)      | Phase 5+      |

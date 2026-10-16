@@ -80,7 +80,7 @@ Optional keys are omitted (not set to `null`) when their source value is absent 
 
 ## Storage interface (preview)
 
-`TakuhonStorage` and `TakuhonAssetStorage` define the persistence contracts that adapters implement. `@takuhon/core` itself ships only the types and the `StorageError` / `NotFoundError` / `ConflictError` exception family — no storage backend is bundled. Concrete adapters live under `adapters/` in this monorepo: `@takuhon/cloudflare` for Workers KV (with R2 planned for assets) and `@takuhon/static` for Node.js filesystem.
+`TakuhonStorage` and `TakuhonAssetStorage` define the persistence contracts that adapters implement. `@takuhon/core` itself ships only the types and the `StorageError` / `NotFoundError` / `ConflictError` exception family — no storage backend is bundled. Concrete adapters live under `adapters/` in this monorepo: `@takuhon/cloudflare` for Workers KV (with R2 for assets), `@takuhon/vercel` for read-only storage of a bundled or URL-fetched document, and `@takuhon/static` for Node.js filesystem (not published to npm).
 
 ```ts
 import { ConflictError } from '@takuhon/core';
