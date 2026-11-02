@@ -4,6 +4,25 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [1.4.4] - 2026-11-02
+
+Patch release. Two fixes to the developer-activity sync in `@takuhon/activity`, both forced by changes on the provider side. No schema, API route, or stored-document change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.4). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
+
+**Upgrade note — deployments that show WakaTime coding time:** replace the value of `TAKUHON_WAKATIME_KEY` (the Cloudflare secret, or the environment variable for `takuhon activity sync`) with a WakaTime OAuth access token that has the `read_stats` scope. A personal token is issued at <https://wakatime.com/oauth>. The secret keeps its name; only what it holds changes. A deployment still holding an API key keeps failing, now with a sync error that names the fix.
+
+### Fixed — `@takuhon/activity`
+
+- **WakaTime coding time is read with an OAuth access token.** WakaTime made API keys write-only on 2026-11-01: an API key now only lets editor plugins send coding activity, and reading stats needs an OAuth access token with the `read_stats` scope, sent as `Authorization: Bearer`. `WakaTimeClient` sent the secret as `Basic base64(key)`, so every coding-time read failed and the last snapshot stopped updating. It now sends the secret as a Bearer token, and on a 401/403 the error says that an OAuth token with `read_stats` is needed. The `TAKUHON_WAKATIME_KEY` descriptions in the Cloudflare `Env`, the `takuhon activity` usage text, the scaffolded `.env.example` / README / `wrangler.toml`, and the package README are updated to match. Verified against the live WakaTime API with a real token.
+- **An expired GitHub token no longer costs the language percentages.** GitHub answers an expired or revoked token with 401 even on endpoints that need no token, so an expired `TAKUHON_GITHUB_TOKEN` took the token-optional language read down together with the token-required contribution calendar. `fetchLanguages` now retries the whole read unauthenticated when its first, token-bearing request returns 401 (subject to GitHub's unauthenticated rate limit; a 401 on a later per-repo request is not retried). The contribution read still fails and reports the bad token. `GitHubFetchError` gains a `status` field carrying the HTTP status of the failed response.
+
+### Changed — documentation
+
+- The `@takuhon/core` and `@takuhon/api` READMEs no longer present `@takuhon/static` as an available adapter: it is not published to npm. Static hosting goes through `takuhon build` from `@takuhon/cli`.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump 1.4.3 → 1.4.4.
+
 ## [1.4.3] - 2026-07-07
 
 Patch release. A single adapter fix to the turnkey contact form. No schema, API, or document change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.3). Turnkey deployments pick this up on their next `@takuhon/*` bump and redeploy.
