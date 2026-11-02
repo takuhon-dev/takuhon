@@ -39,7 +39,11 @@ const DEFAULT_PATH = 'takuhon.json';
 /** Environment variable carrying the optional GitHub token. */
 const GITHUB_TOKEN_ENV = 'TAKUHON_GITHUB_TOKEN';
 
-/** Environment variable carrying the WakaTime API key. */
+/**
+ * Environment variable carrying the WakaTime OAuth access token (`read_stats`
+ * scope). The name predates WakaTime making API keys write-only; an API key in
+ * it can no longer read stats.
+ */
 const WAKATIME_KEY_ENV = 'TAKUHON_WAKATIME_KEY';
 
 const SYNC_USAGE = `Usage: takuhon activity sync [path]
@@ -53,7 +57,9 @@ Secrets are read from the environment, never from flags or the profile:
   ${GITHUB_TOKEN_ENV}   Optional. Raises the GitHub rate limit and unlocks the
                          contribution calendar (which is GraphQL/token-only).
                          Languages work without it.
-  ${WAKATIME_KEY_ENV}   Required to read WakaTime coding time.
+  ${WAKATIME_KEY_ENV}   Required to read WakaTime coding time. A WakaTime OAuth
+                         access token with the read_stats scope — not an API
+                         key, which WakaTime limits to sending activity.
 
 A sync that gathers no data keeps the last-known activity.json — a good
 snapshot is never overwritten with an empty one.

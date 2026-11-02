@@ -92,6 +92,39 @@ describe('fetchActivitySnapshot', () => {
     expect(snapshot.rank).toBeDefined();
   });
 
+  it('keeps languages but reports contributions when the GitHub token is rejected', async () => {
+    const config: ActivitySettings = {
+      enabled: true,
+      github: { username: 'octocat' },
+      wakatime: { username: 'octocat' },
+    };
+    const expiredToken = recordingFetch((url, init) => {
+      const authorization = (init?.headers as Record<string, string>).authorization;
+      if (url.includes('api.github.com') && authorization !== undefined) {
+        return jsonResponse({ message: 'Bad credentials' }, 401);
+      }
+      if (url.includes('/stats/')) return jsonResponse({ data: { total_seconds: 3600 } });
+      if (url.includes('/languages')) return jsonResponse({ TypeScript: 300 });
+      if (url.includes('/repos')) return jsonResponse([{ name: 'a', fork: false }]);
+      return jsonResponse({}, 404);
+    }).fetchImpl;
+    const onError = vi.fn();
+    const snapshot = await fetchActivitySnapshot(
+      config,
+      { githubToken: 'expired', wakatimeKey: 'waka_tok_abc' },
+      { fetch: expiredToken, now: NOW, onError },
+    );
+
+    expect(snapshot.languages).toEqual([{ name: 'TypeScript', bytes: 300, percent: 100 }]);
+    expect(snapshot.contributions).toBeUndefined();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith(
+      'github-contributions',
+      expect.objectContaining({ status: 401 }),
+    );
+    expect(snapshot.codingTime?.hours).toBe(1);
+  });
+
   it('produces an empty snapshot (and reports it) when nothing can be gathered', async () => {
     const config: ActivitySettings = { enabled: true, github: { username: 'octocat' } };
     const onError = vi.fn();

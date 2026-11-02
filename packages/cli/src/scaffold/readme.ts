@@ -98,7 +98,7 @@ The Worker then accepts uploads at \`POST /api/admin/assets\` (magic-byte check,
 
 ### Developer-activity dashboard (optional)
 
-Show your GitHub language mix / contribution calendar and WakaTime coding time on the profile. The data is synced into a snapshot ahead of time — rendering never calls GitHub or WakaTime, and the API keys never leave the sync step.
+Show your GitHub language mix / contribution calendar and WakaTime coding time on the profile. The data is synced into a snapshot ahead of time — rendering never calls GitHub or WakaTime, and the tokens never leave the sync step.
 
 1. Opt in by adding \`settings.activity\` to \`takuhon.json\`:
 
@@ -112,7 +112,7 @@ Show your GitHub language mix / contribution calendar and WakaTime coding time o
    }
    \`\`\`
 
-2. Provision the sync secrets (see \`.env.example\`): \`TAKUHON_WAKATIME_KEY\` is required for coding time; \`TAKUHON_GITHUB_TOKEN\` is optional — languages work without it, the contribution calendar needs it.
+2. Provision the sync secrets (see \`.env.example\`): \`TAKUHON_WAKATIME_KEY\` is required for coding time and takes a WakaTime OAuth access token with the \`read_stats\` scope (not an API key — WakaTime API keys only send activity); \`TAKUHON_GITHUB_TOKEN\` is optional — languages work without it, the contribution calendar needs it.
 
    \`\`\`sh
    npx wrangler secret put TAKUHON_GITHUB_TOKEN

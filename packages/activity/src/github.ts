@@ -46,9 +46,13 @@ interface GraphQLContributionResponse {
 
 /** Thrown when a GitHub request fails; carries no token or host-path detail. */
 export class GitHubFetchError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
+  /** HTTP status of the failed response, when the failure was one. */
+  readonly status?: number;
+
+  constructor(message: string, options?: { cause?: unknown; status?: number }) {
     super(message, options);
     this.name = 'GitHubFetchError';
+    this.status = options?.status;
   }
 }
 
@@ -59,23 +63,35 @@ export class GitHubClient {
    * Aggregate language byte counts across the user's owned, non-fork repos
    * (capped at `maxRepos`, most-recently-pushed first). Returns raw bytes per
    * language; the caller converts to percentages via `@takuhon/core`.
+   *
+   * The token is optional here, so when GitHub rejects it on the first request
+   * (expired or revoked: 401) the whole read is retried unauthenticated rather
+   * than failing; the retry is then subject to GitHub's unauthenticated rate
+   * limit. A 401 on a later per-repo request is not retried. The
+   * token-required contribution read still fails and reports the bad token.
    */
   async fetchLanguages(
     username: string,
     token?: string,
     maxRepos = DEFAULT_MAX_REPOS,
   ): Promise<Record<string, number>> {
-    const repos = await this.getJson<RepoSummary[]>(
-      `${GITHUB_API}/users/${encodeURIComponent(username)}/repos?per_page=100&type=owner&sort=pushed`,
-      token,
-    );
+    const reposUrl = `${GITHUB_API}/users/${encodeURIComponent(username)}/repos?per_page=100&type=owner&sort=pushed`;
+    let auth = token;
+    let repos: RepoSummary[];
+    try {
+      repos = await this.getJson<RepoSummary[]>(reposUrl, auth);
+    } catch (err) {
+      if (!(err instanceof GitHubFetchError && err.status === 401 && hasToken(auth))) throw err;
+      auth = undefined;
+      repos = await this.getJson<RepoSummary[]>(reposUrl, auth);
+    }
     const owned = repos.filter((repo) => !repo.fork).slice(0, maxRepos);
 
     const totals: Record<string, number> = {};
     for (const repo of owned) {
       const langs = await this.getJson<Record<string, number>>(
         `${GITHUB_API}/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo.name)}/languages`,
-        token,
+        auth,
       );
       for (const [name, bytes] of Object.entries(langs)) {
         totals[name] = (totals[name] ?? 0) + bytes;
@@ -101,7 +117,9 @@ export class GitHubClient {
       body: JSON.stringify({ query, variables: { login: username } }),
     });
     if (!res.ok) {
-      throw new GitHubFetchError(`GitHub GraphQL responded ${String(res.status)}.`);
+      throw new GitHubFetchError(`GitHub GraphQL responded ${String(res.status)}.`, {
+        status: res.status,
+      });
     }
     const json = (await res.json()) as GraphQLContributionResponse;
     if (json.errors && json.errors.length > 0) {
@@ -122,11 +140,17 @@ export class GitHubClient {
       accept: 'application/vnd.github+json',
       'user-agent': USER_AGENT,
     };
-    if (token !== undefined && token !== '') headers.authorization = `Bearer ${token}`;
+    if (hasToken(token)) headers.authorization = `Bearer ${token}`;
     const res = await this.fetchImpl(url, { headers });
     if (!res.ok) {
-      throw new GitHubFetchError(`GitHub API responded ${String(res.status)}.`);
+      throw new GitHubFetchError(`GitHub API responded ${String(res.status)}.`, {
+        status: res.status,
+      });
     }
     return (await res.json()) as T;
   }
+}
+
+function hasToken(token: string | undefined): token is string {
+  return token !== undefined && token !== '';
 }

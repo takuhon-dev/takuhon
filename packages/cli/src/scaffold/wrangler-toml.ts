@@ -99,7 +99,7 @@ TAKUHON_ADMIN_ORIGIN = ""
 # result in the TAKUHON_KV namespace (a failed run keeps the last-known
 # snapshot). Secrets MUST be Wrangler secrets, never this file:
 #   wrangler secret put TAKUHON_GITHUB_TOKEN   # optional (contribution calendar)
-#   wrangler secret put TAKUHON_WAKATIME_KEY   # required for WakaTime
+#   wrangler secret put TAKUHON_WAKATIME_KEY   # required for WakaTime (OAuth token, read_stats)
 # [triggers]
 # crons = ["17 3 * * *"]
 
