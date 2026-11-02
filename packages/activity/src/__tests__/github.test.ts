@@ -49,9 +49,46 @@ describe('GitHubClient.fetchLanguages', () => {
 
   it('throws GitHubFetchError on a non-2xx response', async () => {
     const { fetchImpl } = recordingFetch(() => jsonResponse({}, 403));
-    await expect(new GitHubClient(fetchImpl).fetchLanguages('octocat')).rejects.toBeInstanceOf(
-      GitHubFetchError,
-    );
+    await expect(new GitHubClient(fetchImpl).fetchLanguages('octocat')).rejects.toMatchObject({
+      name: 'GitHubFetchError',
+      status: 403,
+    });
+  });
+
+  // GitHub answers an expired or revoked token with 401 even on endpoints that
+  // need no token, so the token must not take the languages read down with it.
+  const rejectsToken = (url: string, init?: RequestInit): Response => {
+    const authorized = (init?.headers as Record<string, string>).authorization !== undefined;
+    if (authorized) return jsonResponse({ message: 'Bad credentials' }, 401);
+    if (url.includes('/users/octocat/repos')) return jsonResponse([{ name: 'a', fork: false }]);
+    return jsonResponse({ TypeScript: 100 });
+  };
+
+  it('retries unauthenticated when GitHub rejects the token', async () => {
+    const { fetchImpl, calls } = recordingFetch(rejectsToken);
+    const bytes = await new GitHubClient(fetchImpl).fetchLanguages('octocat', 'expired');
+    expect(bytes).toEqual({ TypeScript: 100 });
+    expect(calls.map((c) => headerOf(c, 'authorization'))).toEqual([
+      'Bearer expired',
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it('does not retry a 401 that was already unauthenticated', async () => {
+    const { fetchImpl, calls } = recordingFetch(() => jsonResponse({}, 401));
+    await expect(new GitHubClient(fetchImpl).fetchLanguages('octocat')).rejects.toMatchObject({
+      status: 401,
+    });
+    expect(calls).toHaveLength(1);
+  });
+
+  it('keeps the token on failures other than a rejected token', async () => {
+    const { fetchImpl, calls } = recordingFetch(() => jsonResponse({}, 403));
+    await expect(
+      new GitHubClient(fetchImpl).fetchLanguages('octocat', 'tok'),
+    ).rejects.toMatchObject({ status: 403 });
+    expect(calls).toHaveLength(1);
   });
 });
 
@@ -89,6 +126,13 @@ describe('GitHubClient.fetchContributions', () => {
     ]);
     expect(headerOf(calls[0], 'authorization')).toBe('Bearer tok');
     expect(calls[0]?.init?.method).toBe('POST');
+  });
+
+  it('throws with the status when GitHub rejects the token', async () => {
+    const { fetchImpl } = recordingFetch(() => jsonResponse({ message: 'Bad credentials' }, 401));
+    await expect(
+      new GitHubClient(fetchImpl).fetchContributions('octocat', 'expired'),
+    ).rejects.toMatchObject({ name: 'GitHubFetchError', status: 401 });
   });
 
   it('throws on a GraphQL errors payload', async () => {

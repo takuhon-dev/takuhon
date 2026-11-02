@@ -74,10 +74,11 @@ export interface Env {
    */
   TAKUHON_GITHUB_TOKEN?: string;
   /**
-   * WakaTime API key for the scheduled activity sync; required to read coding
-   * time (WakaTime has no unauthenticated mode). Provision via
-   * `wrangler secret put TAKUHON_WAKATIME_KEY` — never in `wrangler.toml`.
-   * Only flows through the sync step; never persisted.
+   * WakaTime OAuth access token (`read_stats` scope) for the scheduled activity
+   * sync; required to read coding time. Not an API key: WakaTime API keys are
+   * write-only (editor plugins use them to send activity) and cannot read
+   * stats. Provision via `wrangler secret put TAKUHON_WAKATIME_KEY` — never in
+   * `wrangler.toml`. Only flows through the sync step; never persisted.
    */
   TAKUHON_WAKATIME_KEY?: string;
   /**

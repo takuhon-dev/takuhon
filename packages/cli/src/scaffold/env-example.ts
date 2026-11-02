@@ -38,8 +38,9 @@ TAKUHON_ADMIN_ORIGIN=
 # Optional GitHub token: languages work without it; the contribution calendar
 # requires it (minimal read-only scope is enough).
 TAKUHON_GITHUB_TOKEN=
-# WakaTime API key (https://wakatime.com/settings/api-key); required to read
-# coding time.
+# WakaTime OAuth access token with the read_stats scope (personal token:
+# https://wakatime.com/oauth); required to read coding time. A WakaTime API key
+# does not work here: API keys only let editor plugins send activity.
 TAKUHON_WAKATIME_KEY=
 
 # Contact form (optional; only when settings.contact is enabled in takuhon.json

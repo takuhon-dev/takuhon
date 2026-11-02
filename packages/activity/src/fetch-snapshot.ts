@@ -28,7 +28,11 @@ import { WakaTimeClient } from './wakatime.js';
 export interface ActivitySecrets {
   /** GitHub token. Optional for languages; REQUIRED for contributions. */
   githubToken?: string;
-  /** WakaTime API key. REQUIRED to read coding time. */
+  /**
+   * WakaTime OAuth access token with the `read_stats` scope. REQUIRED to read
+   * coding time. Not an API key: WakaTime API keys are write-only and cannot
+   * read stats. (The field keeps its original name for compatibility.)
+   */
   wakatimeKey?: string;
 }
 
