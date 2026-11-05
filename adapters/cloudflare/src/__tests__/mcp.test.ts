@@ -44,6 +44,22 @@ describe('cloudflare /mcp — stateless MCP endpoint', () => {
     expect(body.result.capabilities.resources).toBeDefined();
   });
 
+  it('answers 413 to a body over the size bound without parsing it', async () => {
+    const res = await worker.fetch(
+      new Request('https://worker.example/mcp', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json, text/event-stream',
+        },
+        body: JSON.stringify({ ...INITIALIZE, padding: 'x'.repeat(128 * 1024) }),
+      }),
+      makeEnv(),
+    );
+    expect(res.status).toBe(413);
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+  });
+
   it('lists the four tools without a prior session (stateless)', async () => {
     const body = await rpc(makeEnv(), { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const tools = body.result.tools as { name: string }[];

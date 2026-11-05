@@ -38,6 +38,14 @@ import { z } from 'zod';
 const DEFAULT_SERVER_NAME = 'takuhon';
 /** Default server version advertised to MCP clients. */
 const DEFAULT_SERVER_VERSION = '0.0.0';
+/**
+ * Upper bound on array elements plus object members in one `tools/call`
+ * `arguments` payload. The SDK leaves this unbounded by default, and validating
+ * an oversized payload can exhaust memory before any handler runs. The widest
+ * tool here takes two scalar arguments, so this leaves ample headroom while
+ * keeping a public HTTP endpoint from being driven out of memory.
+ */
+const MAX_TOOL_INPUT_ELEMENTS = 32;
 
 /** Loads the profile document to project. Sync or async; the I/O is the caller's. */
 export type ProfileLoader = () => Promise<Takuhon> | Takuhon;
@@ -82,6 +90,7 @@ export function createTakuhonMcpServer(options: TakuhonMcpServerOptions): McpSer
         'Read-only access to a single takuhon profile. Use the tools to read ' +
         'the profile (optionally per locale) and the resources to fetch the ' +
         'whole document or its JSON Schema. Nothing here can modify the profile.',
+      maxToolInputElements: MAX_TOOL_INPUT_ELEMENTS,
     },
   );
 

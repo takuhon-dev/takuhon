@@ -28,6 +28,15 @@ import { KvTakuhonStorage } from './kv-storage.js';
 const MCP_SERVER_NAME = 'takuhon';
 
 /**
+ * Upper bound, in bytes, on a `POST /mcp` body. The endpoint is public and
+ * unauthenticated, and every request it serves is a small read-only JSON-RPC
+ * message, so the SDK's 4 MiB default is far more than it needs. A tighter
+ * bound keeps one request from spending a Worker's memory or CPU on parsing;
+ * anything larger is answered `413` before it is parsed.
+ */
+const MAX_MCP_REQUEST_BODY_BYTES = 64 * 1024;
+
+/**
  * Handle one MCP request against the KV-backed profile. Builds a fresh,
  * stateless server + transport per request and returns its `Response` with
  * `nosniff` and a no-store cache policy layered on.
@@ -57,6 +66,7 @@ export async function serveMcp(
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
+    maxRequestBodySize: MAX_MCP_REQUEST_BODY_BYTES,
   });
   await server.connect(transport);
 
