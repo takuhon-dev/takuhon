@@ -44,6 +44,33 @@ describe('cloudflare /mcp — stateless MCP endpoint', () => {
     expect(body.result.capabilities.resources).toBeDefined();
   });
 
+  it('answers a GET with 405 instead of opening a standalone SSE stream', async () => {
+    const res = await worker.fetch(
+      new Request('https://worker.example/mcp', {
+        method: 'GET',
+        headers: { accept: 'text/event-stream', 'mcp-protocol-version': '2025-06-18' },
+      }),
+      makeEnv(),
+    );
+    // Checked before the body is read: an open SSE stream would never end.
+    expect(res.status).toBe(405);
+    expect(res.headers.get('allow')).toBe('POST');
+    expect(res.headers.get('content-type')).toBe('application/json');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    const body = await res.json<{ error: { code: number } }>();
+    expect(body.error.code).toBe(-32000);
+  });
+
+  it.each(['DELETE', 'PUT', 'HEAD'])('answers %s with 405 and Allow: POST', async (method) => {
+    const res = await worker.fetch(
+      new Request('https://worker.example/mcp', { method }),
+      makeEnv(),
+    );
+    expect(res.status).toBe(405);
+    expect(res.headers.get('allow')).toBe('POST');
+  });
+
   it('answers 413 to a body over the size bound without parsing it', async () => {
     const res = await worker.fetch(
       new Request('https://worker.example/mcp', {
