@@ -40,10 +40,15 @@ const DEFAULT_SERVER_NAME = 'takuhon';
 const DEFAULT_SERVER_VERSION = '0.0.0';
 /**
  * Upper bound on array elements plus object members in one `tools/call`
- * `arguments` payload. The SDK leaves this unbounded by default, and validating
- * an oversized payload can exhaust memory before any handler runs. The widest
- * tool here takes two scalar arguments, so this leaves ample headroom while
- * keeping a public HTTP endpoint from being driven out of memory.
+ * `arguments` payload, which the SDK leaves unbounded by default. A call over
+ * the bound gets an error result instead of being validated against the tool's
+ * input schema. The widest tool here takes two scalar arguments, so this leaves
+ * ample headroom.
+ *
+ * This does not bound the SDK's first pass over the request: the whole message,
+ * `arguments` included, is parsed before the count runs. That pass is bounded by
+ * the transport's request size limit instead (`maxRequestBodySize` on the
+ * Cloudflare adapter).
  */
 const MAX_TOOL_INPUT_ELEMENTS = 32;
 
