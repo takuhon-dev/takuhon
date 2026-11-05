@@ -18,9 +18,11 @@
  * Only `POST` is served. A `GET` would open the SDK's standalone SSE stream,
  * which this endpoint never sends anything on but which the SDK keeps open with
  * periodic keep-alive frames for as long as the client stays connected; a
- * `DELETE` would end a session, and there are none. Every other method is
- * answered `405` with `Allow: POST`, as the MCP transport spec has a server that
- * offers no SSE stream do.
+ * `DELETE` would end a session, and there are none. Every method but `POST` is
+ * answered `405` with `Allow: POST`. For `GET` this is the answer the MCP
+ * transport spec requires of a server that offers no SSE stream, and for
+ * `DELETE` it is the one the spec allows a server that does not let clients
+ * end sessions; no other method is part of the transport.
  *
  * Unauthenticated public read, at parity with `GET /api/profile`: every answer
  * is privacy-filtered by core and no admin/write surface is exposed.
