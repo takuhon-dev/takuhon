@@ -9,8 +9,10 @@ name: Dependabot auto-merge
 # request that carries a commit Dependabot did not write.
 #
 # A pull request qualifies only when both hold:
-# - every commit on it was written by Dependabot and has a verified signature
-#   (fetch-metadata itself only checks the first commit), and
+# - every commit on it was authored by Dependabot, committed by GitHub
+#   (web-flow) and has a verified signature (fetch-metadata itself only checks
+#   the first commit; requiring the web-flow committer means a signed commit
+#   pushed by someone else with Dependabot as its author does not pass), and
 # - every updated dependency is a direct development dependency with a minor
 #   or patch bump (the per-dependency list, not the group-wide summary, which
 #   would let one indirect or unknown entry hide behind a development one).
@@ -60,8 +62,8 @@ jobs:
           set -euo pipefail
 
           commits=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits" --paginate \
-            --jq '.[] | "\(.author.login // "-") \(.commit.verification.verified)"')
-          if [ -n "$commits" ] && ! grep -qv '^dependabot\[bot\] true$' <<<"$commits"; then
+            --jq '.[] | "\(.author.login // "-") \(.committer.login // "-") \(.commit.verification.verified)"')
+          if [ -n "$commits" ] && ! grep -qv '^dependabot\[bot\] web-flow true$' <<<"$commits"; then
             only_dependabot=true
           else
             only_dependabot=false
