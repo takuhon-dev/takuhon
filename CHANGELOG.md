@@ -4,6 +4,23 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [1.4.6] - 2026-11-06
+
+Patch release. `@takuhon/mcp` moves from zod 3 to zod 4, which clears the last runtime dependency advisory. No schema, stored-document, or HTTP route change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.6). Turnkey deployments pick this up on their next `@takuhon/*` bump and redeploy.
+
+### Security — dependencies
+
+- **`zod` `^3.25.76` → `^4.6.6` in `@takuhon/mcp`.** The advisory on zod 3.25.76 is fixed only in zod 4. zod is used only inside `@takuhon/mcp`, for the tool input schemas, and does not appear in its exported types. `@modelcontextprotocol/sdk` 1.32 accepts either major.
+
+### Changed — `@takuhon/mcp`
+
+- **The tool input schemas no longer advertise `additionalProperties: false`.** `tools/list` showed it on `get_profile`, `get_section`, and `get_jsonld` (not on `list_locales`), yet a call with an unknown argument was already accepted and the argument stripped. That behavior is unchanged; the advertised schemas now match it. Required arguments, the tool-input element bound, and successful results are unchanged.
+- Input validation errors are worded as zod 4 words them. They are still returned as errors.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump 1.4.5 → 1.4.6.
+
 ## [1.4.5] - 2026-11-06
 
 Patch release. Dependency security fixes, and tighter bounds on the read-only MCP surface. No schema or stored-document change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.5). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.

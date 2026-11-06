@@ -1,6 +1,6 @@
 {
   "name": "@takuhon/core",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "JSON Schema, validation, normalization, locale resolution, and JSON-LD generation for takuhon",
   "license": "Apache-2.0",
   "author": "Takuhon contributors",
