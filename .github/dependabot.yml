@@ -5,7 +5,19 @@ updates:
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 10
+    # A dependency joins the first group it matches, so this group comes first:
+    # every minor or patch bump of a development dependency lands in one pull
+    # request. The tool groups below pick up what is left, which today means
+    # major bumps.
+    # Production dependencies are not grouped and still get one pull request each.
     groups:
+      development-minor-patch:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
+        patterns:
+          - '*'
       eslint:
         patterns:
           - 'eslint'

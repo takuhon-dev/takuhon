@@ -1,0 +1,65 @@
+name: Dependabot auto-merge
+
+# Turns on auto-merge for Dependabot pull requests that only bump development
+# dependencies by a minor or patch version. GitHub merges such a pull request
+# once every status check that the main branch ruleset requires has passed.
+#
+# Everything else stays manual: production dependencies, major bumps, GitHub
+# Actions updates and security updates of indirect dependencies.
+#
+# For a grouped pull request, fetch-metadata reports the highest dependency
+# type (production > development > indirect) and the highest update type
+# (major > minor > patch) across the group, so one production dependency or
+# one major bump keeps the whole pull request manual. When Dependabot rewrites
+# a pull request so that it no longer qualifies, auto-merge is turned off again.
+#
+# pull_request_target is needed because runs that Dependabot triggers on
+# pull_request only get a read-only token. This workflow never checks out or
+# runs code from the pull request: it reads the pull request's metadata and
+# calls the GitHub API, nothing else.
+#
+# A merge made through this token does not start new workflow runs, so CI and
+# the security scan do not run again on main for it. Both ran on the pull
+# request, and the security scan also sweeps main every week.
+
+on: pull_request_target
+
+permissions: {}
+
+jobs:
+  auto-merge:
+    name: Dependabot auto-merge (development minor/patch)
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'takuhon-dev/takuhon'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+
+      - name: Enable auto-merge
+        if: >-
+          steps.metadata.outputs.dependency-type == 'direct:development' &&
+          (steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-patch')
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Turn auto-merge off when the pull request does not qualify
+        if: >-
+          !(steps.metadata.outputs.dependency-type == 'direct:development' &&
+          (steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-patch'))
+        run: |
+          if [ "$(gh pr view "$PR_URL" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "true" ]; then
+            gh pr merge --disable-auto "$PR_URL"
+          fi
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
