@@ -1,0 +1,104 @@
+name: Dependabot auto-merge
+
+# Turns on auto-merge for Dependabot pull requests that only bump development
+# dependencies by a minor or patch version. GitHub merges such a pull request
+# once every status check that the main branch ruleset requires has passed.
+#
+# Everything else stays manual: production dependencies, major bumps, GitHub
+# Actions updates, security updates of indirect dependencies, and any pull
+# request that carries a commit Dependabot did not write.
+#
+# A pull request qualifies only when both hold:
+# - every commit on it was authored by Dependabot, committed by GitHub
+#   (web-flow) and has a verified signature (fetch-metadata itself only checks
+#   the first commit; requiring the web-flow committer means a signed commit
+#   pushed by someone else with Dependabot as its author does not pass), and
+# - every updated dependency is a direct development dependency with a minor
+#   or patch bump (the per-dependency list, not the group-wide summary, which
+#   would let one indirect or unknown entry hide behind a development one).
+# When a pull request does not qualify, or its metadata cannot be read,
+# auto-merge is turned off again (not by a run that was cancelled: the run that
+# replaced it decides).
+#
+# Runs for the same pull request cancel each other, and auto-merge is only
+# turned on for the head commit this run was started for, so a stale run cannot
+# turn it on for a head that a newer run has already turned it off for.
+#
+# pull_request_target is needed because runs that Dependabot triggers on
+# pull_request only get a read-only token. This workflow never checks out or
+# runs code from the pull request: it reads the pull request's metadata and
+# calls the GitHub API, nothing else.
+#
+# A merge made through this token does not start new workflow runs, so CI and
+# the security scan do not run again on main for it. Both ran on the pull
+# request, and the security scan also sweeps main every week.
+
+on: pull_request_target
+
+permissions: {}
+
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    name: Dependabot auto-merge (development minor/patch)
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'takuhon-dev/takuhon'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+
+      - name: Decide whether the pull request qualifies
+        id: decide
+        run: |
+          set -euo pipefail
+
+          commits=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits" --paginate \
+            --jq '.[] | "\(.author.login // "-") \(.committer.login // "-") \(.commit.verification.verified)"')
+          if [ -n "$commits" ] && ! grep -qv '^dependabot\[bot\] web-flow true$' <<<"$commits"; then
+            only_dependabot=true
+          else
+            only_dependabot=false
+          fi
+
+          dev_minor_patch=$(jq -r 'length > 0 and all(.[];
+            .dependencyType == "direct:development" and
+            (.updateType == "version-update:semver-minor" or .updateType == "version-update:semver-patch"))' <<<"$UPDATED")
+
+          echo "only Dependabot commits: $only_dependabot"
+          echo "every dependency development minor/patch: $dev_minor_patch"
+          if [ "$only_dependabot" = true ] && [ "$dev_minor_patch" = true ]; then
+            echo "qualifies=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "qualifies=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UPDATED: ${{ steps.metadata.outputs.updated-dependencies-json }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Enable auto-merge
+        if: steps.decide.outputs.qualifies == 'true'
+        run: gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Turn auto-merge off when the pull request does not qualify
+        if: ${{ !cancelled() && steps.decide.outputs.qualifies != 'true' }}
+        run: |
+          if [ "$(gh pr view "$PR_URL" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "true" ]; then
+            gh pr merge --disable-auto "$PR_URL"
+          fi
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
