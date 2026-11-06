@@ -4,6 +4,37 @@ All notable changes to the `@takuhon/*` packages, the bare-name `takuhon` redire
 
 This is a monorepo. Eleven publishable artifacts release in lockstep at the same version: the nine scoped npm packages (`@takuhon/core`, `@takuhon/api`, `@takuhon/ui`, `@takuhon/activity`, `@takuhon/mcp`, `@takuhon/cli`, `@takuhon/contact`, `@takuhon/cloudflare`, `@takuhon/vercel`), the bare-name `takuhon` redirect, and the `create-takuhon` initializer. The PyPI placeholder follows an independent version trail and is documented in its own section below. Per-package change descriptions live under the version heading below.
 
+## [1.4.5] - 2026-11-06
+
+Patch release. Dependency security fixes, and tighter bounds on the read-only MCP surface. No schema or stored-document change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.5). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
+
+**Behavior change — Cloudflare `/mcp`:** the endpoint now answers every method but `POST` with `405 Method Not Allowed` and `Allow: POST`. MCP clients built on the official SDK treat a `405` on `GET` as "no event stream" and carry on over `POST`; the MCP transport spec names `405` as the way a server says it offers no stream. To check a deployment by hand, send a `tools/list` request:
+
+```bash
+curl -s https://<your-host>/mcp \
+  -H 'content-type: application/json' \
+  -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+```
+
+### Fixed — `@takuhon/cloudflare`
+
+- **`GET /mcp` no longer holds a connection open.** The endpoint passed every method to the SDK's transport. A `GET` opened the SDK's standalone event stream, on which this endpoint never sends anything. Since `@modelcontextprotocol/sdk` 1.30.0 the SDK writes a keep-alive frame on that stream every 15 s, so the request stayed open for as long as the client stayed connected; a 1.4.4 deployment whose lockfile resolves SDK 1.30.0 or later behaves this way. A `DELETE` answered `200` although there are no sessions to end. Every method but `POST` is now answered `405` with `Allow: POST` and a JSON-RPC error body, before a server or transport is built. The MCP guide on takuhon.org described `GET /mcp` as available for inspection; it never returned anything useful (a plain `GET` got `406`, and one that accepts an event stream got an empty stream), and the guide now shows the `tools/list` request above instead.
+- **`POST /mcp` bodies are capped at 64 KiB.** The transport now sets `maxRequestBodySize` to 64 KiB. The SDK default is 4 MiB from 1.30.1, and earlier releases had no limit. Every request the endpoint serves is a small read-only JSON-RPC message (a batch of 100 tool calls is about 16 KB); a larger body is answered `413` before it is parsed.
+
+### Fixed — `@takuhon/mcp`
+
+- **Tool arguments are bounded.** `createTakuhonMcpServer` sets the SDK's `maxToolInputElements` to 32: array elements plus object members in one `tools/call` `arguments` payload, which the SDK leaves unbounded by default. The widest tool takes two scalar arguments. A call over the bound gets an error result instead of being validated against the tool's input schema. This applies on every transport, the CLI's `takuhon mcp` over stdio as well as the Cloudflare endpoint.
+
+### Security — dependencies
+
+- **`@modelcontextprotocol/sdk` floor `^1.29.0` → `^1.32.0`** in `@takuhon/mcp`, `@takuhon/cli`, and `@takuhon/cloudflare`. Releases before 1.30.1 put no limit on a Streamable HTTP request body, and 1.32.0 adds `maxToolInputElements`.
+- The repository lockfile is refreshed within the declared ranges, which clears the advisories on hono, `@hono/node-server`, undici, fast-uri, the express family, sharp, ws, vite, vitest, and postcss, among others. The published packages declare ranges rather than pinned versions, so a deployment resolves its own: refresh its lockfile to pick up the patched versions. `pnpm audit --prod` on this repository goes from 49 findings to 1. The one left is `zod` 3.25.76 in `@takuhon/mcp`, whose advisory is fixed only in zod 4; the bounds above cap both tool input and request size.
+
+### Lockstep version bump
+
+- All eleven publishable artifacts bump 1.4.4 → 1.4.5.
+
 ## [1.4.4] - 2026-11-02
 
 Patch release. Two fixes to the developer-activity sync in `@takuhon/activity`, both forced by changes on the provider side. No schema, API route, or stored-document change: the schema stays at 1.4.0 and the `@takuhon/*` scaffold caret range is unchanged (`^1.4.0` already admits 1.4.4). Turnkey deployments pick these up on their next `@takuhon/*` bump and redeploy.
