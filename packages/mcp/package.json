@@ -51,6 +51,6 @@
     "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/sdk": "^1.32.0",
     "@takuhon/core": "workspace:*",
-    "zod": "^3.25.76"
+    "zod": "^4.6.6"
   }
 }
