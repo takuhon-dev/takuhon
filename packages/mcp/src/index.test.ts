@@ -109,6 +109,17 @@ describe('createTakuhonMcpServer()', () => {
     expect(result.isError).toBe(true);
   });
 
+  it('rejects tool arguments with more elements than any tool needs', async () => {
+    // Unknown keys alone pass the input schema (they are stripped), so only the
+    // element bound turns this call into an error.
+    const padding = Object.fromEntries(Array.from({ length: 64 }, (_, i) => [`k${i}`, i]));
+    const result = await client.callTool({
+      name: 'get_profile',
+      arguments: { lang: 'en', ...padding },
+    });
+    expect(result.isError).toBe(true);
+  });
+
   it('reads the canonical profile resource (privacy-filtered)', async () => {
     const result = await client.readResource({ uri: 'takuhon://profile' });
     const content = result.contents[0] as { mimeType: string; text: string };

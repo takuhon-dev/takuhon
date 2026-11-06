@@ -126,5 +126,4 @@ export type ValidationError =
 
 /** Result of {@link validateSubmission}. */
 export type ValidationResult =
-  | { ok: true; value: ValidSubmission }
-  | { ok: false; error: ValidationError; spam?: boolean };
+  { ok: true; value: ValidSubmission } | { ok: false; error: ValidationError; spam?: boolean };

@@ -8,8 +8,7 @@ import controls from './controls.module.css';
 
 /** Outcome of an asset upload, returned by {@link UploadAsset}. */
 export type AssetUploadResult =
-  | { status: 'uploaded'; url: string; publicUrl: string }
-  | { status: 'error'; message?: string };
+  { status: 'uploaded'; url: string; publicUrl: string } | { status: 'error'; message?: string };
 
 /**
  * Upload one image file and resolve where it now lives. Supplied by the host's

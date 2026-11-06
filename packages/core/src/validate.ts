@@ -80,8 +80,7 @@ export interface ValidationError {
 
 /** Result of {@link validate}. Narrow on `ok` to access `data` or `errors`. */
 export type ValidationResult =
-  | { ok: true; data: Takuhon }
-  | { ok: false; errors: ValidationError[] };
+  { ok: true; data: Takuhon } | { ok: false; errors: ValidationError[] };
 
 /**
  * Validate an arbitrary value against the bundled takuhon schema.

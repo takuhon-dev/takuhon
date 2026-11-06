@@ -38,6 +38,19 @@ import { z } from 'zod';
 const DEFAULT_SERVER_NAME = 'takuhon';
 /** Default server version advertised to MCP clients. */
 const DEFAULT_SERVER_VERSION = '0.0.0';
+/**
+ * Upper bound on array elements plus object members in one `tools/call`
+ * `arguments` payload, which the SDK leaves unbounded by default. A call over
+ * the bound gets an error result instead of being validated against the tool's
+ * input schema. The widest tool here takes two scalar arguments, so this leaves
+ * ample headroom.
+ *
+ * This does not bound the SDK's first pass over the request: the whole message,
+ * `arguments` included, is parsed before the count runs. That pass is bounded by
+ * the transport's request size limit instead (`maxRequestBodySize` on the
+ * Cloudflare adapter).
+ */
+const MAX_TOOL_INPUT_ELEMENTS = 32;
 
 /** Loads the profile document to project. Sync or async; the I/O is the caller's. */
 export type ProfileLoader = () => Promise<Takuhon> | Takuhon;
@@ -82,6 +95,7 @@ export function createTakuhonMcpServer(options: TakuhonMcpServerOptions): McpSer
         'Read-only access to a single takuhon profile. Use the tools to read ' +
         'the profile (optionally per locale) and the resources to fetch the ' +
         'whole document or its JSON Schema. Nothing here can modify the profile.',
+      maxToolInputElements: MAX_TOOL_INPUT_ELEMENTS,
     },
   );
 
