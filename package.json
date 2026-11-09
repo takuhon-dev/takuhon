@@ -23,7 +23,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.8.0",
     "@vitejs/plugin-react": "^6.0.2",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -37,6 +37,6 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.3",
     "vite": "^8.3.6",
-    "vitest": "^4.1.6"
+    "vitest": "^5.1.0"
   }
 }
