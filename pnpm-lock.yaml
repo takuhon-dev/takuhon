@@ -84,8 +84,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/mcp
       hono:
-        specifier: ^4.12.25
-        version: 4.13.16
+        specifier: ^4.13.19
+        version: 4.13.19
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20260518.1
@@ -109,8 +109,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
       hono:
-        specifier: ^4.12.25
-        version: 4.13.16
+        specifier: ^4.13.19
+        version: 4.13.19
 
   adapters/wordpress:
     dependencies:
@@ -193,8 +193,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       hono:
-        specifier: ^4.12.25
-        version: 4.13.16
+        specifier: ^4.13.19
+        version: 4.13.19
 
   packages/cli:
     dependencies:
@@ -203,7 +203,7 @@ importers:
         version: 0.11.0
       '@hono/node-server':
         specifier: ^2.0.0
-        version: 2.1.6(hono@4.13.16)
+        version: 2.1.6(hono@4.13.19)
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.0
         version: 1.32.2(@cfworker/json-schema@4.1.6)(zod@4.6.7)
@@ -220,8 +220,8 @@ importers:
         specifier: workspace:*
         version: link:../mcp
       hono:
-        specifier: ^4.12.25
-        version: 4.13.16
+        specifier: ^4.13.19
+        version: 4.13.19
     devDependencies:
       '@takuhon/admin':
         specifier: workspace:*
@@ -2291,8 +2291,8 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
-  hono@4.13.16:
-    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
+  hono@4.13.19:
+    resolution: {integrity: sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -3814,9 +3814,9 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@hono/node-server@2.1.6(hono@4.13.16)':
+  '@hono/node-server@2.1.6(hono@4.13.19)':
     dependencies:
-      hono: 4.13.16
+      hono: 4.13.19
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -3974,7 +3974,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.32.2(@cfworker/json-schema@4.1.6)(zod@4.6.7)':
     dependencies:
-      '@hono/node-server': 2.1.6(hono@4.13.16)
+      '@hono/node-server': 2.1.6(hono@4.13.19)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -3984,7 +3984,7 @@ snapshots:
       eventsource-parser: 3.1.1
       express: 5.3.0
       express-rate-limit: 8.7.3(express@5.3.0)
-      hono: 4.13.16
+      hono: 4.13.19
       jose: 6.2.15
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -5350,7 +5350,7 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hono@4.13.16: {}
+  hono@4.13.19: {}
 
   hookified@1.15.1: {}
 
